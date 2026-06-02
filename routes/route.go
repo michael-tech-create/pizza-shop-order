@@ -12,5 +12,6 @@ func SetupRoutes(router *gin.Engine) {
 	router.GET("/api/pizzas/:id", handlers.GetPizzaByIdHandler)
 	router.PUT("/api/pizzas/:id", handlers.UpdatePizzaHandler)
 	router.DELETE("/api/pizzas/:id", handlers.DeletePizzaHandler)
+	router.POST("api/orders", handlers.GetPizzaOrder)
 	//
 }

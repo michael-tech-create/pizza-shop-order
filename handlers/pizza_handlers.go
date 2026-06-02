@@ -7,10 +7,20 @@ import (
 	"pizza-app/models"
 
 	"github.com/gin-gonic/gin"
+	"pizza-app/repositories"
 )
 
 func GetMenuHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, models.Pizzas)
+	pizzas, err := repositories.GetAllPizzas()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, pizzas)
 }
 
 func CreatePizzaHandler(c *gin.Context) {
@@ -42,9 +52,14 @@ func CreatePizzaHandler(c *gin.Context) {
 
 	models.NextPizzaID++
 
-	models.Pizzas = append(models.Pizzas, newPizza)
+	err := repositories.CreatePizza(newPizza)
 
-	c.JSON(http.StatusCreated, newPizza)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error" : err.Error(),
+		})
+		return
+	}
 }
 
 func GetPizzaByIdHandler(c *gin.Context) {
@@ -60,18 +75,17 @@ func GetPizzaByIdHandler(c *gin.Context) {
 		return
 	}
 
-	for _, pizza := range models.Pizzas {
+	pizza, err := repositories.GetPizzaByID(id)
 
-		if pizza.ID == id {
-			c.JSON(http.StatusOK, pizza)
-			return
-		}
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
 	}
 
-	c.JSON(http.StatusNotFound, gin.H{
-		"error": "pizza not found",
-	})
-	return
+	c.JSON(http.StatusOK, pizza)
+	// return
 }
 
 func UpdatePizzaHandler(c *gin.Context) {
@@ -136,20 +150,39 @@ func DeletePizzaHandler(c *gin.Context) {
 		})
 		return
 	}
+	pizza, err := repositories.DeletePizza(id)
 
-	for i, pizza := range models.Pizzas {
-
-		if pizza.ID == id {
-			models.Pizzas = append(models.Pizzas[:i], models.Pizzas[i+1:]...)
-			c.JSON(http.StatusOK, gin.H{
-				"message": "pizza deleted successfully",
-			})
-			return
-		}
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
 	}
 
-	c.JSON(http.StatusNotFound, gin.H{
-		"error": "pizza not found",
+	c.JSON(http.StatusOK, pizza)
+}
+
+func GetPizzaOrder(c *gin.Context) {
+ var req models.Order
+
+
+ if err := c.ShouldBindJSON(&req); err != nil {
+	c.JSON(http.StatusBadRequest, gin.H{
+		"error" : "Invalid request body!",
 	})
 	return
+ }
+
+
+ order, err := repositories.CreateOrder(req.PizzaId, req.Quantity)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error" : err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, order)
+
 }

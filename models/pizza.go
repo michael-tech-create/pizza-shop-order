@@ -7,6 +7,21 @@ type Pizza struct {
 	Description string `json:"description"`
 }
 
+type Order struct{
+	ID int `json:"id"`
+	PizzaId int `json:"pizza_id"`
+	Quantity int `json:"quantity"`
+	TotalCost int `json:"total_cost"`
+}
+// blue print 
+
+type OrderResponse struct {
+	OrderID int `json:"order_id"`
+	PizzaName string `json:"pizza_name"`
+	Quantity int `json:"quantity"`
+	TotalCost int `json:total_cost`
+}
+
 var Pizzas = []Pizza{
 	{
 		ID:          1,
