@@ -9,6 +9,7 @@ import (
 
 	"pizza-app/database"
 	"github.com/joho/godotenv"
+	"github.com/gin-contrib/cors"
 )
 
 func main() {
@@ -22,6 +23,8 @@ func main() {
 	database.ConnectDataBase()
 	
 	router := gin.Default()
+
+	router.Use(cors.Default())
 
 	routes.SetupRoutes(router)
 	fmt.Println("server starting at http://localhost:8080")
