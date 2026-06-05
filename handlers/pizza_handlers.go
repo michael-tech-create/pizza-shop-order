@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"pizza-app/repositories"
+	"log"
 )
 
 func GetMenuHandler(c *gin.Context) {
@@ -172,7 +173,8 @@ func GetPizzaOrder(c *gin.Context) {
 	})
 	return
  }
-
+log.Println("pizza_id:", req.PizzaId)
+log.Println("quantity:", req.Quantity)
 
  order, err := repositories.CreateOrder(req.PizzaId, req.Quantity)
 
@@ -185,4 +187,17 @@ func GetPizzaOrder(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, order)
 
+}
+
+func GetOrdersHandler(c *gin.Context) {
+	orders, err := repositories.GetAllOrders()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, orders)
 }

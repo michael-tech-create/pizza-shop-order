@@ -83,6 +83,7 @@ if err != nil {
 	 return models.Pizza{}, fmt.Errorf("pizza with id %d not found",id)
 
 	}
+	return models.Pizza{},err
 }
 
 return pizza, nil
@@ -122,32 +123,26 @@ return pizza, nil
 }
 
 func CreateOrder(pizzaID int, quantity int) (models.Order, error) {
-	pizza, err := GetPizzaByID(pizzaID)
 
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return models.Order{}, fmt.Errorf("not found")
-		}
+    pizza, err := GetPizzaByID(pizzaID)
+    if err != nil {
+        return models.Order{}, err
+    }
 
-		return models.Order{}, nil
-	}
+    total := pizza.Price * quantity
 
-	// var total float64
+    order := models.Order{
+        PizzaId: pizzaID,
+        Quantity: quantity,
+        TotalCost: total,
+    }
 
-	// for _, item := range pizza {
-	// 	total += models.Pizza * float64(models.quantity)
-	// }
-	total := pizza.Price * quantity
+    savedOrder, err := SaveOrder(order)
+    if err != nil {
+        return models.Order{}, err
+    }
 
-	newOrder := models.Order{
-		PizzaId : pizzaID,
-		Quantity: quantity,
-		TotalCost: total,
-		
-	}
-
-	return newOrder, nil
-	
+    return savedOrder, nil
 }
 
 func SaveOrder(order models.Order) (models.Order, error) {
@@ -167,4 +162,42 @@ func SaveOrder(order models.Order) (models.Order, error) {
 	}
 
 	return order, nil
+}
+
+
+func GetAllOrders() ([]models.Order, error) {
+
+	query := `
+	SELECT id, pizza_id, quantity, total_cost
+	FROM orders
+	ORDER BY id DESC
+	`
+
+	rows, err := database.DB.Query(query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var orders []models.Order
+
+	for rows.Next() {
+		var order models.Order
+
+		err := rows.Scan(
+			&order.ID,
+			&order.PizzaId,
+			&order.Quantity,
+			&order.TotalCost,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		orders = append(orders, order)
+	}
+ return orders, nil 
 }
