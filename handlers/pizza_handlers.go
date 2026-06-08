@@ -190,7 +190,7 @@ log.Println("quantity:", req.Quantity)
 }
 
 func GetOrdersHandler(c *gin.Context) {
-	orders, err := repositories.GetAllOrders()
+	orders, err := repositories.GetAllOrdersWithPizzaName()
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -201,3 +201,5 @@ func GetOrdersHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, orders)
 }
+
+

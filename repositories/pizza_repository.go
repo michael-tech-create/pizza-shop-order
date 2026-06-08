@@ -203,14 +203,43 @@ func GetAllOrders() ([]models.Order, error) {
 }
 
 func GetAllOrdersWithPizzaName() ([]models.OrderResponse, error) {
-	query := `SELECT
-		orders.id,
-		pizzas.name,
-		orders.quantity,
-		orders.total_cost
-	FROM orders
-	JOIN pizzas ON orders.pizza_id = pizzas.id
-	ORDER BY orders.id DESC`
 
-	rows, err := database.DB.Query(query)
+    query := `
+        SELECT 
+            orders.id,
+            pizzas.name,
+            orders.quantity,
+            orders.total_cost
+        FROM orders
+        JOIN pizzas ON orders.pizza_id = pizzas.id
+        ORDER BY orders.id DESC
+    `
+
+    rows, err := database.DB.Query(query)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var orders []models.OrderResponse
+
+    for rows.Next() {
+
+        var order models.OrderResponse
+
+        err := rows.Scan(
+            &order.OrderID,
+            &order.PizzaName,
+            &order.Quantity,
+            &order.TotalCost,
+        )
+
+        if err != nil {
+            return nil, err
+        }
+
+        orders = append(orders, order)
+    }
+
+    return orders, nil
 }

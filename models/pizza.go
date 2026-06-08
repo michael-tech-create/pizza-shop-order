@@ -12,7 +12,9 @@ type Order struct{
 	PizzaId int `json:"pizza_id"`
 	Quantity int `json:"quantity"`
 	TotalCost int `json:"total_cost"`
+	Status string `json:"status"`
 }
+
 // blue print 
 
 type OrderResponse struct {
