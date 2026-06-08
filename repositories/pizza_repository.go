@@ -201,3 +201,16 @@ func GetAllOrders() ([]models.Order, error) {
 	}
  return orders, nil 
 }
+
+func GetAllOrdersWithPizzaName() ([]models.OrderResponse, error) {
+	query := `SELECT
+		orders.id,
+		pizzas.name,
+		orders.quantity,
+		orders.total_cost
+	FROM orders
+	JOIN pizzas ON orders.pizza_id = pizzas.id
+	ORDER BY orders.id DESC`
+
+	rows, err := database.DB.Query(query)
+}
