@@ -90,54 +90,34 @@ func GetPizzaByIdHandler(c *gin.Context) {
 }
 
 func UpdatePizzaHandler(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
 
-	idParam := c.Param("id")
-
-	id, err := strconv.Atoi(idParam)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid pizza ID",
+			"error": "invalid pizza id",
 		})
 		return
 	}
 
-	var updatedPizza models.Pizza
+	var pizza models.Pizza
 
-	// Parse JSON body
-	if err := c.ShouldBindJSON(&updatedPizza); err != nil {
+	if err := c.ShouldBindJSON(&pizza); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid JSON",
+			"error": "invalid json",
 		})
 		return
 	}
 
-	// Validate input
-	if updatedPizza.Name == "" || updatedPizza.Price <= 0 {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "name cannot be empty and price must be greater than 0",
+	updatedPizza, err := repositories.UpdatePizza(id, pizza)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
 
-	// Find and update pizza
-	for i, pizza := range models.Pizzas {
-
-		if pizza.ID == id {
-
-			updatedPizza.ID = id
-
-			models.Pizzas[i] = updatedPizza
-
-			c.JSON(http.StatusOK, updatedPizza)
-
-			return
-		}
-	}
-
-	// Pizza not found
-	c.JSON(http.StatusNotFound, gin.H{
-		"error": "pizza not found",
-	})
+	c.JSON(http.StatusOK, updatedPizza)
 }
 
 func DeletePizzaHandler(c *gin.Context) {
@@ -200,6 +180,45 @@ func GetOrdersHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, orders)
+}
+
+func UpdateOrderStatus(c *gin.Context) {
+	id, err := strconv.Atoi(
+		c.Param("id"),
+	)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error" : "invalid id",
+		})
+		return
+	}
+
+	var req models.UpdateStatusRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		
+		return
+	}
+
+	err = repositories.UpdateOrderStatus(
+		id,
+		req.Status,
+	)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message" : "status updated",
+	})
 }
 
 

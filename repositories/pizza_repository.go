@@ -243,3 +243,58 @@ func GetAllOrdersWithPizzaName() ([]models.OrderResponse, error) {
 
     return orders, nil
 }
+
+func UpdateOrderStatus(id int, status string) (error) {
+	query := `UPDATE orders
+	SET status = $1
+	WHERE id = $2`
+
+	_, err := database.DB.Exec(
+		query,
+		status,
+		id,
+	)
+
+	switch status {
+	case "Pending", "Preparing", "Delivered", "Cancelled":
+		//valid
+	default:
+		return fmt.Errorf("invalid status")
+	}
+
+	return err
+}
+
+
+func UpdatePizza(id int, pizza models.Pizza) (models.Pizza, error) {
+
+	query := `
+	UPDATE pizzas
+	SET name = $1,
+	    price = $2,
+	    description = $3
+	WHERE id = $4
+	RETURNING id, name, price, description
+	`
+
+	var updated models.Pizza
+
+	err := database.DB.QueryRow(
+		query,
+		pizza.Name,
+		pizza.Price,
+		pizza.Description,
+		id,
+	).Scan(
+		&updated.ID,
+		&updated.Name,
+		&updated.Price,
+		&updated.Description,
+	)
+
+	if err != nil {
+		return models.Pizza{}, err
+	}
+
+	return updated, nil
+}
