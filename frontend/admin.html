@@ -102,6 +102,62 @@
             </div>
         </div>
 
+        <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="bg-white shadow-lg shadow-amber-200/50 rounded-2xl border border-amber-200 overflow-hidden lg:col-span-1">
+                <div class="px-6 py-5 border-b border-amber-100 bg-white">
+                    <h2 class="text-lg font-bold text-slate-800">Add New Pizza</h2>
+                </div>
+                <div class="p-6 bg-slate-50 flex flex-col gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-600 mb-1">Pizza Name</label>
+                        <input type="text" id="pizzaName" class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none" placeholder="e.g. Pepperoni">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-600 mb-1">Price (₦)</label>
+                        <input type="number" id="pizzaPrice" class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none" placeholder="e.g. 4500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-600 mb-1">Description</label>
+                        <textarea id="pizzaDescription" rows="2" class="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none" placeholder="e.g. Spicy pepperoni with mozzarella"></textarea>
+                    </div>
+                    <button onclick="createPizza()" class="mt-2 w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-2.5 px-4 rounded-xl shadow-md shadow-teal-600/30 transition-all transform active:scale-95">
+                        Save Pizza
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white shadow-lg shadow-amber-200/50 rounded-2xl border border-amber-200 overflow-hidden lg:col-span-2">
+                <div class="px-6 py-5 border-b border-amber-100 flex justify-between items-center bg-white">
+                    <h2 class="text-lg font-bold text-slate-800">Menu Management</h2>
+                    <button onclick="loadPizzas()" class="text-sm bg-orange-100 hover:bg-orange-200 text-orange-800 px-4 py-2 rounded-lg font-semibold transition-colors">
+                        Load Menu
+                    </button>
+                </div>
+                <div class="overflow-x-auto table-container h-[350px] overflow-y-auto">
+                    <table class="w-full whitespace-nowrap">
+                        <thead class="sticky top-0 z-10 bg-slate-50">
+                            <tr class="border-b border-slate-200 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                <th class="px-6 py-4">ID</th>
+                                <th class="px-6 py-4">Name</th>
+                                <th class="px-6 py-4">Price</th>
+                                <th class="px-6 py-4">Description</th>
+                                <th class="px-6 py-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pizzaTable" class="divide-y divide-slate-100 text-sm">
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center text-slate-400">
+                                    <span class="font-medium">Click "Load Menu" to view existing pizzas.</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
     </main>
 
 <script>
@@ -323,34 +379,40 @@ async function loadPizzas() {
 
 
 async function deletePizza(id) {
-    const confirmed = confirm(
-        "Delete this pizza?"
-    );
+    const confirmed = confirm("Are you sure you want to delete this pizza?")
 
-    if (!confirmed) return;
-
-    await fetch(
-        `http://localhost:8080/api/pizzas/${id}`,
-        {
+    if(!confirmed) {
+        return;
+    }
+    try {
+        const response = await fetch(`http://localhost:8080/api/pizzas/${id}`, {
             method: "DELETE"
-        }
-    );
+        });
 
-    loadPizzas();
+        if (!response.ok) {
+            throw new Error(`Server failed to delete. Status: ${response.status}`);
+        }
+
+      
+        alert("Pizza deleted successfully!");
+        loadPizzas();
+
+    } catch (error) {
+        console.error("Error deleting pizza:", error);
+        alert("Failed to delete pizza! Open your browser console (F12) for details.");
+    }
 }
 
 function editPizza(id) {
     const name = prompt("New pizza name");
-
     const price = prompt("New price")
-
     const desc = prompt("description")
 
         updatePizza(
         id,
         name,
         price,
-        description
+        desc,
     );
 }
 
