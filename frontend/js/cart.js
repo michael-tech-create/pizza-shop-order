@@ -5,7 +5,6 @@ const cartTotal = document.getElementById("cartTotal");
 const cartBtn = document.getElementById("cartBtn");
 const cartDrawer = document.getElementById("cart");
 
-
 cartBtn.addEventListener("click", () => {
     cartDrawer.classList.toggle("hidden");
 });
@@ -29,10 +28,10 @@ function setupCartButtons() {
     });
 }
 
-
 function updateCartCount() {
     document.getElementById("cartCount").textContent = cart.length;
 }
+
 function groupCartItems(items) {
     const grouped = new Map();
     
@@ -41,7 +40,6 @@ function groupCartItems(items) {
         if (existing) {
             existing.quantity++;
         } else {
-            
             grouped.set(item.id, { ...item, quantity: 1 });
         }
     }
@@ -49,67 +47,61 @@ function groupCartItems(items) {
     return Array.from(grouped.values());
 }
 
-
 function renderCart() {
     const groupedItems = groupCartItems(cart);
     let total = 0;
-
 
     const cartHTML = groupedItems.map(item => {
         const itemTotal = item.price * item.quantity;
         total += itemTotal;
 
+        // IMPROVED: Upgraded to styled card rows with elegant layout structure, clean colors, and micro-interactions
         return `
-            <div class="border-b py-2 flex justify-between items-center">
+            <div class="py-4 flex justify-between items-center border-b border-gray-100 last:border-b-0 hover:bg-gray-50/50 px-2 rounded-xl transition-colors">
                 <div>
-                    <p class="font-bold">
-                        ${item.name} ${item.quantity > 1 ? `<span class="text-gray-500 font-medium">x${item.quantity}</span>` : ""}
+                    <p class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+                        ${item.name} 
+                        ${item.quantity > 1 ? `<span class="bg-orange-50 text-orange-600 font-semibold text-xs px-2 py-0.5 rounded-md">x${item.quantity}</span>` : ""}
                     </p>
-                    <p>$${itemTotal.toFixed(2)}</p>
+                    <p class="text-sm font-black text-gray-900 mt-0.5">$${itemTotal.toFixed(2)}</p>
                 </div>
-        <div class="flex items-center gap-2">
+                
+                <!-- Improved Control Buttons Container -->
+                <div class="flex items-center gap-2.5 bg-gray-100/80 p-1 rounded-xl border border-gray-200/40">
+                    <button
+                        onclick="decreaseQuantity(${item.id})"
+                        class="bg-white hover:bg-orange-50 hover:text-orange-600 text-gray-600 font-bold w-7 h-7 rounded-lg shadow-sm flex items-center justify-center active:scale-90 transition-all text-xs"
+                    >
+                        —
+                    </button>
 
-            <button
-             onclick="decreaseQuantity(${item.id})"
-            class="bg-green-500 px-2 rounded text-white"
-        >
-        -
-    </button>
+                    <span class="text-xs font-bold text-gray-800 px-1 min-w-[12px] text-center">${item.quantity}</span>
 
-            <span>${item.quantity}</span>
-
-         <button
-                onclick="increaseQuantity(${item.id})"
-              class="bg-green-500 px-2 text-white rounded"
-             >
-             +
-         </button>
-        </div>
+                    <button
+                        onclick="increaseQuantity(${item.id})"
+                        class="bg-white hover:bg-orange-50 hover:text-orange-600 text-gray-600 font-bold w-7 h-7 rounded-lg shadow-sm flex items-center justify-center active:scale-90 transition-all text-sm"
+                    >
+                        +
+                    </button>
+                </div>
             </div>
         `;
     }).join("");
 
-    cartItems.innerHTML = cartHTML || `<p class="text-gray-500 text-center py-4 text-sm">Your cart is empty</p>`;
+    cartItems.innerHTML = cartHTML || `
+        <div class="text-center py-12 flex flex-col items-center justify-center">
+            <span class="text-4xl mb-2 opacity-60">🍕</span>
+            <p class="text-gray-400 font-medium text-sm">Your cart is empty.</p>
+        </div>
+    `;
     cartTotal.textContent = total.toFixed(2);
 }
 
-
-// function removeFromCart(id) {
-
-//     const index = cart.findIndex(item => item.id === id);
-    
-//     if (index !== -1) {
-//         cart.splice(index, 1); 
-//     }
-
-//     updateCartCount();
-//     renderCart();
-// }
 function increaseQuantity(id) {
     const item = cart.find(item => item.id === id);
 
     if (item) {
-            cart.push({
+        cart.push({
             id: item.id,
             name: item.name,
             price: item.price
@@ -132,7 +124,6 @@ function decreaseQuantity(id) {
     renderCart();
 }
 
-
 async function checkout() {
     if (cart.length == 0) {
         alert("cart is empty")
@@ -140,7 +131,6 @@ async function checkout() {
     }
 
     const grouped = groupCartItems(cart);
-
     const firstItem = grouped[0];
 
     const response = await fetch(
@@ -150,7 +140,6 @@ async function checkout() {
             headers: {
                 "Content-Type": "application/json"
             },
-
             body: JSON.stringify({
                 pizza_id: firstItem.id,
                 quantity: firstItem.quantity
@@ -159,7 +148,6 @@ async function checkout() {
     );
 
     const data = await response.json();
-
     console.log(data);
 
     if (response.ok) {

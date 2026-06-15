@@ -10,8 +10,13 @@ import (
 
 func CreatePizza(pizza models.Pizza) error {
 	query :=  `
-	INSERT INTO pizzas (name, price, description)
-	VALUES ($1, $2, $3)
+INSERT INTO pizzas(
+	name,
+	price,
+	description,
+	image_url
+)
+VALUES($1,$2,$3,$4)
 	`
 
 	_, err := database.DB.Exec(
@@ -26,7 +31,7 @@ func CreatePizza(pizza models.Pizza) error {
 
 func GetAllPizzas() ([]models.Pizza, error) {
 	query := `
-	SELECT id, name, price, description
+	SELECT id, name, price, description image_url
 	FROM pizzas
 	`
 
@@ -297,4 +302,128 @@ func UpdatePizza(id int, pizza models.Pizza) (models.Pizza, error) {
 	}
 
 	return updated, nil
+}
+
+func GetDashboardStats() (models.DashboardStats, error) {
+	var stats models.DashboardStats
+
+	query := `SELECT
+		COUNT(*) as total_orders,
+		COALESCE(SUM(total_cost), 0) as revenue
+		FROM orders
+		`
+
+	err := database.DB.QueryRow(query).Scan(
+		&stats.TotalOrders,
+		&stats.Revenue,
+	)
+
+	if err != nil {
+		return models.DashboardStats{}, err
+	}
+	
+	return stats, nil
+}
+
+func GetBestSellingPizza() (models.BestSellingPizza, error) {
+
+query := `
+SELECT
+    pizzas.name,
+    SUM(orders.quantity) AS sold
+FROM orders
+JOIN pizzas
+ON pizzas.id = orders.pizza_id
+GROUP BY pizzas.name
+ORDER BY sold DESC
+LIMIT 1
+`
+		var pizza models.BestSellingPizza
+
+		err := database.DB.QueryRow(query).Scan(
+			&pizza.PizzaName,
+			&pizza.Sold,
+
+		)
+
+		if err != nil {
+			return models.BestSellingPizza{}, err
+		}
+
+		return pizza, nil 
+}
+
+func SearchPizza(query string) ([]models.Pizza, error) {
+	sqlQuery := `
+	SELECT
+		id,
+		name,
+		price,
+		description
+	FROM pizzas
+	WHERE LOWER(name)
+	LIKE LOWER($1)
+	`
+
+	rows, err := database.DB.Query(
+		sqlQuery,
+		"%"+query+"%",
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var pizzas []models.Pizza
+
+	for rows.Next() {
+		var pizza models.Pizza
+
+		err := rows.Scan(
+			&pizza.ID,
+			&pizza.Name,
+			&pizza.Price,
+			&pizza.Description,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		pizzas = append(pizzas, pizza)
+	}
+	return pizzas, nil 
+}
+
+func GetPizzaImages(pizzaID int) ([]models.PizzaImage, error) {
+	rows, err := database.DB.Query(`
+		SELECT id, pizza_id, image_url
+		FROM pizza_images
+		WHERE pizza_id = $1
+	`, pizzaID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var images []models.PizzaImage
+
+	for rows.Next() {
+		var img models.PizzaImage
+
+		if err := rows.Scan(
+			&img.ID,
+			&img.PizzaID,
+			&img.ImageURL,
+		); err != nil {
+			return nil, err
+		}
+
+		images = append(images, img)
+	}
+
+	return images, nil
 }

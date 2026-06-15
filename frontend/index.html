@@ -4,85 +4,103 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>McMichael Pizza</title>
-
+  
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cloudflare.com">
-
     <link rel="stylesheet" href="./css/style.css">
 </head>
 
-<body class="bg-amber-100">
+<body class="bg-amber-50/50 min-h-screen font-sans">
 
- 
-    <nav class="bg-white shadow">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between">
-
-            <h1 class="text-2xl font-bold text-orange-800">
-                🍕 Mc's Pizza
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-orange-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-black text-orange-600 tracking-tight flex items-center gap-2">
+                <span>🍕</span> Mc's Pizza
             </h1>
-
             <button
                 id="cartBtn"
-                class="bg-orange-700 text-white px-4 py-2 rounded-full"
+                class="bg-orange-600 hover:bg-orange-700 active:scale-95 text-white font-semibold px-5 py-2.5 rounded-full shadow-md shadow-orange-600/10 flex items-center gap-2 transition-all"
             >
-                Cart (<span id="cartCount">0</span>)
+                <span>🛒</span> Cart (<span id="cartCount" class="font-bold">0</span>)
             </button>
-
         </div>
     </nav>
 
-
-    <section class="text-center py-12">
-
-        <h2 class="text-5xl font-bold mb-4">
+    <section class="text-center py-16 px-4 max-w-3xl mx-auto">
+        <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
             Fresh Pizza Delivered Fast
         </h2>
-
-        <p class="text-gray-600">
-            Order your favorite pizza online.
+        <p class="text-gray-500 text-lg">
+            Order your favorite piping-hot pizza online in just a few clicks.
         </p>
-
     </section>
 
-    <section class="max-w-7xl mx-auto px-4">
+    <main class="max-w-7xl mx-auto px-6 pb-24">
+        
+        <div class="max-w-xl mx-auto mb-12 relative">
+           
+            <div class="relative shadow-md shadow-orange-100/50 rounded-2xl">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <input 
+                    type="text" 
+                    id="search" 
+                    placeholder="Search your favorite pizza or ingredients..." 
+                    class="block w-full pl-12 pr-4 py-4 border border-orange-100 rounded-2xl bg-white focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 text-gray-900 placeholder-gray-400 text-base transition-all shadow-inner"
+                >
+            </div>
 
-        <div
-            id="pizzaContainer"
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-
+            <div id="menu" class="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 divide-y divide-gray-50 overflow-hidden z-30 [&:empty]:hidden"></div>
         </div>
 
-    </section>
+       
+        <section>
+            <div
+                id="pizzaContainer"
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            >
+               
+            </div>
+        </section>
+    </main>
 
   
     <div
         id="cart"
-        class="fixed right-0 top-0 h-full w-96 bg-white shadow-lg p-4 hidden"
+        class="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl border-l border-gray-100 p-6 flex flex-col justify-between z-50 transition-transform transform translate-x-full hidden"
     >
+        <div>
+            <div class="flex justify-between items-center pb-4 border-b border-gray-100 mb-6">
+                <h2 class="text-2xl font-black text-gray-900 flex items-center gap-2">
+                    <span>🛍️</span> Your Cart
+                </h2>
+                
+                <button onclick="document.getElementById('cart').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-sm font-medium">
+                    Close
+                </button>
+            </div>
+    
+            <div id="cartItems" class="space-y-4 overflow-y-auto max-h-[60vh]"></div>
+        </div>
 
-        <h2 class="text-2xl font-bold mb-4">
-            Cart
-        </h2>
-
-        <div id="cartItems"></div>
-
-        <div class="mt-6">
-            <h3 class="font-bold">
-                Total:
-                $<span id="cartTotal">0</span>
-            </h3>
-
+    
+        <div class="pt-6 border-t border-gray-100 bg-white">
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-gray-500 font-medium">Estimated Total</span>
+                <span class="text-2xl font-black text-gray-900">
+                    $<span id="cartTotal">0.00</span>
+                </span>
+            </div>
             <button
                 id="checkoutBtn"
                 onclick="checkout()"
-                class="mt-4 bg-green-500 text-white px-4 py-2 rounded"
-                
+                class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-600/10 hover:shadow-emerald-700/20 transition-all text-center tracking-wide"
             >
-                Checkout
+                Proceed to Checkout
             </button>
         </div>
-
     </div>
 
     <script src="./js/app.js"></script>

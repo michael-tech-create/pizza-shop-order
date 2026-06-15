@@ -15,5 +15,9 @@ func SetupRoutes(router *gin.Engine) {
 	router.POST("/api/orders", handlers.GetPizzaOrder)
 	router.GET("/api/orders", handlers.GetOrdersHandler)
 	router.PATCH("/api/orders/:id/status", handlers.UpdateOrderStatus)
+	router.GET("/api/admin/stats", handlers.GetDashboardStatsHandler)
+	router.GET("/api/admin/best-seller", handlers.GetBestSellerHandler)
+	router.GET("/api/admin/search", handlers.SearchPizzaHandler)
+	
 	//
 }

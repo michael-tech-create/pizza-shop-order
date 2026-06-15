@@ -1,16 +1,12 @@
-const API_URL = "http://localhost:8080";
-
 async function getMenu() {
     try {
-        const response = await fetch(`${API_URL}/menu`)
-
-        if (!response.ok) {
-            throw new Error("Failed to fetch menu")
-        }
-
-        return await response.json();
-    }catch (error) {
-        console.error(error);
-        return[];
+        const response = await fetch("http://localhost:8080/menu");
+        const pizzas = await response.json(); 
+        console.log("Parsed Pizza Data:", pizzas); 
+        
+        return pizzas; 
+    } catch (error) {
+        console.error("Error loading menu:", error);
+        return []; 
     }
 }

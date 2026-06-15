@@ -64,29 +64,28 @@ func CreatePizzaHandler(c *gin.Context) {
 }
 
 func GetPizzaByIdHandler(c *gin.Context) {
-
-	idParam := c.Param("id")
-
-	id, err := strconv.Atoi(idParam)
-
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid pizza ID",
-		})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid pizza ID"})
 		return
 	}
 
 	pizza, err := repositories.GetPizzaByID(id)
-
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, pizza)
-	// return
+	images, err := repositories.GetPizzaImages(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"pizza":  pizza,
+		"images": images,
+	})
 }
 
 func UpdatePizzaHandler(c *gin.Context) {
@@ -153,8 +152,8 @@ func GetPizzaOrder(c *gin.Context) {
 	})
 	return
  }
-log.Println("pizza_id:", req.PizzaId)
-log.Println("quantity:", req.Quantity)
+// log.Println("pizza_id:", req.PizzaId)
+// log.Println("quantity:", req.Quantity)
 
  order, err := repositories.CreateOrder(req.PizzaId, req.Quantity)
 
@@ -221,4 +220,44 @@ func UpdateOrderStatus(c *gin.Context) {
 	})
 }
 
+func GetDashboardStatsHandler(c *gin.Context) {
+	stats, err := repositories.GetDashboardStats() 
 
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error" : err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, stats)
+}
+
+func GetBestSellerHandler(c *gin.Context) {
+	pizza, err := repositories.GetBestSellingPizza()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+
+		return
+	}
+
+	c.JSON(http.StatusOK, pizza)
+}
+
+func SearchPizzaHandler(c *gin.Context) {
+	query := c.Query("q")
+	log.Println("Search query:", query)
+
+	pizzas, err := repositories.SearchPizza(query)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, pizzas)
+}

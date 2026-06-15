@@ -212,79 +212,57 @@ async function loadOrders() {
                 </tr>
             `;
         } else {
-            tableBody.innerHTML = orders.map(order => {
-                revenue += Number(order.TotalCost);
-                
-                const statusStr = order.status ? order.status.toLowerCase() : "pending";
-                let badgeClass = "bg-yellow-100 text-yellow-800 border-yellow-200";
-                
-                if (statusStr === "completed" || statusStr === "delivered") {
-                    badgeClass = "bg-teal-100 text-teal-800 border-teal-200";
-                } else if (statusStr === "cancelled") {
-                    badgeClass = "bg-red-100 text-red-800 border-red-200";
-                }
+tableBody.innerHTML = orders.map(order => {
 
-                const pendingSelected = order.status === "Pending" ? "selected" : "";
+    const cost = Number(order.total_cost || 0);
+    revenue += cost;
 
-                const preparingSelected = order.status === "Preparing" ? "selected" : "";
+    const statusStr = (order.status || "pending").toLowerCase();
 
-                const deliveredSelected = order.status === "Delivered" ? "selected" : "";
+    const pendingSelected = order.status === "Pending" ? "selected" : "";
+    const preparingSelected = order.status === "Preparing" ? "selected" : "";
+    const deliveredSelected = order.status === "Delivered" ? "selected" : "";
+    const cancelledSelected = order.status === "Cancelled" ? "selected" : "";
 
-                const cancelledSelected = order.status === "Cancelled" ? "selected" : "";
+    return `
+        <tr class="transition-colors hover:bg-amber-50/50">
+            <td class="px-6 py-4 font-semibold text-slate-700">
+                #${order.order_id}
+            </td>
 
-                return `
-                    <tr class="transition-colors hover:bg-amber-50/50">
-                        <td class="px-6 py-4 font-semibold text-slate-700">
-                            #${order.order_id}
-                        </td>
+            <td class="px-6 py-4 text-slate-600">
+                ${order.pizza_name || `Pizza ${order.pizza_id}`}
+            </td>
 
-                        <td class="px-6 py-4 text-slate-600">
-                            ${order.pizza_name || `Pizza ${order.pizza_id}`}
-                        </td>
+            <td class="px-6 py-4 text-center text-slate-600 font-medium">
+                ${order.quantity}
+            </td>
 
-                        <td class="px-6 py-4 text-center text-slate-600 font-medium">
-                            ${order.quantity}
-                        </td>
+            <td class="px-6 py-4 text-right font-medium text-slate-800">
+                ${new Intl.NumberFormat("en-NG", {
+                    style: "currency",
+                    currency: "NGN"
+                }).format(cost)}
+            </td>
 
-                        <td class="px-6 py-4 text-right font-medium text-slate-800">
-                            ${new Intl.NumberFormat("en-NG", {
-                                style: "currency",
-                                currency: "NGN"
-                            }).format(Number(order.TotalCost))}
-                        </td>
+            <td class="px-6 py-4 text-center">
+                <select onchange="updateOrderStatus(${order.order_id}, this.value)"
+                    class="border rounded-md px-2 py-1 text-sm">
 
-                        
-
-                      <td class="px-6 py-4 text-center">
-                     <select
-                    onchange="updateOrderStatus(${order.order_id}, this.value)"
-                        class="border rounded-md px-2 py-1 text-sm" >
-                    <option value="Pending" ${pendingSelected}>
-                                🟠 Pending
-                    </option>
-
-                    <option value="Preparing" ${preparingSelected}>
-                            🟡 Preparing
-                    </option>
-
-                     <option value="Delivered" ${deliveredSelected}>
-                     🟢 Delivered
-                     </option>
-
-                     <option value="Cancelled" ${cancelledSelected}>
-                     🔴 Cancelled
-                  </option>
-              </select>
-                </td>
-                    </tr>
-                `;
-            }).join("");
+                    <option value="Pending" ${pendingSelected}>🟠 Pending</option>
+                    <option value="Preparing" ${preparingSelected}>🟡 Preparing</option>
+                    <option value="Delivered" ${deliveredSelected}>🟢 Delivered</option>
+                    <option value="Cancelled" ${cancelledSelected}>🔴 Cancelled</option>
+                </select>
+            </td>
+        </tr>
+    `;
+}).join("");
         }
-
-        revenueEl.textContent = new Intl.NumberFormat("en-NG", {
-            style: "currency",
-            currency: "NGN"
-        }).format(revenue);
+revenueEl.textContent = new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN"
+}).format(revenue || 0);
 
         orderCountEl.textContent = orders.length;
 
@@ -311,7 +289,6 @@ async function loadOrders() {
 
 async function updateOrderStatus(orderId, status) {
     try {
-
         const response = await fetch(
             `${API_URL}/api/orders/${orderId}/status`,
             {
@@ -319,33 +296,24 @@ async function updateOrderStatus(orderId, status) {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({
-                    status: status
-                })
+                body: JSON.stringify({ status })
             }
         );
 
         if (!response.ok) {
             throw new Error("Failed to update status");
         }
-        console.log(
-            `Order ${orderId} updated to ${status}`
-        );
+
+        console.log(`Order ${orderId} updated to ${status}`);
+
+        // OPTIONAL: refresh orders after update
+        loadOrders();
+
     } catch (error) {
-      console.error("Failed to load orders:", error);
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="5" class="text-center py-16 text-red-500 font-medium">
-                    Error loading data.
-                </td>
-            </tr>
-        `;
-    } finally {
-        btn.disabled = false;
-        icon.classList.remove("animate-spin");
-        text.textContent = "Refresh";
+        console.error("Failed to update status:", error);
+        alert("Failed to update order status");
     }
-    }
+}
 async function loadPizzas() {
     const response = await fetch(
         "http://localhost:8080/menu"

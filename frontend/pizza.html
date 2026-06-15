@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pizza Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-amber-50 min-h-screen p-6">
+
+<div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6">
+
+    <div class="relative">
+
+<img id="mainImage" class="w-full h-80 object-cover rounded-xl" />
+
+<div id="thumbs" class="flex gap-2 mt-4"></div>
+
+<h1 id="pizzaName"></h1>
+<p id="pizzaDesc"></p>
+<span id="pizzaPrice"></span>
+    </div>
+
+
+    <div class="mt-6">
+
+        <h1 id="pizzaName"
+            class="text-3xl font-bold text-slate-800">
+        </h1>
+
+        <p id="pizzaDesc"
+           class="text-slate-500 mt-2">
+        </p>
+
+        <div class="mt-4 text-2xl font-bold text-orange-700"
+             id="pizzaPrice">
+        </div>
+
+        <button
+            id="addToCart"
+            class="mt-6 bg-orange-700 text-white px-6 py-3 rounded-xl font-medium hover:bg-orange-800"
+        >
+            Add to Cart
+        </button>
+
+    </div>
+
+</div>
+
+
+
+<script src="./js/pizza.js"></script>
+
+</body>
+</html>
