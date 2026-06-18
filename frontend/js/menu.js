@@ -2,9 +2,7 @@ const pizzaContainer = document.getElementById("pizzaContainer");
 const menu = document.getElementById("menu");
 const searchInput = document.getElementById("search");
 
-/* -----------------------------
-   CREATE CARD (optional reuse)
------------------------------- */
+
 function createPizzaCard(pizza) {
     const card = document.createElement("div");
 

@@ -55,7 +55,6 @@ function renderCart() {
         const itemTotal = item.price * item.quantity;
         total += itemTotal;
 
-        // IMPROVED: Upgraded to styled card rows with elegant layout structure, clean colors, and micro-interactions
         return `
             <div class="py-4 flex justify-between items-center border-b border-gray-100 last:border-b-0 hover:bg-gray-50/50 px-2 rounded-xl transition-colors">
                 <div>
