@@ -6,9 +6,13 @@ import (
 
 	"pizza-app/models"
 
-	"github.com/gin-gonic/gin"
-	"pizza-app/repositories"
 	"log"
+	"pizza-app/repositories"
+
+	"github.com/gin-gonic/gin"
+	"fmt"
+	"time"
+	"path/filepath"
 )
 
 func GetMenuHandler(c *gin.Context) {
@@ -57,7 +61,7 @@ func CreatePizzaHandler(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error" : err.Error(),
+			"error": err.Error(),
 		})
 		return
 	}
@@ -143,23 +147,22 @@ func DeletePizzaHandler(c *gin.Context) {
 }
 
 func GetPizzaOrder(c *gin.Context) {
- var req models.Order
+	var req models.Order
 
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request body!",
+		})
+		return
+	}
+	// log.Println("pizza_id:", req.PizzaId)
+	// log.Println("quantity:", req.Quantity)
 
- if err := c.ShouldBindJSON(&req); err != nil {
-	c.JSON(http.StatusBadRequest, gin.H{
-		"error" : "Invalid request body!",
-	})
-	return
- }
-// log.Println("pizza_id:", req.PizzaId)
-// log.Println("quantity:", req.Quantity)
-
- order, err := repositories.CreateOrder(req.PizzaId, req.Quantity)
+	order, err := repositories.CreateOrder(req.PizzaId, req.Quantity)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error" : err.Error(),
+			"error": err.Error(),
 		})
 		return
 	}
@@ -188,7 +191,7 @@ func UpdateOrderStatus(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error" : "invalid id",
+			"error": "invalid id",
 		})
 		return
 	}
@@ -199,7 +202,7 @@ func UpdateOrderStatus(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
-		
+
 		return
 	}
 
@@ -216,16 +219,16 @@ func UpdateOrderStatus(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message" : "status updated",
+		"message": "status updated",
 	})
 }
 
 func GetDashboardStatsHandler(c *gin.Context) {
-	stats, err := repositories.GetDashboardStats() 
+	stats, err := repositories.GetDashboardStats()
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error" : err.Error(),
+			"error": err.Error(),
 		})
 		return
 	}
@@ -260,4 +263,64 @@ func SearchPizzaHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, pizzas)
+}
+func UploadPizzaImageHandler(c *gin.Context) {
+	idParam := c.Param("id")
+	pizzaID, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid pizza ID"})
+		return
+	}
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to read files"})
+		return
+	}
+
+	files := form.File["images"]
+	var uploaded []string
+
+	for _, file := range files {
+		filename := fmt.Sprintf("%d_%s", time.Now().UnixNano(), filepath.Base(file.Filename))
+		path := filepath.Join("uploads", filename)
+
+		if err := c.SaveUploadedFile(file, path); err != nil {
+			continue
+		}
+
+		imageURL := "/uploads/" + filename
+		
+		// Saves the asset link to the database reference map table
+		if err := repositories.SavePizzaImage(pizzaID, imageURL); err != nil {
+			log.Println("DB Write Error:", err)
+			continue
+		}
+		uploaded = append(uploaded, imageURL)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"pizza_id": pizzaID,
+		"images":   uploaded,
+	})
+}
+
+
+func GetPizzaImagesHandler(c *gin.Context) {
+
+	pizzaID := c.Param("id")
+
+	c.JSON(http.StatusOK, gin.H{
+		"pizza_id": pizzaID,
+		"message": "fetch images from database here",
+	})
+}
+
+func DeletePizzaImageHandler(c *gin.Context) {
+
+	imageID := c.Param("id")
+
+	c.JSON(http.StatusOK, gin.H{
+		"deleted_image": imageID,
+	})
 }

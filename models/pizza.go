@@ -1,11 +1,11 @@
 package models
 
 type Pizza struct {
-	ID          int           `json:"id"`
-	Name        string        `json:"name"`
-	Price       int           `json:"price"`
-	Description string        `json:"description"`
-	Images      []PizzaImage  `json:"images,omitempty"`
+	ID          int          `json:"id"`
+	Name        string       `json:"name"`
+	Price       int          `json:"price"`
+	Description string       `json:"description"`
+	Images      []PizzaImage `json:"images,omitempty"` 
 }
 
 type PizzaImage struct {
@@ -24,31 +24,30 @@ type DashboardStats struct {
 
 type BestSellingPizza struct {
 	PizzaName string `json:"pizza_name"`
-	Sold int `json:"sold"`
+	Sold      int    `json:"sold"`
 }
 
-type Order struct{
-	ID int `json:"id"`
-	PizzaId int `json:"pizza_id"`
-	Quantity int `json:"quantity"`
+type Order struct {
+	ID        int `json:"id"`
+	PizzaId   int `json:"pizza_id"`
+	Quantity  int `json:"quantity"`
 	TotalCost int `json:"total_cost"`
 }
 
 type PizzaDetailResponse struct {
-	Pizza  Pizza
-	Images []PizzaImage
+	Pizza  Pizza        `json:"pizza"`
+	Images []PizzaImage `json:"images"`
 }
 
 type UpdateStatusRequest struct {
 	Status string `json:"status"`
 }
-// blue print 
 
 type OrderResponse struct {
-	OrderID int `json:"order_id"`
+	OrderID   int    `json:"order_id"`
 	PizzaName string `json:"pizza_name"`
-	Quantity int `json:"quantity"`
-	TotalCost int `json:"total_cost"`
+	Quantity  int    `json:"quantity"`
+	TotalCost int    `json:"total_cost"`
 }
 
 var Pizzas = []Pizza{

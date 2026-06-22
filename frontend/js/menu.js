@@ -15,7 +15,11 @@ function createPizzaCard(pizza) {
 
     card.innerHTML = `
         <div class="h-40 bg-gradient-to-br from-orange-200 via-amber-100 to-orange-50 flex items-center justify-center">
-            <span class="text-6xl">🍕</span>
+            <img
+    src="http://localhost:8080${pizza.image_url}"
+    alt="${pizza.name}"
+    class="w-full h-full object-cover"
+/>
         </div>
 
         <div class="p-5 flex flex-col flex-1">

@@ -157,8 +157,88 @@
             </div>
 
         </div>
+        <div class="bg-white p-6 rounded-xl shadow">
+            <h2 class="text-gray-400">Upload Image</h2>
+
+            <div id="dropZone"
+            class="border-2 border-dashed border-gray-300 rounded-xl p-10 text-center cursor-pointer hover:border-orange-500 transition">
+                <p class="text-gray-500">
+                    Drag & Drop Image Here
+                </p>
+
+                <p class="text-sm text-gray-400 mt-2">
+                    or click to select
+                </p>
+
+        <input
+            type="file"
+            id="imageInput"
+            multiple
+            accept="image/*"
+            class="hidden"
+        />
+            </div>
+
+            <div
+            id="pContainer"
+            class="mt-6 bg-orange-600 text-white px-6 py-3 rounded-xl">
+
+            </div>
+
+    <button
+        id="uploadBtn"
+        class="mt-6 bg-orange-600 text-white px-6 py-3 rounded-xl"
+    >
+        Upload Images
+    </button>
+
+        </div>
+
+
+        <div
+                id="imageModal"
+                class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50"
+        >
+            <div class="bg-white p-6 rounded-xl w-full max-w-3xl">
+
+                <div class="flex justify-between mb-4">
+                    <h2 class="text-xl font-bold">
+                        Pizza Images
+                    </h2>
+
+                    <button onclick="closeImageModal()">
+                        ✕
+                    </button>
+                </div>
+
+                <input
+                        type="file"
+                        id="imageInput"
+                        multiple
+                        accept="image/*"
+                        class="mb-4"
+                >
+
+                <button
+                        onclick="uploadImages()"
+                        class="bg-orange-600 text-white px-4 py-2 rounded"
+                >
+                    Upload Images
+                </button>
+
+                <div
+                        id="imageGallery"
+                        class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6"
+                ></div>
+
+            </div>
+        </div>
+
+
 
     </main>
+
+        </body>
 
 <script>
 const API_URL = "http://localhost:8080";
@@ -336,6 +416,10 @@ async function loadPizzas() {
                     Edit
                 </button>
 
+                <button onclick="manageImage(${pizza.id})">
+                Images
+                </button>
+
                 <button
                     onclick="deletePizza(${pizza.id})"
                 >
@@ -366,8 +450,7 @@ async function deletePizza(id) {
         loadPizzas();
 
     } catch (error) {
-        console.error("Error deleting pizza:", error);
-        alert("Failed to delete pizza! Open your browser console (F12) for details.");
+        console.error("Error deleting pizza:", error)
     }
 }
 
@@ -453,6 +536,91 @@ async function createPizza() {
     );
 
     loadPizzas();
+}
+
+let currentPizzaId = null;
+
+
+async function manageImages(pizzaId) {
+    currentPizzaId = pizzaId;
+
+    document.getElementById("imageModal").classList.remove("hidden")
+
+    loadPizzaImages(pizzaId);
+}
+
+function closeImageModel() {
+
+    document
+        .getElementById("imageModal")
+        .classList.add("hidden");
+}
+
+async function loadPizzaImages(pizzaId) {
+
+    const res = await fetch(
+        `${API_URL}/api/pizzas/${pizzaId}`
+    );
+
+    const data = await res.json();
+
+    const gallery =
+        document.getElementById("imageGallery");
+
+    gallery.innerHTML = "";
+
+    (data.images || []).forEach(image => {
+
+        gallery.innerHTML += `
+            <div class="relative">
+
+                <img
+                    src="${image.image_url}"
+                    class="w-full h-32 object-cover rounded-lg"
+                >
+
+                <button
+                    onclick="deleteImage(${image.id})"
+                    class="absolute top-2 right-2 bg-red-500 text-white px-2 rounded"
+                >
+                    X
+                </button>
+
+            </div>
+        `;
+    });
+}
+
+async function uploadImages() {
+
+    const files =
+        document.getElementById("imageInput").files;
+
+    if (!files.length) {
+        alert("Select images first");
+        return;
+    }
+
+    const formData = new FormData();
+
+    for (const file of files) {
+        formData.append("images", file);
+    }
+
+    const response = await fetch(
+        `${API_URL}/api/pizzas/${currentPizzaId}/images`,
+        {
+            method: "POST",
+            body: formData
+        }
+    );
+
+    if (!response.ok) {
+        alert("Upload failed");
+        return;
+    }
+
+    loadPizzaImages(currentPizzaId);
 }
 
 document.addEventListener("DOMContentLoaded", loadOrders);
