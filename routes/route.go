@@ -7,29 +7,17 @@ import (
 )
 
 func SetupRoutes(router *gin.Engine) {
+
 	router.GET("/menu", handlers.GetMenuHandler)
 
-	router.POST("/pizzas", handlers.CreatePizzaHandler)
-
+	router.POST("/api/pizzas", handlers.CreatePizzaHandler)
 	router.GET("/api/pizzas/:id", handlers.GetPizzaByIdHandler)
 	router.PUT("/api/pizzas/:id", handlers.UpdatePizzaHandler)
 	router.DELETE("/api/pizzas/:id", handlers.DeletePizzaHandler)
 
-	// Pizza Images
-	router.POST(
-		"/api/pizzas/:id/images",
-		handlers.UploadPizzaImageHandler,
-	)
-
-	router.GET(
-		"/api/pizzas/:id/images",
-		handlers.GetPizzaImagesHandler,
-	)
-
-	router.DELETE(
-		"/api/images/:id",
-		handlers.DeletePizzaImageHandler,
-	)
+	router.POST("/api/pizzas/:id/images", handlers.UploadPizzaImageHandler)
+	router.GET("/api/pizzas/:id/images", handlers.GetPizzaImagesHandler)
+	router.DELETE("/api/images/:id", handlers.DeletePizzaImageHandler)
 
 	router.POST("/api/orders", handlers.GetPizzaOrder)
 	router.GET("/api/orders", handlers.GetOrdersHandler)

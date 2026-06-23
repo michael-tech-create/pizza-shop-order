@@ -5,7 +5,7 @@ type Pizza struct {
 	Name        string       `json:"name"`
 	Price       int          `json:"price"`
 	Description string       `json:"description"`
-	Images      []PizzaImage `json:"images,omitempty"` 
+	Images      []PizzaImage `json:"images,omitempty"`
 }
 
 type PizzaImage struct {
@@ -27,11 +27,13 @@ type BestSellingPizza struct {
 	Sold      int    `json:"sold"`
 }
 
+// Order is the raw DB record. Status defaults to "pending" at the DB level.
 type Order struct {
-	ID        int `json:"id"`
-	PizzaId   int `json:"pizza_id"`
-	Quantity  int `json:"quantity"`
-	TotalCost int `json:"total_cost"`
+	ID        int    `json:"id"`
+	PizzaId   int    `json:"pizza_id"`
+	Quantity  int    `json:"quantity"`
+	TotalCost int    `json:"total_cost"`
+	Status    string `json:"status"`
 }
 
 type PizzaDetailResponse struct {
@@ -43,11 +45,20 @@ type UpdateStatusRequest struct {
 	Status string `json:"status"`
 }
 
+// OrderResponse is the joined view returned to the frontend for order listings.
 type OrderResponse struct {
 	OrderID   int    `json:"order_id"`
 	PizzaName string `json:"pizza_name"`
 	Quantity  int    `json:"quantity"`
 	TotalCost int    `json:"total_cost"`
+	Status    string `json:"status"`
+}
+
+// CreateOrderRequest is the payload the frontend sends on checkout.
+// Supports a single-item order (one pizza_id + quantity).
+type CreateOrderRequest struct {
+	PizzaID  int `json:"pizza_id"`
+	Quantity int `json:"quantity"`
 }
 
 var Pizzas = []Pizza{

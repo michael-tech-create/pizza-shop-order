@@ -11,24 +11,36 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/joho/godotenv"
+	"pizza-app/repositories"
 )
 
 func main() {
 
-	err := godotenv.Load()
+err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading my .env file")
+		log.Fatal("Error loading .env file")
 	}
 
 	database.ConnectDataBase()
 
+	fmt.Println("DB:", database.DB)
+
+	err = repositories.SavePizzaImage(
+		2,
+		"/uploads/test.jpg",
+	)
+
+	fmt.Println("SavePizzaImage:", err)
+
 	router := gin.Default()
 
 	router.Use(cors.Default())
-	
+
 	router.Static("/uploads", "./uploads")
 
 	routes.SetupRoutes(router)
+
 	fmt.Println("server starting at http://localhost:8080")
+
 	router.Run(":8080")
 }
