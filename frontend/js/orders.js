@@ -1,14 +1,8 @@
-// ============================================================
-// orders.js — Orders API layer
-// Responsibility: checkout (POST /api/orders), fetch order list
-// (GET /api/orders), update status (PATCH /api/orders/:id/status).
-// Depends on cart.js being loaded first (uses getCartSnapshot,
-// clearCart, formatNaira).
-// ============================================================
+
 
 const API_BASE = "http://localhost:8080";
 
-// ── Toast notification (no alert() calls) ──
+
 function showToast(message, type = "success") {
     const existing = document.getElementById("orderToast");
     if (existing) existing.remove();
@@ -28,8 +22,7 @@ function showToast(message, type = "success") {
     setTimeout(() => toast.remove(), 3500);
 }
 
-// ── Checkout ──
-// Sends one POST per grouped cart item so each gets its own order record.
+
 async function checkout() {
     const grouped = getCartSnapshot();
 
@@ -78,7 +71,6 @@ async function checkout() {
     }
 }
 
-// ── Fetch all orders (used on admin page / orders view) ──
 async function loadOrders() {
     try {
         const res  = await fetch(`${API_BASE}/api/orders`);
@@ -91,8 +83,7 @@ async function loadOrders() {
     }
 }
 
-// ── Render orders into a table body element ──
-// targetEl: the <tbody> element to render into
+
 function renderOrdersTable(orders, targetEl) {
     if (!targetEl) return;
 
@@ -133,7 +124,6 @@ function renderOrdersTable(orders, targetEl) {
     `).join("");
 }
 
-// ── Update a single order's status ──
 async function updateOrderStatus(orderId, status) {
     try {
         const res = await fetch(`${API_BASE}/api/orders/${orderId}/status`, {
