@@ -23,15 +23,6 @@ err := godotenv.Load()
 
 	database.ConnectDataBase()
 
-	fmt.Println("DB:", database.DB)
-
-	err = repositories.SavePizzaImage(
-		2,
-		"/uploads/test.jpg",
-	)
-
-	fmt.Println("SavePizzaImage:", err)
-
 	router := gin.Default()
 
 	router.Use(cors.Default())
