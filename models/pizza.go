@@ -44,7 +44,6 @@ type UpdateStatusRequest struct {
 	Status string `json:"status"`
 }
 
-// OrderResponse is the joined view returned to the frontend for order listings.
 type OrderResponse struct {
 	OrderID   int    `json:"order_id"`
 	PizzaName string `json:"pizza_name"`
