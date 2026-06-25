@@ -46,7 +46,6 @@ func CreatePizzaHandler(c *gin.Context) {
 		return
 	}
 
-	// Return 201 with the pizza data sent (ID comes from DB sequence, not in-memory counter)
 	c.JSON(http.StatusCreated, gin.H{"message": "pizza created successfully"})
 }
 
@@ -113,7 +112,6 @@ func DeletePizzaHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, pizza)
 }
 
-// GetPizzaOrder creates a new order. Accepts { pizza_id, quantity } from the frontend.
 func GetPizzaOrder(c *gin.Context) {
 	var req models.CreateOrderRequest
 
@@ -163,10 +161,16 @@ func UpdateOrderStatus(c *gin.Context) {
 		return
 	}
 
-	// Only allow known status values
-	allowed := map[string]bool{"pending": true, "delivered": true, "cancelled": true}
+	allowed := map[string]bool{
+		"pending":   true,
+		"preparing": true,
+		"delivered": true,
+		"cancelled": true,
+	}
 	if !allowed[req.Status] {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "status must be pending, delivered, or cancelled"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "status must be one of: pending, preparing, delivered, cancelled",
+		})
 		return
 	}
 

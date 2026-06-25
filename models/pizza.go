@@ -27,7 +27,6 @@ type BestSellingPizza struct {
 	Sold      int    `json:"sold"`
 }
 
-// Order is the raw DB record. Status defaults to "pending" at the DB level.
 type Order struct {
 	ID        int    `json:"id"`
 	PizzaId   int    `json:"pizza_id"`
