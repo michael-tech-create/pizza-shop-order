@@ -1,14 +1,8 @@
-<<<<<<< HEAD
 
 
-const API_BASE = "http://localhost:8080";
-
-
-=======
 
 const API_BASE = "http://localhost:8080";
 
->>>>>>> test
 function showToast(message, type = "success") {
     document.getElementById("orderToast")?.remove();
 
@@ -31,12 +25,11 @@ function showToast(message, type = "success") {
     setTimeout(() => el.remove(), 3200);
 }
 
-<<<<<<< HEAD
+
 
 async function checkout() {
-    const grouped = getCartSnapshot();
-=======
->>>>>>> test
+    const grouped = getCartSnapshot()
+}
 
 function openCheckout() {
     const snap = getCartSnapshot();
@@ -144,8 +137,6 @@ async function startCheckout() {
     }
 }
 
-<<<<<<< HEAD
-=======
 function resetCheckoutFlow() {
     ["co-name", "co-phone", "co-address"].forEach(id => {
         const el = document.getElementById(id);
@@ -157,7 +148,6 @@ function resetCheckoutFlow() {
     if (s) s.innerHTML = "";
 }
 
->>>>>>> test
 async function loadOrders() {
     try {
         const res = await fetch(`${API_BASE}/api/orders`);
@@ -169,14 +159,9 @@ async function loadOrders() {
     }
 }
 
-<<<<<<< HEAD
 
-function renderOrdersTable(orders, targetEl) {
-    if (!targetEl) return;
-=======
 function renderOrdersTable(orders, tbody) {
     if (!tbody) return;
->>>>>>> test
 
     if (!orders || orders.length === 0) {
         tbody.innerHTML = `
@@ -223,12 +208,11 @@ function renderOrdersTable(orders, tbody) {
     }).join("");
 }
 
-<<<<<<< HEAD
-async function updateOrderStatus(orderId, status) {
-=======
+
+
 
 async function updateOrderStatus(orderId, status, selectEl) {
->>>>>>> test
+
     try {
         const res = await fetch(`${API_BASE}/api/orders/${orderId}/status`, {
             method:  "PATCH",

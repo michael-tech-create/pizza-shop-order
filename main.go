@@ -11,7 +11,8 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/joho/godotenv"
-	"pizza-app/repositories"
+// 	"pizza-app/repositories"
+// )
 )
 
 func main() {
@@ -22,11 +23,6 @@ err := godotenv.Load()
 	}
 
 	database.ConnectDataBase()
-<<<<<<< HEAD
-
-=======
-	
->>>>>>> test
 	router := gin.Default()
 
 	router.Use(cors.Default())
