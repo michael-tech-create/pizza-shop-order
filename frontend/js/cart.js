@@ -1,22 +1,16 @@
-// ============================================================
-// cart.js — Cart state management
-// Responsibility: in-memory cart array, UI rendering, quantity
-// controls. Does NOT talk to the server — that lives in orders.js
-// ============================================================
 
 let cart = [];
 
-// ── DOM refs ──
+
 const cartItemsEl  = document.getElementById("cartItems");
 const cartTotalEl  = document.getElementById("cartTotal");
 const cartCountEl  = document.getElementById("cartCount");
 
-// ── Naira formatter ──
 function formatNaira(amount) {
     return "₦" + Number(amount).toLocaleString("en-NG");
 }
 
-// ── Add item from any "add-to-cart" button on the page ──
+
 function setupCartButtons() {
     document.querySelectorAll(".add-to-cart").forEach(button => {
         button.addEventListener("click", () => {
@@ -36,7 +30,7 @@ function addToCart(item) {
     renderCart();
 }
 
-// ── Group duplicate items so we can show qty badges ──
+
 function groupCartItems(items) {
     const grouped = new Map();
     for (const item of items) {
@@ -97,7 +91,7 @@ function renderCart() {
     if (cartItemsEl) {
         cartItemsEl.innerHTML = html || `
             <div class="text-center py-12 flex flex-col items-center justify-center">
-                <span class="text-4xl mb-2 opacity-60">🍕</span>
+                <span class="text-4xl mb-2 opacity-60">0</span>
                 <p class="text-gray-400 font-medium text-sm">Your cart is empty.</p>
             </div>
         `;
@@ -130,7 +124,27 @@ function getCartSnapshot() {
     return groupCartItems(cart);
 }
 
-// Expose to window for inline onclick handlers and orders.js
+// async function checkout() {
+//     const orders = cart.map(item => ({
+//         pizza_id: item.id,
+//         quantity: item.quantity
+//     }));
+
+//     const res = await fetch("http://localhost:8080/api/orders", {
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/json"
+//         },
+//         body: JSON.stringify(orders)
+//     });
+
+//     const data = await res.json();
+
+//     cart = [];
+//     localStorage.removeItem("cart");
+
+//     alert("Order placed successfully!");
+// }
 window.increaseQuantity = increaseQuantity;
 window.decreaseQuantity = decreaseQuantity;
 window.setupCartButtons = setupCartButtons;

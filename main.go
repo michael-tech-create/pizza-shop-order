@@ -22,7 +22,11 @@ err := godotenv.Load()
 	}
 
 	database.ConnectDataBase()
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> test
 	router := gin.Default()
 
 	router.Use(cors.Default())

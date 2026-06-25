@@ -8,10 +8,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="./css/style.css">
     
-    <!-- Optional: Adding a modern font like Inter or Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; }
+        
+    
+        .spin-wheel-transition {
+            transition: transform 4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
     </style>
 </head>
 
@@ -32,7 +36,6 @@
         </div>
     </nav>
 
-
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-10 mb-16">
         <div id="featuredPizza" class="relative w-full h-[450px] sm:h-[500px] lg:h-[600px] rounded-[2rem] overflow-hidden shadow-2xl shadow-orange-900/10 group">
     
@@ -43,7 +46,6 @@
                 alt="Featured Pizza"
             >
 
-          
             <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent sm:bg-gradient-to-r sm:from-black/90 sm:via-black/60 sm:to-transparent"></div>
 
             <div class="absolute inset-0 flex flex-col justify-end sm:justify-center p-6 sm:p-12 lg:p-20 z-10">
@@ -80,10 +82,8 @@
         </div>
     </section>
 
-
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         
- 
         <div class="max-w-2xl mx-auto mb-12 relative">
             <div class="relative group">
                 <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
@@ -107,22 +107,118 @@
             </div>
         </section>
 
-    <section class="mb-10 mt-6">
+        <section class="mb-10 mt-6">
+            <div class="flex items-center justify-between mb-4 mt-6">
+                <h2 class="text-2xl font-bold text-orange-600">
+                    Popular Pizzas
+                </h2>
+            </div>
 
-    <div class="flex items-center justify-between mb-4 mt-6">
-        <h2 class="text-2xl font-bold text-orange-600">
-            Popular Pizzas
-        </h2>
-    </div>
+            <div
+                id="featuredCards"
+                class="flex gap-6 overflow-x-auto pb-4 scrollbar-hide"
+            >
+            </div>
+        </section>
 
-    <div
-        id="featuredCards"
-        class="flex gap-6 overflow-x-auto pb-4 scrollbar-hide"
-    >
-    </div>
+        <section class="mt-16 mb-16">
+            <div class="relative w-full h-[320px] sm:h-[380px] lg:h-[420px] rounded-[2rem] overflow-hidden shadow-xl group bg-gray-950">
+                <img
+                    src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=2074&auto=format&fit=crop"
+                    class="absolute inset-0 w-full h-full object-cover opacity-35 transition-transform duration-1000 group-hover:scale-105"
+                    alt="McMichael Kitchen Experience"
+                >
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/50 to-transparent sm:bg-gradient-to-r sm:from-gray-950 sm:via-gray-950/60 sm:to-transparent"></div>
+                
+                <div class="absolute inset-0 flex flex-col justify-center p-8 sm:p-12 lg:p-16 z-10">
+                    <div class="max-w-xl">
+                        <span class="inline-flex bg-orange-600 text-white font-bold tracking-wider uppercase text-[10px] sm:text-xs px-3 py-1 rounded-md mb-4">
+                            ⚡ Fast & Fresh
+                        </span>
+                        <h2 class="text-3xl sm:text-4xl font-black text-white mb-3">
+                            Craving Late Night <br/>
+                            <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-500">Pizza Perfection?</span>
+                        </h2>
+                        <p class="text-gray-300 text-xs sm:text-sm lg:text-base mb-6 leading-relaxed max-w-md">
+                            We deliver hot, fresh, stone-oven pizzas directly to your doorstep. Experience premium quality dough baked to absolute perfection.
+                        </p>
+                        <a 
+                            href="https://wa.me/2348012345678?text=Hello%20Mc's%20Pizza!%20I%20want%20to%20make%20an%20inquiry%20about%20ordering%20fresh%20pizza." 
+                            target="_blank"
+                            class="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold text-sm px-6 py-3.5 rounded-full shadow-lg shadow-green-600/20 transition-all hover:-translate-y-0.5"
+                        >
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.516 2.266 2.27 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.455L0 24zm6.59-4.846c1.66.986 3.292 1.482 4.634 1.482 5.443 0 9.871-4.425 9.873-9.873.001-2.641-1.025-5.115-2.887-6.979C16.344 1.919 13.874.891 11.23.891c-5.447 0-9.875 4.426-9.877 9.874-.001 2.052.559 3.933 1.621 5.456l-.993 3.626 3.734-.979zm11.063-7.234c-.298-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.371-.025-.521-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414-.074-.124-.272-.198-.57-.347z"/>
+                            </svg>
+                            Instant Query Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-</section>
+        <section class="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-8 sm:p-12 mb-16 text-center max-w-3xl mx-auto">
+            <h2 class="text-3xl font-black text-gray-900 mb-2">🎁 Spin & Win!</h2>
+            <p class="text-gray-500 mb-8 max-w-md mx-auto">Feeling lucky? Give the wheel a spin to win exclusive discounts!</p>
+
+            <div class="relative w-64 h-64 sm:w-80 sm:h-80 mx-auto">
+                <svg class="w-12 h-12 text-gray-900 fill-current absolute -top-5 left-1/2 -translate-x-1/2 z-20 drop-shadow-md" viewBox="0 0 24 24">
+                    <path d="M12 21l-9-9h18z" />
+                </svg>
+                
+                <div id="spinWheel" class="w-full h-full rounded-full border-8 border-gray-900 shadow-2xl relative overflow-hidden spin-wheel-transition" 
+                     style="background: conic-gradient(#f97316 0% 16.66%, #fbbf24 16.66% 33.33%, #ea580c 33.33% 50%, #f59e0b 50% 66.66%, #c2410c 66.66% 83.33%, #d97706 83.33% 100%);">
+                    
+                    <div class="absolute top-1/2 left-1/2 w-1/2 origin-left flex items-center justify-start pl-4 sm:pl-8 text-white font-black text-[10px] sm:text-xs tracking-wider" style="transform: translateY(-50%) rotate(30deg);">10% DISCOUNT</div>
+                    <div class="absolute top-1/2 left-1/2 w-1/2 origin-left flex items-center justify-start pl-4 sm:pl-8 text-white font-black text-[10px] sm:text-xs tracking-wider" style="transform: translateY(-50%) rotate(90deg);">FREE MOVIE</div>
+                    <div class="absolute top-1/2 left-1/2 w-1/2 origin-left flex items-center justify-start pl-4 sm:pl-8 text-white font-black text-[10px] sm:text-xs tracking-wider" style="transform: translateY(-50%) rotate(150deg);">20% DISCOUNT</div>
+                    <div class="absolute top-1/2 left-1/2 w-1/2 origin-left flex items-center justify-start pl-4 sm:pl-8 text-white font-black text-[10px] sm:text-xs tracking-wider" style="transform: translateY(-50%) rotate(210deg);">MOVIE RENTAL</div>
+                    <div class="absolute top-1/2 left-1/2 w-1/2 origin-left flex items-center justify-start pl-4 sm:pl-8 text-white font-black text-[10px] sm:text-xs tracking-wider" style="transform: translateY(-50%) rotate(270deg);">50% DISCOUNT</div>
+                    <div class="absolute top-1/2 left-1/2 w-1/2 origin-left flex items-center justify-start pl-4 sm:pl-8 text-white font-black text-[10px] sm:text-xs tracking-wider" style="transform: translateY(-50%) rotate(330deg);">TRY AGAIN</div>
+                </div>
+
+                <button id="spinBtn" onclick="executeSpin()" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-gray-900 hover:bg-black text-white w-16 h-16 sm:w-20 sm:h-20 rounded-full font-black text-sm sm:text-base shadow-xl border-4 border-white active:scale-95 transition-transform flex items-center justify-center">
+                    SPIN
+                </button>
+            </div>
+
+            <div id="spinResult" class="mt-8 text-lg sm:text-xl font-medium text-gray-700 hidden transition-all">
+                🎉 You won: <span id="winPrize" class="font-black text-orange-600 uppercase"></span>! <br>
+                <span class="text-sm text-gray-400 mt-1 block">Take a screenshot to claim via WhatsApp</span>
+            </div>
+        </section>
+
     </main>
+
+    <footer class="bg-gray-900 border-t border-gray-800 text-gray-400 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+            
+            <div class="flex flex-col items-center md:items-start gap-1">
+                <h3 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
+                    <span class="text-orange-500">🍕</span> Mc's Pizza
+                </h3>
+                <p class="text-xs text-gray-500">© 2026 McMichael Pizza. All rights reserved.</p>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row items-center gap-4">
+                <span class="text-xs sm:text-sm text-gray-400 text-center sm:text-left">
+                    Prefer direct human booking or support assistance?
+                </span>
+                
+                <a 
+                    href="https://wa.me/2349033464071" 
+                    target="_blank"
+                    class="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#22c35e] text-white text-xs font-bold px-5 py-3 rounded-xl shadow-lg shadow-green-950/20 active:scale-95 transition-all whitespace-nowrap"
+                >
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.516 2.266 2.27 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.455L0 24zm6.59-4.846c1.66.986 3.292 1.482 4.634 1.482 5.443 0 9.871-4.425 9.873-9.873.001-2.641-1.025-5.115-2.887-6.979C16.344 1.919 13.874.891 11.23.891c-5.447 0-9.875 4.426-9.877 9.874-.001 2.052.559 3.933 1.621 5.456l-.993 3.626 3.734-.979zm11.063-7.234c-.298-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.371-.025-.521-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414-.074-.124-.272-.198-.57-.347z"/>
+                    </svg>
+                    Order via WhatsApp
+                </a>
+            </div>
+            
+        </div>
+    </footer>
 
     <div id="cartOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden transition-opacity" onclick="closeCart()"></div>
     
@@ -141,7 +237,6 @@
             </div>
     
             <div id="cartItems" class="space-y-4 overflow-y-auto flex-1 pr-2 custom-scrollbar">
-           
             </div>
         </div>
 
@@ -154,7 +249,6 @@
             </div>
             <button
                 id="checkoutBtn"
-                onclick="checkout()"
                 class="w-full bg-gray-900 hover:bg-black active:scale-[0.98] text-white font-bold py-4 rounded-xl shadow-lg transition-all text-center tracking-wide"
             >
                 Proceed to Checkout
@@ -162,8 +256,60 @@
         </div>
     </div>
 
-    <!-- Script to demo the cart slide (replace with your app.js logic) -->
+    <div id="checkoutModal" class="fixed inset-0 bg-black/60 hidden z-[999] flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden relative flex flex-col max-h-[90vh]">
+        
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 class="text-xl font-bold text-gray-900">Secure Checkout</h3>
+                <button onclick="closeCheckout()" class="p-1.5 bg-white hover:bg-gray-100 border border-gray-200 text-gray-400 hover:text-gray-600 rounded-xl transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-1">
+
+                <div id="stepAddress" class="space-y-4">
+                    <div class="font-semibold text-orange-600 uppercase tracking-wider text-xs">Step 1 of 2: Delivery Details</div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5" for="co-name">Full Name</label>
+                        <input type="text" id="co-name" placeholder="Michael James" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-orange-500 transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5" for="co-phone">Phone Number</label>
+                        <input type="tel" id="co-phone" placeholder="08012345678" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-orange-500 transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5" for="co-address">Delivery Address</label>
+                        <textarea id="co-address" rows="3" placeholder="Street name, Apartment layout, Area..." class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-orange-500 transition-colors resize-none"></textarea>
+                    </div>
+
+                    <button type="button" id="nextStepBtn" class="w-full mt-2 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-orange-500/10">
+                        Continue to Summary
+                    </button>
+                </div>
+
+                <div id="stepConfirm" class="space-y-4 hidden">
+                    <div class="font-semibold text-orange-600 uppercase tracking-wider text-xs">Step 2 of 2: Confirm Order</div>
+                    
+                    <div id="orderSummary" class="divide-y divide-gray-100"></div>
+
+                    <div class="flex gap-3 mt-4">
+                        <button type="button" id="backToAddressBtn" class="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3.5 rounded-xl transition-all">
+                            Back
+                        </button>
+                        <button type="button" id="confirmOrderBtn" class="w-2/3 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-orange-500/10">
+                            Place Order
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <script>
+     
         function openCart() {
             document.getElementById('cart').classList.remove('translate-x-full');
             document.getElementById('cartOverlay').classList.remove('hidden');
@@ -173,11 +319,59 @@
             document.getElementById('cartOverlay').classList.add('hidden');
         }
         document.getElementById('cartBtn').addEventListener('click', openCart);
+
+   
+        let currentRotation = 0;
+        const slices = [
+            "10% Discount", 
+            "Free Movie Ticket", 
+            "20% Discount", 
+            "Free Movie Rental", 
+            "50% Discount", 
+            "Try Again"
+        ];
+
+        function executeSpin() {
+            const wheel = document.getElementById('spinWheel');
+            const resultDiv = document.getElementById('spinResult');
+            const winPrize = document.getElementById('winPrize');
+            const spinBtn = document.getElementById('spinBtn');
+            
+   
+            spinBtn.disabled = true;
+            resultDiv.classList.add('hidden');
+
+
+            const extraSpins = Math.floor(Math.random() * 5) + 5;
+            const randomDegree = Math.floor(Math.random() * 360);
+            const totalRotation = currentRotation + (extraSpins * 360) + randomDegree;
+            
+            currentRotation = totalRotation;
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
+
+
+            setTimeout(() => {
+                const normalizedRotation = currentRotation % 360;
+
+                let offset = (270 - normalizedRotation) % 360;
+                if (offset < 0) offset += 360; 
+                
+                const winningIndex = Math.floor(offset / 60);
+                
+                winPrize.innerText = slices[winningIndex];
+                resultDiv.classList.remove('hidden');
+                
+
+                spinBtn.disabled = false;
+                
+            }, 4000);
+        }
     </script>
 
     <script src="./js/app.js"></script>
     <script src="./js/cart.js"></script>
     <script src="./js/menu.js"></script>
+    <script src="./js/orders.js"></script>
 
 </body>
 </html>

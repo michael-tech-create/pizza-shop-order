@@ -1,75 +1,141 @@
+
 const API_URL = "http://localhost:8080";
 
-const mainImage = document.getElementById("mainImage");
-const thumbs = document.getElementById("thumbs");
-const pizzaName = document.getElementById("pizzaName");
-const pizzaDesc = document.getElementById("pizzaDesc");
-const pizzaPrice = document.getElementById("pizzaPrice");
+let currentPizza = null;
+let currentImages = [];
+let selectedQty = 1;
 
-function getPizzaId() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get("id");
+
+const mainImageEl = document.getElementById("mainImage");
+const thumbsEl    = document.getElementById("thumbs");
+const nameEl      = document.getElementById("pizzaName");
+const descEl      = document.getElementById("pizzaDesc");
+const priceEl     = document.getElementById("pizzaPrice");
+const qtyEl       = document.getElementById("qtyDisplay");
+const counterEl   = document.getElementById("imgCounter");
+
+function setActiveImage(url, index) {
+    if (!mainImageEl) return;
+    mainImageEl.src = url;
+
+
+    document.querySelectorAll(".thumb").forEach((t, i) => {
+        t.classList.toggle("active", i === index);
+        t.classList.toggle("border-orange-500", i === index);
+        t.classList.toggle("border-transparent", i !== index);
+    });
+
+ 
+    if (counterEl && currentImages.length > 1) {
+        counterEl.textContent = `${index + 1} / ${currentImages.length}`;
+    }
 }
 
-// Fixed: Explicitly attach to window so inline HTML onclick can find it
-window.changeImage = function(url) {
-    if (mainImage) mainImage.src = url;
-};
+
+window.changeImage = (url, index) => setActiveImage(url, index ?? 0);
+
+
+function changeQty(delta) {
+    selectedQty = Math.max(1, Math.min(10, selectedQty + delta));
+    if (qtyEl) qtyEl.textContent = selectedQty;
+}
+window.changeQty = changeQty;
+
+
+function addPizzaToCart() {
+    if (!currentPizza) return;
+
+    const image = currentImages[0]?.image_url || "";
+
+    for (let i = 0; i < selectedQty; i++) {
+        addToCart({
+            id:    currentPizza.id,
+            name:  currentPizza.name,
+            price: currentPizza.price,
+            image,
+        });
+    }
+
+   
+    const btn = document.getElementById("addToCartBtn");
+    if (btn) {
+        btn.textContent = `✓ Added ${selectedQty > 1 ? "×" + selectedQty : ""}`;
+        btn.classList.add("bg-green-600");
+        btn.classList.remove("bg-gray-900");
+        setTimeout(() => {
+            btn.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                Add to Cart
+            `;
+            btn.classList.remove("bg-green-600");
+            btn.classList.add("bg-gray-900");
+        }, 1500);
+    }
+
+  
+    selectedQty = 1;
+    if (qtyEl) qtyEl.textContent = "1";
+}
+window.addPizzaToCart = addPizzaToCart;
+
 
 async function loadPizzaDetails() {
-    const id = getPizzaId();
-
-    if (!id) {
-        alert("No pizza selected!");
-        return;
-    }
+    const id = new URLSearchParams(window.location.search).get("id");
+    if (!id) { showError(); return; }
 
     try {
         const res = await fetch(`${API_URL}/api/pizzas/${id}`);
-        
-        if (!res.ok) {
-            throw new Error(`Server responded with status: ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const data = await res.json();
-        console.log("API RESPONSE:", data);
+        if (!data?.pizza) { showError(); return; }
 
-        if (!data || !data.pizza) {
-            alert("Pizza not found!");
-            return;
-        }
+        currentPizza  = data.pizza;
+        currentImages = data.images || [];
 
-        const pizza = data.pizza;
-        const images = data.images || [];
 
-        pizzaName.textContent = pizza.name;
-        pizzaDesc.textContent = pizza.description;
-        pizzaPrice.textContent = `₦${Number(pizza.price).toLocaleString()}`;
+        if (nameEl)  nameEl.textContent  = currentPizza.name;
+        if (descEl)  descEl.textContent  = currentPizza.description || "A freshly baked artisan pizza.";
+        if (priceEl) priceEl.textContent = `₦${Number(currentPizza.price).toLocaleString("en-NG")}`;
 
-        if (images.length > 0) {
-            mainImage.src = images[0].image_url;
-        } else {
-            mainImage.src = "https://images.unsplash.com/photo-1700760934249-93efbb574d23?ixlib=rb-4.1.0&q=85&fm=jpg&crop=entropy&cs=srgb&dl=farhad-ibrahimzade-dFE0FNVd4k0-unsplash.jpg";
-        }
+        // Populate images
+        const fallback = "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=800&auto=format&fit=crop";
 
-        // Fixed: Wrapped the entire map loop inside a single grid container
-        thumbs.innerHTML = `
-            <div class="grid grid-cols-3 gap-4">
-                ${images.map(img => `
-                    <img 
+        if (currentImages.length > 0) {
+            mainImageEl.src = currentImages[0].image_url;
+
+            if (currentImages.length > 1) {
+                counterEl?.classList.remove("hidden");
+                counterEl.textContent = `1 / ${currentImages.length}`;
+
+                thumbsEl.innerHTML = currentImages.map((img, i) => `
+                    <img
                         src="${img.image_url}"
-                        class="w-20 h-20 object-cover rounded-lg border cursor-pointer hover:scale-105 transition"
-                        onclick="changeImage('${img.image_url}')"
-                        alt="Pizza thumbnail"
-                    />
-                `).join("")}
-            </div>
-        `;
+                        class="thumb w-16 h-16 rounded-xl object-cover border-2 cursor-pointer flex-shrink-0 ${i === 0 ? "border-orange-500" : "border-transparent"}"
+                        onclick="changeImage('${img.image_url}', ${i})"
+                        alt="View ${i + 1}"
+                    >
+                `).join("");
+            }
+        } else {
+            mainImageEl.src = fallback;
+        }
 
-    } catch (error) {
-        console.error("Error loading pizza details:", error);
-        alert("Could not load pizza details. Please try again later.");
+        document.getElementById("skeletonEl")?.classList.add("hidden");
+        document.getElementById("pizzaContent")?.classList.remove("hidden");
+
+    } catch (err) {
+        console.error("loadPizzaDetails:", err);
+        showError();
     }
+}
+
+function showError() {
+    document.getElementById("skeletonEl")?.classList.add("hidden");
+    document.getElementById("errorEl")?.classList.remove("hidden");
 }
 
 document.addEventListener("DOMContentLoaded", loadPizzaDetails);

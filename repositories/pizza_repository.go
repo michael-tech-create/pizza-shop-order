@@ -8,11 +8,7 @@ import (
 	"pizza-app/models"
 )
 
-// ==========================================
-// PIZZA CRUD FUNCTIONS
-// ==========================================
 
-// CreatePizza saves a new pizza layout directly into the DB.
 func CreatePizza(pizza models.Pizza) error {
 	query := `
 	INSERT INTO pizzas (name, price, description)
@@ -22,7 +18,7 @@ func CreatePizza(pizza models.Pizza) error {
 	return err
 }
 
-// GetAllPizzas aggregates all menu items and embeds their child images.
+
 func GetAllPizzas() ([]models.Pizza, error) {
 	query := `SELECT id, name, price, description FROM pizzas`
 	rows, err := database.DB.Query(query)
@@ -48,7 +44,7 @@ func GetAllPizzas() ([]models.Pizza, error) {
 	return pizzas, nil
 }
 
-// GetPizzaByID returns a single clean pizza struct matching the record primary key ID.
+
 func GetPizzaByID(id int) (models.Pizza, error) {
 	query := `SELECT id, name, price, description FROM pizzas WHERE id = $1`
 	var pizza models.Pizza
@@ -63,7 +59,7 @@ func GetPizzaByID(id int) (models.Pizza, error) {
 	return pizza, nil
 }
 
-// UpdatePizza mutates core structural data fields based on record unique ID.
+
 func UpdatePizza(id int, pizza models.Pizza) (models.Pizza, error) {
 	query := `
 	UPDATE pizzas 
@@ -78,7 +74,6 @@ func UpdatePizza(id int, pizza models.Pizza) (models.Pizza, error) {
 	return pizza, nil
 }
 
-// DeletePizza drops records and handles execution verification before clean layout returns.
 func DeletePizza(id int) (models.Pizza, error) {
 	pizza, err := GetPizzaByID(id)
 	if err != nil {
@@ -93,7 +88,7 @@ func DeletePizza(id int) (models.Pizza, error) {
 	return pizza, nil
 }
 
-// SearchPizza handles lowercase wildcards to enable keyword matching searches.
+
 func SearchPizza(queryStr string) ([]models.Pizza, error) {
 	query := `
 		SELECT id, name, price, description 
@@ -123,11 +118,7 @@ func SearchPizza(queryStr string) ([]models.Pizza, error) {
 	return pizzas, nil
 }
 
-// ==========================================
-// PIZZA IMAGES RELATIONSHIP FUNCTIONS
-// ==========================================
 
-// GetPizzaImages retrieves all associated images belonging to a specific pizza.
 func GetPizzaImages(pizzaID int) ([]models.PizzaImage, error) {
 	query := `SELECT id, pizza_id, image_url FROM pizza_images WHERE pizza_id = $1`
 	rows, err := database.DB.Query(query, pizzaID)
@@ -147,18 +138,14 @@ func GetPizzaImages(pizzaID int) ([]models.PizzaImage, error) {
 	return images, nil
 }
 
-// SavePizzaImage maps static local upload file targets back into relationship mapping layers.
+
 func SavePizzaImage(pizzaID int, imageURL string) error {
 	query := `INSERT INTO pizza_images (pizza_id, image_url) VALUES ($1, $2)`
 	_, err := database.DB.Exec(query, pizzaID, imageURL)
 	return err
 }
 
-// ==========================================
-// ORDERS LOGIC INTERFACES
-// ==========================================
 
-// CreateOrder resolves item pricing profiles to generate computed costs before storage execution.
 func CreateOrder(pizzaID int, quantity int) (models.Order, error) {
 	pizza, err := GetPizzaByID(pizzaID)
 	if err != nil {
@@ -184,7 +171,6 @@ func CreateOrder(pizzaID int, quantity int) (models.Order, error) {
 	return order, nil
 }
 
-// GetAllOrdersWithPizzaName handles relationships to construct structural checkout list displays.
 func GetAllOrdersWithPizzaName() ([]models.OrderResponse, error) {
 	query := `
 		SELECT o.id, p.name, o.quantity, o.total_cost
@@ -210,18 +196,14 @@ func GetAllOrdersWithPizzaName() ([]models.OrderResponse, error) {
 	return orders, nil
 }
 
-// UpdateOrderStatus modifies tracking conditions (e.g. pending, delivered, cancelled).
 func UpdateOrderStatus(id int, status string) error {
 	query := `UPDATE orders SET status = $1 WHERE id = $2`
 	_, err := database.DB.Exec(query, status, id)
 	return err
 }
 
-// ==========================================
-// DASHBOARD METRICS AND STATISTICS
-// ==========================================
 
-// GetDashboardStats aggregates live transaction sums and counter scopes.
+
 func GetDashboardStats() (models.DashboardStats, error) {
 	var stats models.DashboardStats
 
