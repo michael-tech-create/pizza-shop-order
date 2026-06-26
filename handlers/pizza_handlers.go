@@ -161,6 +161,7 @@ func UpdateOrderStatus(c *gin.Context) {
 		return
 	}
 
+	// "preparing" is now a valid transition state between pending and delivered
 	allowed := map[string]bool{
 		"pending":   true,
 		"preparing": true,

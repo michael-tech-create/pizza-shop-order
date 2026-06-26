@@ -5,6 +5,10 @@ let currentPizza = null;
 let currentImages = [];
 let selectedQty = 1;
 
+let selectedSize = "Medium";
+
+
+
 
 const mainImageEl = document.getElementById("mainImage");
 const thumbsEl    = document.getElementById("thumbs");
@@ -101,7 +105,6 @@ async function loadPizzaDetails() {
         if (descEl)  descEl.textContent  = currentPizza.description || "A freshly baked artisan pizza.";
         if (priceEl) priceEl.textContent = `₦${Number(currentPizza.price).toLocaleString("en-NG")}`;
 
-        // Populate images
         const fallback = "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=800&auto=format&fit=crop";
 
         if (currentImages.length > 0) {

@@ -558,15 +558,23 @@ function closeDeleteModal() {
     pendingDeleteId = null;
     document.getElementById("deleteModal").classList.add("hidden");
 }
+// delete pizza confirm message
 async function confirmDelete() {
     if (!pendingDeleteId) return;
     try {
         const res = await fetch(`${API_URL}/api/pizzas/${pendingDeleteId}`, { method: "DELETE" });
-        if (!res.ok) throw new Error("Delete failed");
+        
+        if (!res.ok) {
+            const errorData = await res.json()
+            throw new Error(errorData.error || `Delete failed (Status: ${res.status})`);
+        }
+        
         showToast("Pizza deleted", "success");
         closeDeleteModal();
         loadPizzas();
-    } catch (e) { showToast(e.message, "error"); }
+    } catch (e) { 
+        showToast(e.message, "error"); 
+    }
 }
 
 

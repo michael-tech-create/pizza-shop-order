@@ -2,7 +2,7 @@ let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
 function renderCheckout() {
     const container = document.getElementById("cartItems");
-    const totalEl = document.getElementById("total");
+    const totalEl = document.getElementById("cartTotal");
 
     let total = 0;
 
