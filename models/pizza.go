@@ -28,11 +28,15 @@ type BestSellingPizza struct {
 }
 
 type Order struct {
-	ID        int    `json:"id"`
-	PizzaId   int    `json:"pizza_id"`
-	Quantity  int    `json:"quantity"`
-	TotalCost int    `json:"total_cost"`
-	Status    string `json:"status"`
+ID           int         `json:"id"`
+	CustomerName string      `json:"customer_name"`
+	Phone        string      `json:"phone"`
+	Address      string      `json:"address"`
+	TotalCost    int         `json:"total_cost"`
+	Status       string      `json:"status"`
+	Items        []OrderItem `json:"items,omitempty"`
+	
+	
 }
 
 type PizzaDetailResponse struct {
@@ -45,18 +49,29 @@ type UpdateStatusRequest struct {
 }
 
 type OrderResponse struct {
-	OrderID   int    `json:"order_id"`
-	PizzaName string `json:"pizza_name"`
-	Quantity  int    `json:"quantity"`
-	TotalCost int    `json:"total_cost"`
-	Status    string `json:"status"`
+OrderID      int    `json:"order_id"`
+	CustomerName string `json:"customer_name"`
+	PizzaName    string `json:"pizza_name"`
+	Quantity     int    `json:"quantity"`
+	TotalCost    int    `json:"total_cost"`
+	Status       string `json:"status"`
+}
+
+type OrderItem struct {
+ID      int `json:"id,omitempty"` // DB primary key
+	OrderID  int `json:"order_id,omitempty"`
+	PizzaID  int `json:"pizza_id" binding:"required,gt=0"`
+	Quantity int `json:"quantity" binding:"required,gt=0"`
+	SubTotal int `json:"sub_total,omitempty"`
 }
 
 // CreateOrderRequest is the payload the frontend sends on checkout.
 // Supports a single-item order (one pizza_id + quantity).
 type CreateOrderRequest struct {
-	PizzaID  int `json:"pizza_id"`
-	Quantity int `json:"quantity"`
+CustomerName string      `json:"customer_name" binding:"required"`
+	Phone        string      `json:"phone" binding:"required"`
+	Address      string      `json:"address" binding:"required"`
+	Items        []OrderItem `json:"items" binding:"required,min=1,dive"`
 }
 
 var Pizzas = []Pizza{

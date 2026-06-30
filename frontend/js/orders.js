@@ -1,6 +1,3 @@
-
-
-
 const API_BASE = "http://localhost:8080";
 
 function showToast(message, type = "success") {
@@ -23,12 +20,6 @@ function showToast(message, type = "success") {
     el.textContent = message;
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 3200);
-}
-
-
-
-async function checkout() {
-    const grouped = getCartSnapshot()
 }
 
 function openCheckout() {
@@ -55,13 +46,11 @@ function goToPayment() {
         return;
     }
 
-
     if (!/^(\+234|0)[789]\d{9}$/.test(phone)) {
         showToast("Enter a valid Nigerian phone number", "error");
         return;
     }
 
-    // Build order summary
     const snap = getCartSnapshot();
     const total = snap.reduce((s, i) => s + i.price * i.quantity, 0);
 
@@ -83,6 +72,7 @@ function goToPayment() {
             <div class="mt-4 text-xs text-gray-500 space-y-1 bg-gray-50 rounded-xl p-3">
                 <p>📍 <span class="font-medium">${address}</span></p>
                 <p>📞 <span class="font-medium">${phone}</span></p>
+                <p>👤 <span class="font-medium">${name}</span></p>
             </div>
         `;
     }
@@ -96,7 +86,6 @@ function backToAddress() {
     document.getElementById("stepAddress")?.classList.remove("hidden");
 }
 
-
 async function startCheckout() {
     const snap = getCartSnapshot();
     if (!snap || snap.length === 0) {
@@ -104,30 +93,52 @@ async function startCheckout() {
         return;
     }
 
+    const name = document.getElementById("co-name")?.value.trim();
+    const address = document.getElementById("co-address")?.value.trim();
+    const phone = document.getElementById("co-phone")?.value.trim();
+
+    // Map and sanitize layout variables strictly into integers
+    const formattedItems = snap.map(item => {
+        const pId = Number(item.id) || Number(item.pizza_id) || 0;
+        const qty = Number(item.quantity) || 1;
+        return { pizza_id: pId, quantity: qty };
+    });
+
+    // Client-Side Safeguard against 400 Bad Requests
+    if (formattedItems.some(item => item.pizza_id <= 0)) {
+        showToast("Cart contains item with an invalid ID. Please clear cart and try again.", "error");
+        return;
+    }
+
     const btn = document.getElementById("confirmOrderBtn");
     if (btn) { btn.disabled = true; btn.textContent = "Placing order…"; }
 
     try {
-        const results = await Promise.all(
-            snap.map(item =>
-                fetch(`${API_BASE}/api/orders`, {
-                    method:  "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body:    JSON.stringify({ pizza_id: item.id, quantity: item.quantity }),
-                }).then(async res => {
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.error || "Order failed");
-                    return data;
-                })
-            )
-        );
+       const payload = {
+        customer_name: document.getElementById("co-name").value,
+        phone: document.getElementById("co-phone").value,
+        address: document.getElementById("co-address").value,
+        items: snap.map(i => ({ pizza_id: i.id, quantity: i.quantity }))
+    };
 
-        const total = results.reduce((s, o) => s + (o.total_cost || 0), 0);
+    const res = await fetch(`${API_BASE}/api/orders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
 
-        showToast(`Order placed! Total: ${formatNaira(total)}`, "success");
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error || "Order failed");
+        }
+
+        showToast(`Order placed successfully!`, "success");
         clearCart();
         resetCheckoutFlow();
-        closeCheckout();
+        
+        setTimeout(() => {
+            window.location.href = "index.html";
+        }, 2000);
 
     } catch (err) {
         console.error("Checkout error:", err);
@@ -158,7 +169,6 @@ async function loadOrders() {
         return [];
     }
 }
-
 
 function renderOrdersTable(orders, tbody) {
     if (!tbody) return;
@@ -208,11 +218,7 @@ function renderOrdersTable(orders, tbody) {
     }).join("");
 }
 
-
-
-
 async function updateOrderStatus(orderId, status, selectEl) {
-
     try {
         const res = await fetch(`${API_BASE}/api/orders/${orderId}/status`, {
             method:  "PATCH",
@@ -225,18 +231,14 @@ async function updateOrderStatus(orderId, status, selectEl) {
         }
         showToast(`Order #${orderId} → ${status}`, "success");
 
-
         if (typeof refreshStats === "function") refreshStats();
-
     } catch (err) {
         showToast(err.message, "error");
         if (selectEl) selectEl.value = selectEl.dataset.prev ?? "pending";
     }
 
-
     if (selectEl) selectEl.dataset.prev = status;
 }
-
 
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("checkoutBtn")?.addEventListener("click", openCheckout);
@@ -244,7 +246,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("backToAddressBtn")?.addEventListener("click", backToAddress);
     document.getElementById("confirmOrderBtn")?.addEventListener("click", startCheckout);
 });
-
 
 window.openCheckout      = openCheckout;
 window.closeCheckout     = closeCheckout;

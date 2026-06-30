@@ -113,30 +113,24 @@ func DeletePizzaHandler(c *gin.Context) {
 }
 
 func GetPizzaOrder(c *gin.Context) {
-	var req models.CreateOrderRequest
+var req models.CreateOrderRequest
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
-		return
-	}
+    // Ensure the payload matches the struct in models/pizza.go
+    if err := c.ShouldBindJSON(&req); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid order details"})
+        return
+    }
 
-	if req.PizzaID <= 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "pizza_id must be a positive integer"})
-		return
-	}
+    // Pass the slice of items to the repository
+    order, err := repositories.CreateOrder(req.CustomerName, req.Phone, req.Address, req.Items)
+    if err != nil {
+        // Log the error in the terminal to see specific DB issues
+        log.Printf("Repository error: %v", err)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not save order"})
+        return
+    }
 
-	if req.Quantity <= 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "quantity must be greater than 0"})
-		return
-	}
-
-	order, err := repositories.CreateOrder(req.PizzaID, req.Quantity)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusCreated, order)
+    c.JSON(http.StatusCreated, order)
 }
 
 func GetOrdersHandler(c *gin.Context) {

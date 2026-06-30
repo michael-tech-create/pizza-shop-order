@@ -1,23 +1,25 @@
+// Load from localStorage or start empty
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-let cart = [];
-
-
-const cartItemsEl  = document.getElementById("cartItems");
-const cartTotalEl  = document.getElementById("cartTotal");
-const cartCountEl  = document.getElementById("cartCount");
+// Save to localStorage whenever cart changes
+function saveCart() {
+    localStorage.setItem("cart", JSON.stringify(cart));
+}
 
 function formatNaira(amount) {
     return "₦" + Number(amount).toLocaleString("en-NG");
 }
 
-
 function setupCartButtons() {
     document.querySelectorAll(".add-to-cart").forEach(button => {
         button.addEventListener("click", () => {
+            // Support both data-id and data-pizza-id safely
+            const itemID = Number(button.dataset.id) || Number(button.dataset.pizzaId) || 0;
+            
             addToCart({
-                id:    Number(button.dataset.id),
-                name:  button.dataset.name,
-                price: Number(button.dataset.price),
+                id:    itemID,
+                name:  button.dataset.name || "Delicious Pizza",
+                price: Number(button.dataset.price) || 0,
                 image: button.dataset.image || "",
             });
         });
@@ -25,30 +27,46 @@ function setupCartButtons() {
 }
 
 function addToCart(item) {
+    if (!item.id || item.id <= 0) {
+        console.error("Cannot add item: Invalid or missing ID", item);
+        return;
+    }
     cart.push(item);
+    saveCart();
     updateCartCount();
     renderCart();
 }
 
-
 function groupCartItems(items) {
     const grouped = new Map();
     for (const item of items) {
-        const existing = grouped.get(item.id);
+        // Fallback check for alternate ID keys
+        const id = Number(item.id) || Number(item.pizza_id) || 0;
+        if (id <= 0) continue; // Skip corrupted entries
+
+        const existing = grouped.get(id);
         if (existing) {
-            existing.quantity++;
+            existing.quantity += (Number(item.quantity) || 1);
         } else {
-            grouped.set(item.id, { ...item, quantity: 1 });
+            grouped.set(id, { 
+                ...item, 
+                id: id, 
+                quantity: Number(item.quantity) || 1 
+            });
         }
     }
     return Array.from(grouped.values());
 }
 
 function updateCartCount() {
+    const cartCountEl = document.getElementById("cartCount");
     if (cartCountEl) cartCountEl.textContent = cart.length;
 }
 
 function renderCart() {
+    const cartItemsEl = document.getElementById("cartItems");
+    const cartTotalEl = document.getElementById("cartTotal");
+    
     const grouped = groupCartItems(cart);
     let total = 0;
 
@@ -101,21 +119,30 @@ function renderCart() {
 }
 
 function increaseQuantity(id) {
-    const item = cart.find(i => i.id === id);
-    if (item) cart.push({ id: item.id, name: item.name, price: item.price, image: item.image });
+    const targetId = Number(id);
+    const item = cart.find(i => (Number(i.id) || Number(i.pizza_id)) === targetId);
+    if (item) {
+        cart.push({ id: targetId, name: item.name, price: item.price, image: item.image });
+        saveCart();
+    }
     updateCartCount();
     renderCart();
 }
 
 function decreaseQuantity(id) {
-    const index = cart.findIndex(i => i.id === id);
-    if (index !== -1) cart.splice(index, 1);
+    const targetId = Number(id);
+    const index = cart.findIndex(i => (Number(i.id) || Number(i.pizza_id)) === targetId);
+    if (index !== -1) {
+        cart.splice(index, 1);
+        saveCart();
+    }
     updateCartCount();
     renderCart();
 }
 
 function clearCart() {
     cart = [];
+    saveCart();
     updateCartCount();
     renderCart();
 }
@@ -124,31 +151,16 @@ function getCartSnapshot() {
     return groupCartItems(cart);
 }
 
-// async function checkout() {
-//     const orders = cart.map(item => ({
-//         pizza_id: item.id,
-//         quantity: item.quantity
-//     }));
+document.addEventListener("DOMContentLoaded", () => {
+    updateCartCount();
+    renderCart();
+    setupCartButtons();
+});
 
-//     const res = await fetch("http://localhost:8080/api/orders", {
-//         method: "POST",
-//         headers: {
-//             "Content-Type": "application/json"
-//         },
-//         body: JSON.stringify(orders)
-//     });
-
-//     const data = await res.json();
-
-//     cart = [];
-//     localStorage.removeItem("cart");
-
-//     alert("Order placed successfully!");
-// }
 window.increaseQuantity = increaseQuantity;
 window.decreaseQuantity = decreaseQuantity;
 window.setupCartButtons = setupCartButtons;
-window.addToCart = addToCart;
-window.clearCart = clearCart;
-window.getCartSnapshot = getCartSnapshot;
-window.formatNaira = formatNaira;
+window.addToCart         = addToCart;
+window.clearCart         = clearCart;
+window.getCartSnapshot   = getCartSnapshot;
+window.formatNaira       = formatNaira;

@@ -8,6 +8,10 @@ import (
 	"pizza-app/models"
 )
 
+
+// PIZZA CRUD FUNCTIONS
+
+
 func CreatePizza(pizza models.Pizza) error {
 	query := `
 	INSERT INTO pizzas (name, price, description)
@@ -71,35 +75,19 @@ func UpdatePizza(id int, pizza models.Pizza) (models.Pizza, error) {
 }
 
 func DeletePizza(id int) (models.Pizza, error) {
-	var pizza models.Pizza
-
-	
-	query := `
-		DELETE FROM pizzas 
-		WHERE id = $1 
-		RETURNING id, name, price, description` 
-
-
-	err := database.DB.QueryRow(query, id).Scan(
-		&pizza.ID,
-		&pizza.Name,
-		&pizza.Price,
-		&pizza.Description,
-
-	)
-
+	pizza, err := GetPizzaByID(id)
 	if err != nil {
-		
-		if errors.Is(err, sql.ErrNoRows) {
-			return models.Pizza{}, errors.New("pizza not found")
-		}
-		
-	
 		return models.Pizza{}, err
 	}
 
+	query := `DELETE FROM pizzas WHERE id = $1`
+	_, err = database.DB.Exec(query, id)
+	if err != nil {
+		return models.Pizza{}, err
+	}
 	return pizza, nil
 }
+
 func SearchPizza(queryStr string) ([]models.Pizza, error) {
 	query := `
 		SELECT id, name, price, description 
@@ -130,6 +118,9 @@ func SearchPizza(queryStr string) ([]models.Pizza, error) {
 }
 
 
+// PIZZA IMAGES RELATIONSHIP FUNCTIONS
+
+
 func GetPizzaImages(pizzaID int) ([]models.PizzaImage, error) {
 	query := `SELECT id, pizza_id, image_url FROM pizza_images WHERE pizza_id = $1`
 	rows, err := database.DB.Query(query, pizzaID)
@@ -155,39 +146,66 @@ func SavePizzaImage(pizzaID int, imageURL string) error {
 	return err
 }
 
+// ORDERS LOGIC INTERFACES
 
-func CreateOrder(pizzaID int, quantity int) (models.Order, error) {
-	pizza, err := GetPizzaByID(pizzaID)
-	if err != nil {
-		return models.Order{}, err
-	}
 
-	total := pizza.Price * quantity
-	order := models.Order{
-		PizzaId:   pizzaID,
-		Quantity:  quantity,
-		TotalCost: total,
-	}
+// CreateOrder inserts a new order and returns the full record including the
+// DB-assigned id and the default status ("pending" set by column DEFAULT).
+// ORDERS LOGIC INTERFACES
 
-	query := `
-	INSERT INTO orders (pizza_id, quantity, total_cost)
-	VALUES ($1, $2, $3)
-	RETURNING id, status
-	`
-	err = database.DB.QueryRow(query, order.PizzaId, order.Quantity, order.TotalCost).
-		Scan(&order.ID, &order.Status)
-	if err != nil {
-		return models.Order{}, err
-	}
-	return order, nil
+
+func CreateOrder(customerName string, phone string, address string, items []models.OrderItem) (models.Order, error) {
+    tx, err := database.DB.Begin()
+    if err != nil {
+        return models.Order{}, err
+    }
+    defer tx.Rollback() // Rollback if any step fails
+
+    // 1. Insert main order
+    var orderID int
+    err = tx.QueryRow(`INSERT INTO orders (customer_name, phone, address, total_cost, status) 
+                       VALUES ($1, $2, $3, 0, 'pending') RETURNING id`, 
+                       customerName, phone, address).Scan(&orderID)
+    if err != nil {
+        return models.Order{}, err
+    }
+
+    // 2. Insert items and sum the total
+    var totalCost int
+    for _, item := range items {
+        var price int
+        err := tx.QueryRow("SELECT price FROM pizzas WHERE id = $1", item.PizzaID).Scan(&price)
+        if err != nil {
+            return models.Order{}, err
+        }
+        
+        subTotal := price * item.Quantity
+        totalCost += subTotal
+        
+        _, err = tx.Exec("INSERT INTO order_items (order_id, pizza_id, quantity, sub_total) VALUES ($1, $2, $3, $4)", 
+                          orderID, item.PizzaID, item.Quantity, subTotal)
+        if err != nil {
+            return models.Order{}, err
+        }
+    }
+
+    // 3. Update the final total cost
+    _, err = tx.Exec("UPDATE orders SET total_cost = $1 WHERE id = $2", totalCost, orderID)
+    if err != nil {
+        return models.Order{}, err
+    }
+
+    return models.Order{ID: orderID, TotalCost: totalCost}, tx.Commit()
 }
 
-
+// OrderResponse including status — required by the frontend order table.
 func GetAllOrdersWithPizzaName() ([]models.OrderResponse, error) {
+	// This joins orders -> order_items -> pizzas
 	query := `
-		SELECT o.id, p.name, o.quantity, o.total_cost, o.status
+		SELECT o.id, o.customer_name, p.name, oi.quantity, o.total_cost, o.status
 		FROM orders o
-		JOIN pizzas p ON o.pizza_id = p.id
+		JOIN order_items oi ON o.id = oi.order_id
+		JOIN pizzas p ON oi.pizza_id = p.id
 		ORDER BY o.id DESC
 	`
 	rows, err := database.DB.Query(query)
@@ -199,8 +217,7 @@ func GetAllOrdersWithPizzaName() ([]models.OrderResponse, error) {
 	var orders []models.OrderResponse
 	for rows.Next() {
 		var o models.OrderResponse
-		
-		err := rows.Scan(&o.OrderID, &o.PizzaName, &o.Quantity, &o.TotalCost, &o.Status)
+		err := rows.Scan(&o.OrderID, &o.CustomerName, &o.PizzaName, &o.Quantity, &o.TotalCost, &o.Status)
 		if err != nil {
 			return nil, err
 		}
@@ -209,12 +226,16 @@ func GetAllOrdersWithPizzaName() ([]models.OrderResponse, error) {
 	return orders, nil
 }
 
+// UpdateOrderStatus accepts: pending | preparing | delivered | cancelled
 
 func UpdateOrderStatus(id int, status string) error {
 	query := `UPDATE orders SET status = $1 WHERE id = $2`
 	_, err := database.DB.Exec(query, status, id)
 	return err
 }
+
+
+// DASHBOARD METRICS AND STATISTICS
 
 
 func GetDashboardStats() (models.DashboardStats, error) {

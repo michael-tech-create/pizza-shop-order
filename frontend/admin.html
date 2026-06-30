@@ -5,109 +5,116 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin — McMichael Pizza</title>
     <link rel="stylesheet" href="./css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
         .tab-active   { border-bottom: 2px solid #ea580c; color: #ea580c; font-weight: 600; }
         .tab-inactive { border-bottom: 2px solid transparent; color: #64748b; }
-        .table-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
-        .table-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .stat-card { transition: transform 0.15s, box-shadow 0.15s; }
+        .stat-card    { transition: transform 0.15s, box-shadow 0.15s; }
         .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+        .table-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+        .table-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .badge-pending   { background:#fef3c7; color:#92400e; border:1px solid #fde68a; }
         .badge-preparing { background:#dbeafe; color:#1e40af; border:1px solid #bfdbfe; }
         .badge-delivered { background:#d1fae5; color:#065f46; border:1px solid #a7f3d0; }
         .badge-cancelled { background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
-        .input-field {
-            width: 100%; padding: 0.6rem 0.9rem; font-size: 0.9rem;
-            border: 1.5px solid #e2e8f0; border-radius: 0.625rem; outline: none;
-            transition: border-color 0.15s;
-        }
-        .input-field:focus { border-color: #f97316; }
-        #dropZone.drag-over { border-color: #ea580c; background: #fff7ed; }
+        .input-field { width:100%; padding:.65rem .9rem; font-size:.875rem; border:1.5px solid #e2e8f0; border-radius:.625rem; outline:none; transition:border-color .15s; }
+        .input-field:focus { border-color:#f97316; }
+        .input-field:disabled { background: #f8fafc; cursor: not-allowed; }
+        #dropZone.drag-over { border-color:#ea580c; background:#fff7ed; }
+        /* Countdown ring */
+        .ring-track { stroke: #e2e8f0; }
+        .ring-fill  { stroke: #f97316; stroke-linecap: round; transition: stroke-dashoffset .9s linear; transform: rotate(-90deg); transform-origin: 50% 50%; }
+        /* Row flash animation */
+        @keyframes rowflash { from{background:rgba(251,146,60,0.18)} to{background:transparent} }
+        .row-new { animation: rowflash 1.5s ease-out; }
     </style>
 </head>
 
 <body class="bg-amber-50/60 text-slate-800 min-h-screen">
 
-
 <header class="bg-white/90 backdrop-blur-md border-b border-amber-200 sticky top-0 z-30 shadow-sm">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3 flex-wrap">
+
         <div class="flex items-center gap-3">
-            <div class="bg-orange-100 p-2 rounded-lg">
-                <span class="text-xl">🍕</span>
-            </div>
+            <div class="bg-orange-100 p-2 rounded-lg text-xl"><a href="/frontend/index.html">🍕</a></div>
             <div>
-                <h1 class="text-orange-800 text-xl font-bold leading-tight">McMichael Admin</h1>
-                <p class="text-xs text-gray-400 leading-none">Restaurant Dashboard</p>
+                <h1 class="text-orange-800 text-lg font-bold leading-tight">McMichael Admin</h1>
+                <p class="text-xs text-gray-400 leading-none" id="lastRefreshLabel">Loading…</p>
             </div>
         </div>
 
-        <div class="flex items-center gap-3">
-            <a href="index.html" class="text-sm text-gray-500 hover:text-orange-600 font-medium transition-colors hidden sm:block">
-                ← View Menu
+        <div class="flex items-center gap-2">
+            <a href="index.html" class="text-sm text-gray-500 hover:text-orange-600 font-medium transition-colors hidden sm:block">← Menu</a>
+            <a href="activity.html" class="flex items-center gap-1.5 text-sm text-gray-500 hover:text-orange-600 font-medium transition-colors hidden sm:block">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                Activity Log
             </a>
-            <button
-                id="refreshBtn"
-                onclick="adminRefresh()"
-                class="bg-orange-700 hover:bg-orange-800 active:scale-95 text-white px-4 py-2 rounded-xl font-medium transition-all shadow-md flex items-center gap-2 text-sm"
-            >
-                <svg id="refreshIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+
+            <div class="flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-xl px-3 py-1.5" title="Auto-refresh timer">
+                <svg width="22" height="22" viewBox="0 0 22 22">
+                    <circle class="ring-track" cx="11" cy="11" r="9" fill="none" stroke-width="2.5"/>
+                    <circle id="countRing" class="ring-fill" cx="11" cy="11" r="9" fill="none" stroke-width="2.5" stroke-dasharray="56.5" stroke-dashoffset="0"/>
                 </svg>
-                <span class="hidden sm:inline" id="refreshText">Refresh</span>
+                <span id="countdownLabel" class="text-xs font-bold text-orange-700 mono w-5 text-center">30</span>
+            </div>
+
+            <button id="refreshBtn" onclick="adminRefresh()" class="bg-orange-700 hover:bg-orange-800 active:scale-95 text-white px-3 py-2 rounded-xl font-medium transition-all shadow-md flex items-center gap-1.5 text-sm">
+                <svg id="refreshIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span class="hidden sm:inline">Refresh</span>
             </button>
         </div>
     </div>
 
-
-    <div class="max-w-7xl mx-auto px-6 flex gap-0 border-t border-amber-100">
-        <button onclick="switchTab('orders')" id="tab-orders" class="tab-active px-5 py-3 text-sm transition-all font-bold">
-            Orders
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex border-t border-amber-100">
+        <button onclick="switchTab('orders')" id="tab-orders" class="tab-active px-4 py-3 text-sm transition-all flex items-center gap-2">
+            Orders <span id="pendingBadge" class="bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold hidden">0</span>
         </button>
-        <button onclick="switchTab('menu')" id="tab-menu" class="tab-inactive px-5 py-3 text-sm transition-all">
-            Menu
-        </button>
-        <button onclick="switchTab('images')" id="tab-images" class="tab-inactive px-5 py-3 text-sm transition-all font-bold">
-            Images
-        </button>
+        <button onclick="switchTab('menu')" id="tab-menu" class="tab-inactive px-4 py-3 text-sm transition-all">Menu</button>
+        <button onclick="switchTab('images')" id="tab-images" class="tab-inactive px-4 py-3 text-sm transition-all">Images</button>
+        <a href="activity.html" class="tab-inactive px-4 py-3 text-sm flex items-center gap-1.5 sm:hidden">Logs</a>
     </div>
 </header>
 
-
-<main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-
-    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
-        <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-amber-100 lg:col-span-1">
-            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Revenue</p>
-            <div class="text-xl font-black text-teal-600" id="statRevenue">—</div>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-5 space-y-5">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div class="stat-card bg-gradient-to-br from-orange-500 to-orange-700 text-white p-5 rounded-2xl shadow-md shadow-orange-400/20 lg:col-span-2 flex items-center gap-4">
+            <div class="text-3xl">🏆</div>
+            <div class="min-w-0">
+                <p class="text-xs text-orange-200 font-semibold uppercase tracking-wider">Best Seller</p>
+                <p class="text-lg font-black truncate mt-0.5" id="statBestSeller">—</p>
+                <p class="text-xs text-orange-200 mt-0.5"><span id="statBestQty">—</span> sold</p>
+            </div>
+        </div>
+        <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-amber-100">
+            <p class="text-xs text-teal-600 font-semibold uppercase tracking-wider mb-1">Revenue</p>
+            <p class="text-xl font-black text-teal-700" id="statRevenue">—</p>
         </div>
         <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-amber-100">
             <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Total Orders</p>
-            <div class="text-xl font-black text-slate-800" id="statTotal">—</div>
+            <p class="text-xl font-black text-slate-800" id="statTotal">—</p>
         </div>
         <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-amber-100">
             <p class="text-xs text-yellow-600 font-semibold uppercase tracking-wider mb-1">Pending</p>
-            <div class="text-xl font-black text-yellow-600" id="statPending">—</div>
+            <p class="text-xl font-black text-yellow-600" id="statPending">—</p>
         </div>
         <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-amber-100">
             <p class="text-xs text-green-600 font-semibold uppercase tracking-wider mb-1">Delivered</p>
-            <div class="text-xl font-black text-green-600" id="statDelivered">—</div>
-        </div>
-        <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-amber-100">
-            <p class="text-xs text-red-500 font-semibold uppercase tracking-wider mb-1">Cancelled</p>
-            <div class="text-xl font-black text-red-500" id="statCancelled">—</div>
+            <p class="text-xl font-black text-green-600" id="statDelivered">—</p>
         </div>
     </div>
 
-
     <section id="section-orders" class="block">
         <div class="bg-white rounded-2xl shadow-sm border border-amber-100 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div class="px-5 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
                 <h2 class="font-bold text-slate-800">Recent Orders</h2>
-                <div class="flex items-center gap-2">
-                    <select id="statusFilter" onchange="filterOrders()" class="text-xs border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-400">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <div class="relative">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <input type="text" id="orderSearch" placeholder="Search order…" oninput="filterOrders()" class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 text-slate-600 w-36">
+                    </div>
+                    <select id="statusFilter" onchange="filterOrders()" class="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-400 cursor-pointer">
                         <option value="">All statuses</option>
                         <option value="pending">🟠 Pending</option>
                         <option value="preparing">🔵 Preparing</option>
@@ -116,42 +123,42 @@
                     </select>
                 </div>
             </div>
+
             <div class="overflow-x-auto table-scroll">
                 <table class="w-full whitespace-nowrap text-sm">
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider font-semibold text-left">
-                            <th class="px-6 py-3">Order</th>
-                            <th class="px-6 py-3">Pizza</th>
-                            <th class="px-6 py-3 text-center">Qty</th>
-                            <th class="px-6 py-3 text-right">Total</th>
-                            <th class="px-6 py-3 text-center">Status</th>
+                            <th class="px-5 py-3 cursor-pointer hover:text-orange-600 select-none" onclick="sortOrders('order_id')">Order <span id="sort-order_id">↕</span></th>
+                            <th class="px-5 py-3 cursor-pointer hover:text-orange-600 select-none" onclick="sortOrders('pizza_name')">Pizza <span id="sort-pizza_name">↕</span></th>
+                            <th class="px-5 py-3 text-center">Qty</th>
+                            <th class="px-5 py-3 text-right cursor-pointer hover:text-orange-600 select-none" onclick="sortOrders('total_cost')">Total <span id="sort-total_cost">↕</span></th>
+                            <th class="px-5 py-3 text-center">Status</th>
                         </tr>
                     </thead>
                     <tbody id="ordersTable" class="divide-y divide-slate-50">
-                        <tr>
-                            <td colspan="5" class="px-6 py-16 text-center text-slate-400">
-                                <svg class="animate-spin h-7 w-7 mx-auto mb-3 text-orange-400" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                                </svg>
-                                <span class="text-sm font-medium">Loading orders…</span>
-                            </td>
-                        </tr>
+                        <tr><td colspan="5" class="px-5 py-16 text-center text-slate-400">Loading orders…</td></tr>
                     </tbody>
                 </table>
+            </div>
+
+            <div class="px-5 py-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+                <span id="orderCountLabel">—</span>
+                <div class="flex gap-1">
+                    <button onclick="prevPage()" class="px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">‹</button>
+                    <span id="pageLabel" class="px-3 py-1 rounded-lg bg-orange-50 text-orange-700 font-semibold">1</span>
+                    <button onclick="nextPage()" class="px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">›</button>
+                </div>
             </div>
         </div>
     </section>
 
     <section id="section-menu" class="hidden">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            <!-- Add pizza form -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
             <div class="bg-white rounded-2xl shadow-sm border border-amber-100 overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-100">
+                <div class="px-5 py-4 border-b border-slate-100">
                     <h2 class="font-bold text-slate-800">Add New Pizza</h2>
                 </div>
-                <div class="p-6 space-y-4">
+                <div class="p-5 space-y-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Pizza Name</label>
                         <input type="text" id="newPizzaName" class="input-field" placeholder="e.g. Suya Chicken">
@@ -162,24 +169,28 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Description</label>
-                        <textarea id="newPizzaDesc" rows="3" class="input-field resize-none" placeholder="e.g. Spicy suya-marinated chicken with peppers"></textarea>
+                        <textarea id="newPizzaDesc" rows="3" class="input-field resize-none" placeholder="e.g. Spicy suya-marinated chicken"></textarea>
                     </div>
-                    <button onclick="createPizza()"
-                        class="w-full bg-teal-600 hover:bg-teal-700 active:scale-95 text-white font-semibold py-2.5 rounded-xl shadow-md shadow-teal-600/20 transition-all">
-                        Save Pizza
+                    <button id="savePizzaBtn" onclick="createPizza()" class="w-full bg-teal-600 hover:bg-teal-700 active:scale-95 text-white font-semibold py-2.5 rounded-xl shadow-md shadow-teal-600/20 transition-all">
+                        ✚ Save Pizza
                     </button>
                 </div>
             </div>
 
             <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-amber-100 overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
                     <h2 class="font-bold text-slate-800">Menu Items</h2>
-                    <button onclick="loadPizzas()"
-                        class="text-xs bg-orange-100 hover:bg-orange-200 text-orange-800 px-3 py-1.5 rounded-lg font-semibold transition-colors">
-                        Load Menu
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <div class="relative">
+                            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <input type="text" id="menuSearch" placeholder="Filter menu…" oninput="filterMenu()" class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 text-slate-600 w-32">
+                        </div>
+                        <button onclick="loadPizzas()" class="text-xs bg-orange-100 hover:bg-orange-200 text-orange-800 px-3 py-1.5 rounded-lg font-semibold transition-colors">
+                            Load Menu
+                        </button>
+                    </div>
                 </div>
-                <div class="overflow-x-auto table-scroll max-h-[420px]">
+                <div class="overflow-x-auto table-scroll max-h-[460px]">
                     <table class="w-full whitespace-nowrap text-sm">
                         <thead class="sticky top-0 bg-slate-50 z-10">
                             <tr class="border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider font-semibold text-left">
@@ -190,12 +201,8 @@
                                 <th class="px-4 py-3 text-center">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="pizzaTable" class="divide-y divide-slate-50 text-sm">
-                            <tr>
-                                <td colspan="5" class="px-4 py-12 text-center text-slate-400 font-medium">
-                                    Click "Load Menu" to view pizzas
-                                </td>
-                            </tr>
+                        <tbody id="pizzaTable" class="divide-y divide-slate-50">
+                            <tr><td colspan="5" class="px-4 py-12 text-center text-slate-400 font-medium">Click "Load Menu" to view pizzas</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -203,44 +210,35 @@
         </div>
     </section>
 
-
     <section id="section-images" class="hidden">
         <div class="bg-white rounded-2xl shadow-sm border border-amber-100 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100">
+            <div class="px-5 py-4 border-b border-slate-100">
                 <h2 class="font-bold text-slate-800">Upload Images</h2>
-                <p class="text-xs text-slate-400 mt-1">Select a pizza first, then drop images into the zone</p>
+                <p class="text-xs text-slate-400 mt-1">Select a pizza, then drag images into the drop zone</p>
             </div>
-            <div class="p-6 space-y-5">
-
+            <div class="p-5 space-y-5">
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Select Pizza</label>
-                    <select id="imagePizzaSelect"
-                        class="input-field"
-                        onchange="currentPizzaId = Number(this.value); loadPizzaImages(currentPizzaId)">
+                    <select id="imagePizzaSelect" class="input-field" onchange="currentPizzaId = Number(this.value); loadPizzaImages(currentPizzaId)">
                         <option value="">— pick a pizza —</option>
                     </select>
                 </div>
 
-                <div id="dropZone"
-                    class="border-2 border-dashed border-slate-300 rounded-2xl p-10 text-center cursor-pointer transition-all hover:border-orange-500 hover:bg-orange-50/50">
-            <div class="text-center mb-2">
-                 <img src="./public/images/photo-camera.png" class="mx-auto block w-40 h-30 object-contain" alt="Camera">
-            </div>
+                <div id="dropZone" class="border-2 border-dashed border-slate-300 rounded-2xl p-10 text-center cursor-pointer transition-all hover:border-orange-500 hover:bg-orange-50/50">
+                    <div class="text-center mb-2">
+                        <img src="./public/images/photo-camera.png" class="mx-auto block w-40 h-30 object-contain" alt="Camera" onerror="this.style.display='none'">
+                    </div>
                     <p class="text-slate-500 font-medium">Drag & drop images here</p>
-                    <p class="text-xs text-slate-400 mt-1">or click to select files</p>
+                    <p class="text-xs text-slate-400 mt-1">or click to select files · JPG / PNG / WEBP</p>
                     <input type="file" id="imageFileInput" multiple accept="image/*" class="hidden">
                 </div>
 
-
-                
                 <div id="uploadPreview" class="flex gap-3 flex-wrap hidden"></div>
 
-                <button onclick="uploadImages()"
-                    class="bg-orange-600 hover:bg-orange-500 active:scale-95 text-white font-semibold px-6 py-2.5 rounded-xl shadow-md transition-all">
+                <button id="uploadBtn" onclick="uploadImages()" class="bg-orange-600 hover:bg-orange-500 active:scale-95 text-white font-semibold px-6 py-2.5 rounded-xl shadow-md transition-all">
                     Upload Images
                 </button>
 
-   
                 <div>
                     <h3 class="text-sm font-semibold text-slate-600 mb-3">Existing Images</h3>
                     <div id="imageGallery" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -250,23 +248,17 @@
             </div>
         </div>
     </section>
-
 </main>
 
-<!-- ═══════════════════════════════════════════════
-     EDIT PIZZA MODAL
-════════════════════════════════════════════════ -->
 <div id="editModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+        <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center">
             <h2 class="font-bold text-slate-800">Edit Pizza</h2>
-            <button onclick="closeEditModal()" class="p-2 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors">
-                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
+            <button onclick="closeEditModal()" class="p-1.5 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors text-gray-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
-        <div class="p-6 space-y-4">
+        <div class="p-5 space-y-4">
             <input type="hidden" id="editPizzaId">
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Name</label>
@@ -280,146 +272,185 @@
                 <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Description</label>
                 <textarea id="editPizzaDesc" rows="3" class="input-field resize-none"></textarea>
             </div>
-            <button onclick="submitEditPizza()"
-                class="w-full bg-teal-600 hover:bg-teal-700 active:scale-95 text-white font-semibold py-2.5 rounded-xl shadow-md transition-all">
+            <button id="updatePizzaBtn" onclick="submitEditPizza()" class="w-full bg-teal-600 hover:bg-teal-700 active:scale-95 text-white font-semibold py-2.5 rounded-xl shadow-md transition-all">
                 Save Changes
             </button>
         </div>
     </div>
 </div>
 
-
 <div id="deleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center">
-        <div class="text-4xl mb-3">x</div>
+        <div class="text-4xl mb-3">🗑️</div>
         <h2 class="font-black text-slate-800 text-lg mb-2">Delete Pizza?</h2>
-        <p class="text-slate-500 text-sm mb-6">This will permanently remove the pizza and all its images.</p>
+        <p class="text-slate-500 text-sm mb-6">This permanently removes the pizza and all its images.</p>
         <div class="flex gap-3">
-            <button onclick="closeDeleteModal()"
-                class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-xl transition-colors">
-                Cancel
-            </button>
-            <button onclick="confirmDelete()"
-                class="flex-1 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-semibold py-2.5 rounded-xl transition-all">
-                Delete
-            </button>
+            <button onclick="closeDeleteModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-xl transition-colors">Cancel</button>
+            <button onclick="confirmDelete()" class="flex-1 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-semibold py-2.5 rounded-xl transition-all">Delete</button>
         </div>
     </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════
-     SCRIPT
-════════════════════════════════════════════════ -->
+<script src="./js/logger.js"></script>
 <script>
 const API_URL = "http://localhost:8080";
 
-let allOrders      = [];    // full order list for filter
-let currentPizzaId = null;  // active pizza for image management
-let pendingDeleteId = null; // pizza id awaiting confirm
+// State
+let allOrders       = [];
+let filteredOrders  = [];
+let allPizzas       = [];
+let filteredPizzas  = [];
+let currentPizzaId  = null;
+let pendingDeleteId = null;
+let sortKey         = "order_id";
+let sortDir         = "desc";
+let currentPage     = 1;
+const PAGE_SIZE     = 15;
 
-// ── Toast (no alert()) ──────────────────────────────
+let refreshTimer    = null;
+let countdown       = 30;
+const REFRESH_SECS  = 30;
+const CIRC          = 56.5;
+
+// Helper: Escape HTML to prevent XSS
+function escapeHTML(str) {
+    if (!str) return "";
+    return String(str).replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[tag] || tag));
+}
+
 function showToast(message, type = "success") {
     document.getElementById("adminToast")?.remove();
-    const palette = { success:"bg-green-600", error:"bg-red-600", info:"bg-orange-500" };
+    const bg = { success:"bg-green-600", error:"bg-red-600", info:"bg-orange-500", warning:"bg-yellow-500" };
     const el = document.createElement("div");
     el.id = "adminToast";
-    el.className = `fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 rounded-xl text-white text-sm font-semibold shadow-2xl ${palette[type] ?? palette.success}`;
-    el.textContent = message;
+    el.className = `fixed bottom-6 right-6 z-[9999] px-5 py-3 rounded-xl text-white text-sm font-semibold shadow-2xl flex items-center gap-2 ${bg[type] || bg.success}`;
+    el.innerHTML = `<span>${escapeHTML(message)}</span>`;
     document.body.appendChild(el);
-    setTimeout(() => el.remove(), 3200);
+    setTimeout(() => el.remove(), 3400);
 }
 
 function formatNaira(n) {
-    return new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(n);
+    return new Intl.NumberFormat("en-NG", { style:"currency", currency:"NGN", maximumFractionDigits:0 }).format(n);
 }
-
 
 function switchTab(tab) {
     ["orders","menu","images"].forEach(t => {
         document.getElementById(`section-${t}`).classList.toggle("hidden", t !== tab);
-        const btn = document.getElementById(`tab-${t}`);
-        btn.className = t === tab
-            ? "tab-active px-5 py-3 text-sm transition-all"
-            : "tab-inactive px-5 py-3 text-sm transition-all";
+        document.getElementById(`tab-${t}`).className = t === tab
+            ? "tab-active px-4 py-3 text-sm transition-all flex items-center gap-2"
+            : "tab-inactive px-4 py-3 text-sm transition-all flex items-center gap-2";
     });
     if (tab === "images") populatePizzaSelect();
 }
 
 async function refreshStats() {
     try {
-        const res  = await fetch(`${API_URL}/api/admin/stats`);
-        if (!res.ok) return;
-        const s = await res.json();
-        document.getElementById("statRevenue").textContent   = formatNaira(s.revenue || 0);
-        document.getElementById("statTotal").textContent     = s.total_orders ?? 0;
-        document.getElementById("statPending").textContent   = s.pending_orders ?? 0;
-        document.getElementById("statDelivered").textContent = s.delivered_orders ?? 0;
-        document.getElementById("statCancelled").textContent = s.cancelled_orders ?? 0;
+        const [sRes, bRes] = await Promise.all([
+            fetch(`${API_URL}/api/admin/stats`), fetch(`${API_URL}/api/admin/best-seller`)
+        ]);
+
+        if (sRes.ok) {
+            const s = await sRes.json();
+            document.getElementById("statRevenue").textContent   = formatNaira(s.revenue || 0);
+            document.getElementById("statTotal").textContent     = s.total_orders ?? 0;
+            document.getElementById("statPending").textContent   = s.pending_orders ?? 0;
+            document.getElementById("statDelivered").textContent = s.delivered_orders ?? 0;
+
+            const pending = s.pending_orders ?? 0;
+            const badge = document.getElementById("pendingBadge");
+            badge.textContent = pending;
+            badge.classList.toggle("hidden", pending === 0);
+        }
+
+        if (bRes.ok) {
+            const b = await bRes.json();
+            document.getElementById("statBestSeller").textContent = escapeHTML(b.pizza_name ?? "—");
+            document.getElementById("statBestQty").textContent    = b.sold ?? 0;
+        }
     } catch (e) { console.warn("Stats fetch failed:", e); }
 }
 
-
 async function loadOrders() {
     const tbody = document.getElementById("ordersTable");
-    tbody.innerHTML = `
-        <tr><td colspan="5" class="px-6 py-14 text-center text-slate-400">
-            <svg class="animate-spin h-7 w-7 mx-auto mb-3 text-orange-400" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-            </svg>
-            Loading orders…
-        </td></tr>`;
-
+    tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-14 text-center text-slate-400">Loading…</td></tr>`;
     try {
         const res = await fetch(`${API_URL}/api/orders`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         allOrders = await res.json() || [];
-        renderOrderRows(allOrders);
+        filterOrders();
     } catch (e) {
-        tbody.innerHTML = `
-            <tr><td colspan="5" class="px-6 py-14 text-center text-red-400 font-medium">
-                Failed to load orders — is the server running?
-            </td></tr>`;
-        console.error(e);
+        tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-14 text-center text-red-400">Failed to load orders</td></tr>`;
+        if (window.AppLogger) AppLogger.log(`Failed to load orders: ${e.message}`, "error", "SYSTEM");
     }
 }
 
 function filterOrders() {
-    const filter = document.getElementById("statusFilter").value;
-    const filtered = filter ? allOrders.filter(o => (o.status||"pending").toLowerCase() === filter) : allOrders;
-    renderOrderRows(filtered);
+    const statusF = document.getElementById("statusFilter").value;
+    const search  = document.getElementById("orderSearch").value.trim().toLowerCase();
+
+    filteredOrders = allOrders.filter(o => {
+        if (statusF && (o.status||"pending").toLowerCase() !== statusF) return false;
+        if (search && !String(o.order_id).includes(search) && !(o.pizza_name||"").toLowerCase().includes(search)) return false;
+        return true;
+    });
+
+    currentPage = 1;
+    sortAndRenderOrders();
 }
+
+function sortOrders(key) {
+    if (sortKey === key) sortDir = sortDir === "asc" ? "desc" : "asc";
+    else { sortKey = key; sortDir = "desc"; }
+    
+    ["order_id","pizza_name","total_cost"].forEach(k => {
+        const el = document.getElementById(`sort-${k}`);
+        if (el) el.textContent = k === sortKey ? (sortDir === "asc" ? "↑" : "↓") : "↕";
+    });
+    sortAndRenderOrders();
+}
+
+function sortAndRenderOrders() {
+    const sorted = [...filteredOrders].sort((a, b) => {
+        let av = a[sortKey], bv = b[sortKey];
+        if (typeof av === "string") av = av.toLowerCase();
+        if (typeof bv === "string") bv = bv.toLowerCase();
+        if (av < bv) return sortDir === "asc" ? -1 : 1;
+        if (av > bv) return sortDir === "asc" ? 1 : -1;
+        return 0;
+    });
+
+    const total = sorted.length;
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const page  = sorted.slice(start, start + PAGE_SIZE);
+
+    document.getElementById("orderCountLabel").textContent = `${total} order(s)`;
+    document.getElementById("pageLabel").textContent = currentPage;
+
+    renderOrderRows(page);
+}
+
+function prevPage() { if (currentPage > 1) { currentPage--; sortAndRenderOrders(); } }
+function nextPage() { if (currentPage < Math.ceil(filteredOrders.length / PAGE_SIZE)) { currentPage++; sortAndRenderOrders(); } }
+
+const statusEmoji = { pending:"🟠", preparing:"🔵", delivered:"🟢", cancelled:"🔴" };
 
 function renderOrderRows(orders) {
     const tbody = document.getElementById("ordersTable");
-
-    if (!orders || orders.length === 0) {
-        tbody.innerHTML = `
-            <tr><td colspan="5" class="px-6 py-14 text-center text-slate-400 font-medium">
-                No orders found
-            </td></tr>`;
-        return;
-    }
-
-    const emoji = { pending:"🟠", preparing:"🔵", delivered:"🟢", cancelled:"🔴" };
+    if (!orders.length) return tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-14 text-center text-slate-400 font-medium">No orders found</td></tr>`;
 
     tbody.innerHTML = orders.map(o => {
         const status = (o.status || "pending").toLowerCase();
         return `
             <tr class="hover:bg-amber-50/40 transition-colors">
-                <td class="px-6 py-3.5 font-semibold text-slate-700">#${o.order_id}</td>
-                <td class="px-6 py-3.5 text-slate-600">${o.pizza_name || "—"}</td>
-                <td class="px-6 py-3.5 text-center text-slate-600">${o.quantity}</td>
-                <td class="px-6 py-3.5 text-right font-bold text-slate-800">${formatNaira(Number(o.total_cost||0))}</td>
-                <td class="px-6 py-3.5 text-center">
-                    <select
-                        onchange="updateOrderStatus(${o.order_id}, this.value, this)"
-                        data-prev="${status}"
-                        class="text-xs font-semibold px-2.5 py-1.5 rounded-lg border cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-400 badge-${status}"
-                    >
-                        ${["pending","preparing","delivered","cancelled"].map(s =>
-                            `<option value="${s}" ${status===s?"selected":""}>${emoji[s]} ${s[0].toUpperCase()+s.slice(1)}</option>`
-                        ).join("")}
+                <td class="px-5 py-3.5 font-semibold text-slate-700">#${o.order_id}</td>
+                <td class="px-5 py-3.5 text-slate-600">${escapeHTML(o.pizza_name || "—")}</td>
+                <td class="px-5 py-3.5 text-center text-slate-600">${o.quantity}</td>
+                <td class="px-5 py-3.5 text-right font-bold text-slate-800">${formatNaira(Number(o.total_cost||0))}</td>
+                <td class="px-5 py-3.5 text-center">
+                    <select onchange="updateOrderStatus(${o.order_id}, this.value, this)" data-prev="${status}" class="text-xs font-semibold px-2.5 py-1.5 rounded-lg border cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-400 badge-${status}">
+                        ${["pending","preparing","delivered","cancelled"].map(s => `<option value="${s}" ${status===s?"selected":""}>${statusEmoji[s]} ${s[0].toUpperCase()+s.slice(1)}</option>`).join("")}
                     </select>
                 </td>
             </tr>`;
@@ -429,23 +460,16 @@ function renderOrderRows(orders) {
 async function updateOrderStatus(orderId, status, selectEl) {
     try {
         const res = await fetch(`${API_URL}/api/orders/${orderId}/status`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ status }),
+            method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }),
         });
-        if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Update failed"); }
-
-        showToast(`Order #${orderId} → ${status}`, "success");
-
+        if (!res.ok) throw new Error("Update failed");
+        showToast(`Order #${orderId} → ${status}`);
         if (selectEl) {
             selectEl.className = `text-xs font-semibold px-2.5 py-1.5 rounded-lg border cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-400 badge-${status}`;
             selectEl.dataset.prev = status;
         }
-
-
         const o = allOrders.find(x => x.order_id === orderId);
         if (o) o.status = status;
-
         refreshStats();
     } catch (e) {
         showToast(e.message, "error");
@@ -453,139 +477,126 @@ async function updateOrderStatus(orderId, status, selectEl) {
     }
 }
 
-// ── Pizza CRUD ───────────────────────────────────────
 async function loadPizzas() {
     const tbody = document.getElementById("pizzaTable");
     tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">Loading…</td></tr>`;
     try {
         const res = await fetch(`${API_URL}/menu`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const pizzas = await res.json() || [];
-        renderPizzaRows(pizzas);
-    } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-red-400">Failed to load menu</td></tr>`;
-    }
+        if (!res.ok) throw new Error("Failed");
+        allPizzas = await res.json() || [];
+        filteredPizzas = allPizzas;
+        renderPizzaRows(filteredPizzas);
+    } catch (e) { tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-red-400">Failed to load menu</td></tr>`; }
+}
+
+function filterMenu() {
+    const q = document.getElementById("menuSearch").value.trim().toLowerCase();
+    filteredPizzas = q ? allPizzas.filter(p => p.name.toLowerCase().includes(q) || (p.description||"").toLowerCase().includes(q)) : allPizzas;
+    renderPizzaRows(filteredPizzas);
 }
 
 function renderPizzaRows(pizzas) {
     const tbody = document.getElementById("pizzaTable");
-    if (!pizzas.length) {
-        tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">No pizzas in menu</td></tr>`;
-        return;
-    }
+    if (!pizzas.length) return tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">No pizzas found</td></tr>`;
+    
     tbody.innerHTML = pizzas.map(p => `
         <tr class="hover:bg-amber-50/40 transition-colors">
             <td class="px-4 py-3 text-slate-400 text-xs">#${p.id}</td>
-            <td class="px-4 py-3 font-semibold text-slate-800">${p.name}</td>
+            <td class="px-4 py-3 font-semibold text-slate-800">${escapeHTML(p.name)}</td>
             <td class="px-4 py-3 font-bold text-orange-600">${formatNaira(p.price)}</td>
-            <td class="px-4 py-3 text-slate-500 text-xs max-w-[180px] truncate hidden md:table-cell">${p.description || "—"}</td>
+            <td class="px-4 py-3 text-slate-500 text-xs max-w-[200px] truncate hidden md:table-cell">${escapeHTML(p.description || "—")}</td>
             <td class="px-4 py-3 text-center">
-                <div class="flex items-center justify-center gap-2">
-                    <button onclick="openEditModal(${p.id}, '${escape(p.name)}', ${p.price}, '${escape(p.description || "")}')"
-                        class="text-xs bg-teal-50 hover:bg-teal-100 text-teal-700 font-semibold px-3 py-1.5 rounded-lg transition-colors">
-                        Edit
-                    </button>
-                    <button onclick="openDeleteModal(${p.id})"
-                        class="text-xs bg-red-50 hover:bg-red-100 text-red-700 font-semibold px-3 py-1.5 rounded-lg transition-colors">
-                        Delete
-                    </button>
+                <div class="flex items-center justify-center gap-1.5">
+                    <button onclick="openEditModal(${p.id})" class="text-xs bg-teal-50 hover:bg-teal-100 text-teal-700 font-semibold px-2.5 py-1.5 rounded-lg transition-colors">Edit</button>
+                    <button onclick="openDeleteModal(${p.id})" class="text-xs bg-red-50 hover:bg-red-100 text-red-700 font-semibold px-2.5 py-1.5 rounded-lg transition-colors">Delete</button>
                 </div>
             </td>
         </tr>`).join("");
 }
 
 async function createPizza() {
-    const name  = document.getElementById("newPizzaName").value.trim();
+    const name = document.getElementById("newPizzaName").value.trim();
     const price = Number(document.getElementById("newPizzaPrice").value);
-    const desc  = document.getElementById("newPizzaDesc").value.trim();
+    const desc = document.getElementById("newPizzaDesc").value.trim();
+    const btn = document.getElementById("savePizzaBtn");
 
-    if (!name)       { showToast("Pizza name is required", "error"); return; }
-    if (price <= 0)  { showToast("Price must be greater than 0", "error"); return; }
+    if (!name) return showToast("Pizza name is required", "error");
+    if (price <= 0) return showToast("Price must be greater than ₦0", "error");
 
+    btn.disabled = true; btn.textContent = "Saving...";
     try {
         const res = await fetch(`${API_URL}/api/pizzas`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+            method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name, price, description: desc }),
         });
-        if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Create failed"); }
-        showToast(`"${name}" added to menu`, "success");
-        document.getElementById("newPizzaName").value  = "";
+        if (!res.ok) throw new Error("Create failed");
+        showToast(`"${name}" added to menu ✓`);
+        document.getElementById("newPizzaName").value = "";
         document.getElementById("newPizzaPrice").value = "";
-        document.getElementById("newPizzaDesc").value  = "";
+        document.getElementById("newPizzaDesc").value = "";
         loadPizzas();
+        if (window.AppLogger) AppLogger.log(`Pizza created: "${name}"`, "success", "PIZZA");
     } catch (e) { showToast(e.message, "error"); }
+    finally { btn.disabled = false; btn.innerHTML = "✚ Save Pizza"; }
 }
 
-// Edit modal
-function openEditModal(id, name, price, desc) {
-    document.getElementById("editPizzaId").value    = id;
-    document.getElementById("editPizzaName").value  = unescape(name);
-    document.getElementById("editPizzaPrice").value = price;
-    document.getElementById("editPizzaDesc").value  = unescape(desc);
+function openEditModal(id) {
+    const p = allPizzas.find(pizza => pizza.id === id);
+    if (!p) return;
+    document.getElementById("editPizzaId").value = p.id;
+    document.getElementById("editPizzaName").value = p.name;
+    document.getElementById("editPizzaPrice").value = p.price;
+    document.getElementById("editPizzaDesc").value = p.description || "";
     document.getElementById("editModal").classList.remove("hidden");
 }
+
 function closeEditModal() { document.getElementById("editModal").classList.add("hidden"); }
 
 async function submitEditPizza() {
-    const id    = document.getElementById("editPizzaId").value;
-    const name  = document.getElementById("editPizzaName").value.trim();
+    const id = document.getElementById("editPizzaId").value;
+    const name = document.getElementById("editPizzaName").value.trim();
     const price = Number(document.getElementById("editPizzaPrice").value);
-    const desc  = document.getElementById("editPizzaDesc").value.trim();
+    const desc = document.getElementById("editPizzaDesc").value.trim();
+    const btn = document.getElementById("updatePizzaBtn");
 
-    if (!name)      { showToast("Name is required", "error"); return; }
-    if (price <= 0) { showToast("Price must be > 0", "error"); return; }
+    if (!name) return showToast("Name is required", "error");
+    if (price <= 0) return showToast("Price must be > ₦0", "error");
 
+    btn.disabled = true; btn.textContent = "Updating...";
     try {
         const res = await fetch(`${API_URL}/api/pizzas/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            method: "PUT", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name, price, description: desc }),
         });
-        if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
-        showToast("Pizza updated", "success");
+        if (!res.ok) throw new Error("Failed to update");
+        showToast("Pizza updated ✓");
         closeEditModal();
         loadPizzas();
     } catch (e) { showToast(e.message, "error"); }
+    finally { btn.disabled = false; btn.textContent = "Save Changes"; }
 }
 
+function openDeleteModal(id) { pendingDeleteId = id; document.getElementById("deleteModal").classList.remove("hidden"); }
+function closeDeleteModal() { pendingDeleteId = null; document.getElementById("deleteModal").classList.add("hidden"); }
 
-function openDeleteModal(id) {
-    pendingDeleteId = id;
-    document.getElementById("deleteModal").classList.remove("hidden");
-}
-function closeDeleteModal() {
-    pendingDeleteId = null;
-    document.getElementById("deleteModal").classList.add("hidden");
-}
-// delete pizza confirm message
 async function confirmDelete() {
     if (!pendingDeleteId) return;
     try {
         const res = await fetch(`${API_URL}/api/pizzas/${pendingDeleteId}`, { method: "DELETE" });
-        
-        if (!res.ok) {
-            const errorData = await res.json()
-            throw new Error(errorData.error || `Delete failed (Status: ${res.status})`);
-        }
-        
-        showToast("Pizza deleted", "success");
+        if (!res.ok) throw new Error("Delete failed");
+        showToast("Pizza deleted");
         closeDeleteModal();
         loadPizzas();
-    } catch (e) { 
-        showToast(e.message, "error"); 
-    }
+    } catch (e) { showToast(e.message, "error"); }
 }
-
 
 async function populatePizzaSelect() {
     try {
-        const res    = await fetch(`${API_URL}/menu`);
+        const res = await fetch(`${API_URL}/menu`);
         const pizzas = await res.json() || [];
-        const sel    = document.getElementById("imagePizzaSelect");
-        sel.innerHTML = `<option value="">— pick a pizza —</option>` +
-            pizzas.map(p => `<option value="${p.id}">${p.name}</option>`).join("");
-    } catch (e) { console.warn("populatePizzaSelect:", e); }
+        document.getElementById("imagePizzaSelect").innerHTML = `<option value="">— pick a pizza —</option>` +
+            pizzas.map(p => `<option value="${p.id}">${escapeHTML(p.name)}</option>`).join("");
+    } catch (e) {}
 }
 
 async function loadPizzaImages(pizzaId) {
@@ -593,69 +604,67 @@ async function loadPizzaImages(pizzaId) {
     const gallery = document.getElementById("imageGallery");
     gallery.innerHTML = `<p class="text-xs text-slate-400">Loading…</p>`;
     try {
-        const res  = await fetch(`${API_URL}/api/pizzas/${pizzaId}`);
-        const data = await res.json();
-        const imgs = data.images || [];
-
-        if (!imgs.length) {
-            gallery.innerHTML = `<p class="col-span-full text-xs text-slate-400">No images yet for this pizza</p>`;
-            return;
-        }
+        const res = await fetch(`${API_URL}/api/pizzas/${pizzaId}`);
+        const imgs = (await res.json()).images || [];
+        if (!imgs.length) return gallery.innerHTML = `<p class="col-span-full text-xs text-slate-400">No images yet</p>`;
+        
         gallery.innerHTML = imgs.map(img => `
-            <div class="relative group rounded-xl overflow-hidden">
-                <img src="${img.image_url}" class="w-full h-32 object-cover">
-                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button onclick="deleteImage(${img.id})"
-                        class="bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">
-                        Remove
-                    </button>
+            <div class="relative group rounded-xl overflow-hidden shadow-sm">
+                <img src="${escapeHTML(img.image_url)}" class="w-full h-32 object-cover">
+                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button onclick="deleteImage(${img.id})" class="bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg active:scale-95 transition-all">Remove</button>
                 </div>
-            </div>
-        `).join("");
+            </div>`).join("");
     } catch (e) { gallery.innerHTML = `<p class="text-xs text-red-400">Failed to load images</p>`; }
 }
 
 async function uploadImages() {
-    if (!currentPizzaId) { showToast("Select a pizza first", "error"); return; }
+    if (!currentPizzaId) return showToast("Select a pizza first", "error");
     const files = document.getElementById("imageFileInput").files;
-    if (!files.length) { showToast("Select at least one image", "error"); return; }
+    if (!files.length) return showToast("Select at least one image", "error");
 
+    const btn = document.getElementById("uploadBtn");
+    btn.disabled = true; btn.textContent = "Uploading...";
+    
     const formData = new FormData();
-    for (const f of files) formData.append("images", f);
+    for (let f of files) formData.append("images", f);
 
     try {
-        const res = await fetch(`${API_URL}/api/pizzas/${currentPizzaId}/images`, {
-            method: "POST", body: formData,
-        });
+        const res = await fetch(`${API_URL}/api/pizzas/${currentPizzaId}/images`, { method: "POST", body: formData });
         if (!res.ok) throw new Error("Upload failed");
-        showToast("Images uploaded!", "success");
+        showToast(`${files.length} image(s) uploaded ✓`);
         document.getElementById("imageFileInput").value = "";
         document.getElementById("uploadPreview").innerHTML = "";
         document.getElementById("uploadPreview").classList.add("hidden");
         loadPizzaImages(currentPizzaId);
     } catch (e) { showToast(e.message, "error"); }
+    finally { btn.disabled = false; btn.textContent = "Upload Images"; }
 }
 
 async function deleteImage(imageId) {
     try {
         const res = await fetch(`${API_URL}/api/images/${imageId}`, { method: "DELETE" });
         if (!res.ok) throw new Error("Delete failed");
-        showToast("Image removed", "success");
+        showToast("Image removed");
         loadPizzaImages(currentPizzaId);
     } catch (e) { showToast(e.message, "error"); }
 }
 
-
-const dropZone      = document.getElementById("dropZone");
+const dropZone = document.getElementById("dropZone");
 const imageFileInput = document.getElementById("imageFileInput");
 
 dropZone.addEventListener("click", () => imageFileInput.click());
-dropZone.addEventListener("dragover",  e => { e.preventDefault(); dropZone.classList.add("drag-over"); });
+dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("drag-over"); });
 dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
 dropZone.addEventListener("drop", e => {
     e.preventDefault();
     dropZone.classList.remove("drag-over");
-    showPreviews(e.dataTransfer.files);
+    
+    // Proper Drag & Drop Fix
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        imageFileInput.files = e.dataTransfer.files; 
+        showPreviews(imageFileInput.files);
+    }
 });
 imageFileInput.addEventListener("change", () => showPreviews(imageFileInput.files));
 
@@ -663,31 +672,44 @@ function showPreviews(files) {
     const wrap = document.getElementById("uploadPreview");
     wrap.innerHTML = "";
     wrap.classList.remove("hidden");
-    for (const f of files) {
+    for (let f of files) {
         const url = URL.createObjectURL(f);
         wrap.innerHTML += `
             <div class="relative">
-                <img src="${url}" class="w-20 h-20 object-cover rounded-xl border-2 border-orange-300">
+                <img src="${url}" class="w-20 h-20 object-cover rounded-xl border-2 border-orange-300 shadow-sm">
+                <span class="absolute -bottom-1 left-0 right-0 text-center text-[9px] text-slate-500 truncate px-1">${escapeHTML(f.name)}</span>
             </div>`;
     }
 }
 
+function startCountdown() {
+    clearInterval(refreshTimer);
+    countdown = REFRESH_SECS;
+    refreshTimer = setInterval(() => {
+        countdown--;
+        document.getElementById("countRing").style.strokeDashoffset = CIRC - (CIRC * (countdown / REFRESH_SECS));
+        document.getElementById("countdownLabel").textContent = countdown;
+        if (countdown <= 0) adminRefresh();
+    }, 1000);
+}
+
 async function adminRefresh() {
     const icon = document.getElementById("refreshIcon");
-    const text = document.getElementById("refreshText");
     icon.classList.add("animate-spin");
-    if (text) text.textContent = "Refreshing…";
-
     await Promise.all([loadOrders(), refreshStats()]);
-
     icon.classList.remove("animate-spin");
-    if (text) text.textContent = "Refresh";
+    document.getElementById("lastRefreshLabel").textContent = "Last refreshed " + new Date().toLocaleTimeString("en-NG", { hour12: false });
+    startCountdown();       
 }
+
+document.addEventListener("keydown", e => {
+    if (e.key === "Escape") { closeEditModal(); closeDeleteModal(); }
+});
 
 document.addEventListener("DOMContentLoaded", () => {
     adminRefresh();
+    if(window.AppLogger) AppLogger.log("Admin dashboard opened", "info", "UI");
 });
 </script>
-<script r></script>
 </body>
 </html>
