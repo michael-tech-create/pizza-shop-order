@@ -118,7 +118,16 @@ if (searchInput) {
 
         searchTimeout = setTimeout(async () => {
             try {
-                const response = await fetch(`http://localhost:8080/api/admin/search?q=${encodeURIComponent(query)}`);
+                const token = localStorage.getItem('adminToken')
+
+                const response = await fetch(`http://localhost:8080/api/admin/search?q=${encodeURIComponent(query)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
                 if (!response.ok) throw new Error("Search failed");
                 const pizzas = await response.json();
                 renderSearchDropdown(pizzas);

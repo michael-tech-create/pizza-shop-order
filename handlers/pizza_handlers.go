@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+	"pizza-app/middleware"
 
 	"pizza-app/models"
 	"pizza-app/repositories"
@@ -196,15 +197,24 @@ func GetBestSellerHandler(c *gin.Context) {
 }
 
 func SearchPizzaHandler(c *gin.Context) {
-	query := c.Query("q")
-	log.Println("Search query:", query)
+    query := c.Query("q")
+    log.Println("Search query:", query)
 
-	pizzas, err := repositories.SearchPizza(query)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, pizzas)
+    var pizzas []models.Pizza
+    var err error
+
+
+    if query == "" {
+        pizzas, err = repositories.GetAllPizzas() // Create a simple SELECT * function
+    } else {
+        pizzas, err = repositories.SearchPizza(query)
+    }
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+    c.JSON(http.StatusOK, pizzas)
 }
 
 func UploadPizzaImageHandler(c *gin.Context) {
@@ -274,3 +284,42 @@ func DeletePizzaImageHandler(c *gin.Context) {
 		"deleted_image": imageID,
 	})
 }
+
+// POST /api/auth/login
+func LoginHandler(c *gin.Context) {
+	var req models.LoginRequest
+ 
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "username and password are required"})
+		return
+	}
+ 
+	admin, err := repositories.VerifyAdminCredentials(req.Username, req.Password)
+	if err != nil {
+		// Always 401 with the same generic message — never reveal whether
+		// the username exists or the password was wrong.
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
+		return
+	}
+ 
+	token, expiresAt, err := middleware.GenerateToken(admin.ID, admin.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create session"})
+		return
+	}
+ 
+	c.JSON(http.StatusOK, models.LoginResponse{
+		Token:     token,
+		Username:  admin.Username,
+		ExpiresAt: expiresAt,
+	})
+}
+
+func VerifySessionHandler(c *gin.Context) {
+	username, _ := c.Get("admin_username")
+	c.JSON(http.StatusOK, gin.H{
+		"valid":    true,
+		"username": username,
+	})
+}
+ 

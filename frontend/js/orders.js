@@ -202,6 +202,9 @@ function renderOrdersTable(orders, tbody) {
             <tr class="hover:bg-amber-50/40 transition-colors">
                 <td class="px-6 py-4 font-semibold text-slate-700">#${o.order_id}</td>
                 <td class="px-6 py-4 text-slate-600">${o.pizza_name || "—"}</td>
+                <td class="px-6 py-4 text-slate-600">${o.address}</td>
+                <td class="px-6 py-4 text-slate-600">${o.phone}</td>
+                td class="px-6 py-4 text-slate-600">${o.customer_name}</td>
                 <td class="px-6 py-4 text-center font-medium text-slate-600">${o.quantity}</td>
                 <td class="px-6 py-4 text-right font-bold text-slate-800">${formatNaira(cost)}</td>
                 <td class="px-6 py-4 text-center">

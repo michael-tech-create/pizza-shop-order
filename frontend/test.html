@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mc's Pizza — Menu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 1. Live Tracker Ticker Animation */
+        @keyframes ticker {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-50%, 0, 0); }
+        }
+        .animate-ticker {
+            display: flex;
+            width: max-content;
+            animation: ticker 25s linear infinite;
+        }
+
+        /* 2. Topping Rain & Bounce Animation */
+        @keyframes toppingFall {
+            0% { transform: translateY(-200px) scale(0) rotate(0deg); opacity: 0; }
+            60% { transform: translateY(0) scale(1.1) rotate(15deg); opacity: 1; }
+            75% { transform: translateY(-15px) scale(0.95) rotate(10deg); }
+            90% { transform: translateY(0) scale(1.02) rotate(13deg); }
+            100% { transform: translateY(0) scale(1) rotate(12deg); opacity: 1; }
+        }
+        .topping-item {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .slice-container.is-visible .topping-item {
+            animation: toppingFall 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        /* 3. Smooth transition for Parallax Hover */
+        .tilt-card {
+            transform-style: preserve-3d;
+            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-amber-50/50 min-h-screen font-sans">
+
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-orange-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-black text-orange-600 tracking-tight flex items-center gap-2">
+                <span>🍕</span> Mc's Pizza
+            </h1>
+            <button id="cartBtn" class="bg-orange-600 hover:bg-orange-700 active:scale-95 text-white font-semibold px-5 py-2.5 rounded-full shadow-md flex items-center gap-2 transition-all">
+                <span>🛒</span> Cart (<span id="cartCount">0</span>)
+            </button>
+        </div>
+    </nav>
+
+    <section class="text-center py-16 px-4 max-w-3xl mx-auto">
+        <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">Fresh Pizza, Naija Flavors</h2>
+        <p class="text-gray-500 text-lg">Pick your size, load up your toppings, pay cash on delivery.</p>
+    </section>
+
+    <div class="w-full bg-orange-600 text-white overflow-hidden py-3.5 shadow-inner border-y border-orange-700/30 mb-16 flex">
+        <div class="animate-ticker space-x-12 flex items-center whitespace-nowrap text-sm font-bold tracking-wide uppercase">
+            <span>🔥 1,240 Pizzas Baked Today</span> <span class="text-orange-300">•</span>
+            <span>🚚 Average Delivery Time: 22 Mins</span> <span class="text-orange-300">•</span>
+            <span>🧀 100% Mozzarella Used</span> <span class="text-orange-300">•</span>
+            <span>🌶️ Fresh Local Ingredients</span> <span class="text-orange-300">•</span>
+            <span>🔥 1,240 Pizzas Baked Today</span> <span class="text-orange-300">•</span>
+            <span>🚚 Average Delivery Time: 22 Mins</span> <span class="text-orange-300">•</span>
+            <span>🧀 100% Mozzarella Used</span> <span class="text-orange-300">•</span>
+            <span>🌶️ Fresh Local Ingredients</span> <span class="text-orange-300">•</span>
+        </div>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-6 pb-24">
+        <div id="menuGrid" class="grid grid-cols-1 gap-6">
+            <p class="col-span-full text-center text-slate-400 py-16">Loading menu…</p>
+        </div>
+    </main>
+
+    <div id="configuratorModal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"></div>
+
+    <div id="cart" class="fixed right-0 top-0 h-full w-full sm:w-96 bg-white shadow-2xl border-l border-gray-100 p-6 flex flex-col justify-between z-50 hidden">
+        <div>
+            <div class="flex justify-between items-center pb-4 border-b border-gray-100 mb-6">
+                <h2 class="text-2xl font-black text-gray-900">🛍️ Your Cart</h2>
+                <button onclick="document.getElementById('cart').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-sm font-medium">Close</button>
+            </div>
+            <div id="cartItems" class="space-y-2 overflow-y-auto max-h-[60vh]"></div>
+        </div>
+        <div class="pt-6 border-t border-gray-100">
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-gray-500 font-medium">Subtotal</span>
+                <span class="text-2xl font-black text-gray-900" id="cartSubtotal">₦0</span>
+            </div>
+            <a href="checkout.html" class="block text-center w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl transition-all">
+                Proceed to Checkout
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Intersection Observer for Build-Your-Slice Scroll Trigger
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                }
+            });
+        }, { threshold: 0.2 });
+
+        const sliceSection = document.getElementById('sliceSection');
+        if (sliceSection) observer.observe(sliceSection);
+
+        // 3D Parallax Tilt Effect for Hot Deals
+        document.querySelectorAll('.tilt-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const xc = rect.width / 2;
+                const yc = rect.height / 2;
+                
+                // Calculate rotational angles bases on mouse coordinates
+                const angleX = (yc - y) / 12; 
+                const angleY = (x - xc) / 12;
+                
+                card.style.transform = `perspective(800px) rotateX(${angleX}deg) rotateY(${angleY}deg) scale(1.02)`;
+                card.style.boxShadow = '0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05)';
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)';
+                card.style.boxShadow = 'none';
+            });
+        });
+    </script>
+
+    <script src="./js/api.js"></script>
+    <script src="./js/cart.js"></script>
+    <script src="./js/menu.js"></script>
+</body>
+</html>

@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"pizza-app/database"
 	"pizza-app/models"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
-
 // PIZZA CRUD FUNCTIONS
-
 
 func CreatePizza(pizza models.Pizza) error {
 	query := `
@@ -89,37 +89,36 @@ func DeletePizza(id int) (models.Pizza, error) {
 }
 
 func SearchPizza(queryStr string) ([]models.Pizza, error) {
-	query := `
-		SELECT id, name, price, description 
-		FROM pizzas
-		WHERE LOWER(name) LIKE LOWER($1) OR LOWER(description) LIKE LOWER($1)
-	`
-	rows, err := database.DB.Query(query, "%"+queryStr+"%")
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
+    query := `
+        SELECT id, name, price, description 
+        FROM pizzas
+        WHERE LOWER(name) LIKE LOWER($1) OR LOWER(description) LIKE LOWER($1)
+    `
+    rows, err := database.DB.Query(query, "%"+queryStr+"%")
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
 
-	var pizzas []models.Pizza
-	for rows.Next() {
-		var p models.Pizza
-		err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.Description)
-		if err != nil {
-			return nil, err
-		}
+    pizzas := []models.Pizza{} 
 
-		images, err := GetPizzaImages(p.ID)
-		if err == nil {
-			p.Images = images
-		}
-		pizzas = append(pizzas, p)
-	}
-	return pizzas, nil
+    for rows.Next() {
+        var p models.Pizza
+        err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.Description)
+        if err != nil {
+            return nil, err
+        }
+
+        images, err := GetPizzaImages(p.ID)
+        if err == nil {
+            p.Images = images
+        }
+        pizzas = append(pizzas, p)
+    }
+    return pizzas, nil
 }
 
-
 // PIZZA IMAGES RELATIONSHIP FUNCTIONS
-
 
 func GetPizzaImages(pizzaID int) ([]models.PizzaImage, error) {
 	query := `SELECT id, pizza_id, image_url FROM pizza_images WHERE pizza_id = $1`
@@ -148,61 +147,51 @@ func SavePizzaImage(pizzaID int, imageURL string) error {
 
 // ORDERS LOGIC INTERFACES
 
-
-// CreateOrder inserts a new order and returns the full record including the
-// DB-assigned id and the default status ("pending" set by column DEFAULT).
-// ORDERS LOGIC INTERFACES
-
-
 func CreateOrder(customerName string, phone string, address string, items []models.OrderItem) (models.Order, error) {
-    tx, err := database.DB.Begin()
-    if err != nil {
-        return models.Order{}, err
-    }
-    defer tx.Rollback() // Rollback if any step fails
+	tx, err := database.DB.Begin()
+	if err != nil {
+		return models.Order{}, err
+	}
+	defer tx.Rollback() // Rollback if any step fails
 
-    // 1. Insert main order
-    var orderID int
-    err = tx.QueryRow(`INSERT INTO orders (customer_name, phone, address, total_cost, status) 
-                       VALUES ($1, $2, $3, 0, 'pending') RETURNING id`, 
-                       customerName, phone, address).Scan(&orderID)
-    if err != nil {
-        return models.Order{}, err
-    }
+	var orderID int
+	err = tx.QueryRow(`INSERT INTO orders (customer_name, phone, address, total_cost, status) 
+                       VALUES ($1, $2, $3, 0, 'pending') RETURNING id`,
+		customerName, phone, address).Scan(&orderID)
+	if err != nil {
+		return models.Order{}, err
+	}
 
-    // 2. Insert items and sum the total
-    var totalCost int
-    for _, item := range items {
-        var price int
-        err := tx.QueryRow("SELECT price FROM pizzas WHERE id = $1", item.PizzaID).Scan(&price)
-        if err != nil {
-            return models.Order{}, err
-        }
-        
-        subTotal := price * item.Quantity
-        totalCost += subTotal
-        
-        _, err = tx.Exec("INSERT INTO order_items (order_id, pizza_id, quantity, sub_total) VALUES ($1, $2, $3, $4)", 
-                          orderID, item.PizzaID, item.Quantity, subTotal)
-        if err != nil {
-            return models.Order{}, err
-        }
-    }
+	var totalCost int
+	for _, item := range items {
+		var price int
+		err := tx.QueryRow("SELECT price FROM pizzas WHERE id = $1", item.PizzaID).Scan(&price)
+		if err != nil {
+			return models.Order{}, err
+		}
 
-    // 3. Update the final total cost
-    _, err = tx.Exec("UPDATE orders SET total_cost = $1 WHERE id = $2", totalCost, orderID)
-    if err != nil {
-        return models.Order{}, err
-    }
+		subTotal := price * item.Quantity
+		totalCost += subTotal
 
-    return models.Order{ID: orderID, TotalCost: totalCost}, tx.Commit()
+		_, err = tx.Exec("INSERT INTO order_items (order_id, pizza_id, quantity, sub_total) VALUES ($1, $2, $3, $4)",
+			orderID, item.PizzaID, item.Quantity, subTotal)
+		if err != nil {
+			return models.Order{}, err
+		}
+	}
+
+	// 3. Update the final total cost
+	_, err = tx.Exec("UPDATE orders SET total_cost = $1 WHERE id = $2", totalCost, orderID)
+	if err != nil {
+		return models.Order{}, err
+	}
+
+	return models.Order{ID: orderID, TotalCost: totalCost}, tx.Commit()
 }
 
-// OrderResponse including status — required by the frontend order table.
 func GetAllOrdersWithPizzaName() ([]models.OrderResponse, error) {
-	// This joins orders -> order_items -> pizzas
 	query := `
-		SELECT o.id, o.customer_name, p.name, oi.quantity, o.total_cost, o.status
+		SELECT o.id, o.customer_name, o.phone, o.address, p.name, oi.quantity, o.total_cost, o.status
 		FROM orders o
 		JOIN order_items oi ON o.id = oi.order_id
 		JOIN pizzas p ON oi.pizza_id = p.id
@@ -217,7 +206,7 @@ func GetAllOrdersWithPizzaName() ([]models.OrderResponse, error) {
 	var orders []models.OrderResponse
 	for rows.Next() {
 		var o models.OrderResponse
-		err := rows.Scan(&o.OrderID, &o.CustomerName, &o.PizzaName, &o.Quantity, &o.TotalCost, &o.Status)
+		err := rows.Scan(&o.OrderID, &o.CustomerName, &o.Phone, &o.Address, &o.PizzaName, &o.Quantity, &o.TotalCost, &o.Status)
 		if err != nil {
 			return nil, err
 		}
@@ -234,9 +223,7 @@ func UpdateOrderStatus(id int, status string) error {
 	return err
 }
 
-
 // DASHBOARD METRICS AND STATISTICS
-
 
 func GetDashboardStats() (models.DashboardStats, error) {
 	var stats models.DashboardStats
@@ -270,9 +257,9 @@ func GetDashboardStats() (models.DashboardStats, error) {
 func GetBestSellingPizza() (models.BestSellingPizza, error) {
 	var best models.BestSellingPizza
 	query := `
-		SELECT p.name, COALESCE(SUM(o.quantity), 0) as total_sold
-		FROM orders o
-		JOIN pizzas p ON o.pizza_id = p.id
+		SELECT p.name, COALESCE(SUM(oi.quantity), 0) as total_sold
+		FROM order_items oi
+		JOIN pizzas p ON oi.pizza_id = p.id
 		GROUP BY p.name
 		ORDER BY total_sold DESC
 		LIMIT 1
@@ -285,4 +272,63 @@ func GetBestSellingPizza() (models.BestSellingPizza, error) {
 		return best, err
 	}
 	return best, nil
+}
+
+var ErrInvalidCredentials = errors.New("invalid username or password")
+
+// GetAdminByUsername fetches a single admin row by username.
+func GetAdminByUsername(username string) (models.Admin, error) {
+	query := `SELECT id, username, password_hash, created_at FROM admins WHERE username = $1`
+	var admin models.Admin
+
+	err := database.DB.QueryRow(query, username).Scan(
+		&admin.ID, &admin.Username, &admin.PasswordHash, &admin.CreatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.Admin{}, ErrInvalidCredentials
+		}
+		return models.Admin{}, err
+	}
+	return admin, nil
+}
+
+// VerifyAdminCredentials looks up the admin and checks the password hash.
+// Returns ErrInvalidCredentials for any mismatch — username not found or
+// wrong password produce the exact same error and timing characteristics
+// are close enough (bcrypt.CompareHashAndPassword always runs) to avoid
+// leaking which case occurred via response time.
+func VerifyAdminCredentials(username, password string) (models.Admin, error) {
+	admin, err := GetAdminByUsername(username)
+	if err != nil {
+		// Still run a dummy bcrypt comparison so a non-existent username
+		// takes roughly the same time as a wrong-password attempt,
+		// reducing the username-enumeration timing side-channel.
+		_ = bcrypt.CompareHashAndPassword(
+			[]byte("$2a$10$7EqJtq98hPqEX7fNZaFWoOhi5L4Lhgk1Xb6/U6V5/9b3o3o4k1n0K"),
+			[]byte(password),
+		)
+		return models.Admin{}, ErrInvalidCredentials
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(admin.PasswordHash), []byte(password)); err != nil {
+		return models.Admin{}, ErrInvalidCredentials
+	}
+
+	return admin, nil
+}
+
+// CreateAdmin hashes the given password and inserts a new admin row.
+// Intended for a one-off seed script or CLI command — not exposed via
+// any public HTTP route, since admin self-signup is out of scope for
+// a single-restaurant dashboard.
+func CreateAdmin(username, plainPassword string) error {
+	hash, err := bcrypt.GenerateFromPassword([]byte(plainPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	query := `INSERT INTO admins (username, password_hash) VALUES ($1, $2)`
+	_, err = database.DB.Exec(query, username, string(hash))
+	return err
 }

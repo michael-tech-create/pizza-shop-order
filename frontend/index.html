@@ -5,21 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>McMichael Pizza</title>
   
-    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
     <link rel="stylesheet" href="./css/style.css">
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; }
         
-    
         .spin-wheel-transition {
             transition: transform 4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
+
+        /* Smooth transition for moving hero elements */
+        .fade-transition {
+            transition: opacity 0.6s ease-in-out;
+        }
+
+              /* 1. Live Tracker Ticker Animation */
+        @keyframes ticker {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-50%, 0, 0); }
+        }
+        .animate-ticker {
+            display: flex;
+            width: max-content;
+            animation: ticker 25s linear infinite;
+        }
+
+        /* 2. Topping Rain & Bounce Animation */
+        @keyframes toppingFall {
+            0% { transform: translateY(-200px) scale(0) rotate(0deg); opacity: 0; }
+            60% { transform: translateY(0) scale(1.1) rotate(15deg); opacity: 1; }
+            75% { transform: translateY(-15px) scale(0.95) rotate(10deg); }
+            90% { transform: translateY(0) scale(1.02) rotate(13deg); }
+            100% { transform: translateY(0) scale(1) rotate(12deg); opacity: 1; }
+        }
+        .topping-item {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .slice-container.is-visible .topping-item {
+            animation: toppingFall 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        /* 3. Smooth transition for Parallax Hover */
+        .tilt-card {
+            transform-style: preserve-3d;
+            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+        }
+
+
     </style>
 </head>
 
 <body class="bg-gray-50 min-h-screen">
+
+    <div class="bg-gradient-to-r from-orange-600 to-yellow-500 text-white py-2 px-4 text-center text-xs sm:text-sm font-bold tracking-wide shadow-sm flex items-center justify-center gap-2">
+        <span>⚡ FLASH DEAL: Use code SPIN50 for huge savings! Offer ends in:</span>
+        <span id="dealCountdown" class="bg-white/20 px-2 py-0.5 rounded font-mono">29:59</span>
+    </div>
 
     <nav class="bg-white/70 backdrop-blur-lg sticky top-0 z-40 border-b border-gray-200 shadow-sm transition-all">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
@@ -42,16 +85,16 @@
             <img
                 id="featuredImage"
                 src="https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=2070&auto=format&fit=crop"
-                class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 fade-transition"
                 alt="Featured Pizza"
             >
 
             <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent sm:bg-gradient-to-r sm:from-black/90 sm:via-black/60 sm:to-transparent"></div>
 
             <div class="absolute inset-0 flex flex-col justify-end sm:justify-center p-6 sm:p-12 lg:p-20 z-10">
-                <div class="max-w-2xl">
+                <div class="max-w-2xl content-wrapper fade-transition" id="heroContentBlock">
                 
-                    <span class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-orange-400 px-4 py-2 rounded-full text-xs sm:text-sm font-bold mb-4 sm:mb-6 tracking-wider uppercase">
+                    <span id="featuredTag" class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-orange-400 px-4 py-2 rounded-full text-xs sm:text-sm font-bold mb-4 sm:mb-6 tracking-wider uppercase">
                         Mich Pie
                     </span>
 
@@ -78,9 +121,34 @@
                     </div>
 
                 </div>
+
+
+            </div>
+
+            <div class="absolute bottom-6 right-8 z-20 flex gap-2">
+                <span class="hero-dot w-8 h-2 rounded-full bg-orange-500 transition-all cursor-pointer" onclick="jumpToSlide(0)"></span>
+                <span class="hero-dot w-2 h-2 rounded-full bg-white/40 transition-all cursor-pointer" onclick="jumpToSlide(1)"></span>
+                <span class="hero-dot w-2 h-2 rounded-full bg-white/40 transition-all cursor-pointer" onclick="jumpToSlide(2)"></span>
             </div>
         </div>
     </section>
+
+
+
+    <div class="w-full bg-orange-600 text-white overflow-hidden py-3.5 shadow-inner border-y border-orange-700/30 mb-16 flex">
+        <div class="animate-ticker space-x-12 flex items-center whitespace-nowrap text-sm font-bold tracking-wide uppercase">
+            <span>🔥 1,240 Pizzas Baked Today</span> <span class="text-orange-300">•</span>
+            <span>🚚 Average Delivery Time: 22 Mins</span> <span class="text-orange-300">•</span>
+            <span>🧀 100% Mozzarella Used</span> <span class="text-orange-300">•</span>
+            <span>🌶️ Fresh Local Ingredients</span> <span class="text-orange-300">•</span>
+            <span>🔥 1,240 Pizzas Baked Today</span> <span class="text-orange-300">•</span>
+            <span>🚚 Average Delivery Time: 22 Mins</span> <span class="text-orange-300">•</span>
+            <span>🧀 100% Mozzarella Used</span> <span class="text-orange-300">•</span>
+            <span>🌶️ Fresh Local Ingredients</span> <span class="text-orange-300">•</span>
+        </div>
+    </div>
+
+
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         
@@ -116,7 +184,7 @@
 
             <div
                 id="featuredCards"
-                class="flex gap-6 overflow-x-auto pb-4 scrollbar-hide"
+                class="grid grid-cols-2 md:flex md:overflow-x-auto gap-4 sm:gap-6 pb-4 scrollbar-hide"
             >
             </div>
         </section>
@@ -309,7 +377,6 @@
     </div>
 
     <script>
-     
         function openCart() {
             document.getElementById('cart').classList.remove('translate-x-full');
             document.getElementById('cartOverlay').classList.remove('hidden');
@@ -320,7 +387,6 @@
         }
         document.getElementById('cartBtn').addEventListener('click', openCart);
 
-   
         let currentRotation = 0;
         const slices = [
             "10% Discount", 
@@ -337,10 +403,8 @@
             const winPrize = document.getElementById('winPrize');
             const spinBtn = document.getElementById('spinBtn');
             
-   
             spinBtn.disabled = true;
             resultDiv.classList.add('hidden');
-
 
             const extraSpins = Math.floor(Math.random() * 5) + 5;
             const randomDegree = Math.floor(Math.random() * 360);
@@ -349,10 +413,8 @@
             currentRotation = totalRotation;
             wheel.style.transform = `rotate(${currentRotation}deg)`;
 
-
             setTimeout(() => {
                 const normalizedRotation = currentRotation % 360;
-
                 let offset = (270 - normalizedRotation) % 360;
                 if (offset < 0) offset += 360; 
                 
@@ -361,11 +423,139 @@
                 winPrize.innerText = slices[winningIndex];
                 resultDiv.classList.remove('hidden');
                 
-
                 spinBtn.disabled = false;
-                
             }, 4000);
         }
+
+        // --- NEW SLIDESHOW LOGIC FOR MOVING HERO SECTION ---
+        const slidesData = [
+            {
+                image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=2070&auto=format&fit=crop",
+                tag: "Mich Pie",
+                title: 'Pepperoni <br class="hidden sm:block" /><span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-400">Supreme</span>',
+                desc: "Loaded with double mozzarella, crispy artisanal pepperoni, and our secret family tomato sauce.",
+                price: "₦5,000"
+            },
+            {
+                image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=2071&auto=format&fit=crop",
+                tag: "Chef Special",
+                title: 'BBQ Chicken <br class="hidden sm:block" /><span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-400">Fiesta</span>',
+                desc: "Grilled shredded chicken breast, caramelized sweet onions, rich smoked BBQ glaze, and fresh cilantro leaves.",
+                price: "₦6,500"
+            },
+            {
+                image: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?q=80&w=2070&auto=format&fit=crop",
+                tag: "Veggie Fresh",
+                title: 'Garden <br class="hidden sm:block" /><span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-400">Harvest</span>',
+                desc: "Crisp bell peppers, kalamata olives, wild mushrooms, sweet corn, and premium goat cheese crumbles.",
+                price: "₦4,800"
+            }
+        ];
+
+        let currentHeroIndex = 0;
+        let slideInterval;
+
+        function updateHeroSlide(index) {
+            currentHeroIndex = index;
+            const imgEl = document.getElementById('featuredImage');
+            const contentEl = document.getElementById('heroContentBlock');
+            
+            // Fade out
+            imgEl.style.opacity = '0';
+            contentEl.style.opacity = '0';
+            
+            setTimeout(() => {
+                const data = slidesData[index];
+                imgEl.src = data.image;
+                document.getElementById('featuredTag').innerText = data.tag;
+                document.getElementById('featuredTitle').innerHTML = data.title;
+                document.getElementById('featuredDescription').innerText = data.desc;
+                document.getElementById('featuredPrice').innerText = data.price;
+                
+                // Fade in
+                imgEl.style.opacity = '1';
+                contentEl.style.opacity = '1';
+                
+                // Update dots UI
+                const dots = document.querySelectorAll('.hero-dot');
+                dots.forEach((dot, idx) => {
+                    if (idx === index) {
+                        dot.classList.add('bg-orange-500', 'w-8');
+                        dot.classList.remove('bg-white/40', 'w-2');
+                    } else {
+                        dot.classList.remove('bg-orange-500', 'w-8');
+                        dot.classList.add('bg-white/40', 'w-2');
+                    }
+                });
+            }, 300);
+        }
+
+        function startHeroAutoCycle() {
+            slideInterval = setInterval(() => {
+                let nextIndex = (currentHeroIndex + 1) % slidesData.length;
+                updateHeroSlide(nextIndex);
+            }, 5000);
+        }
+
+        function jumpToSlide(index) {
+            clearInterval(slideInterval);
+            updateHeroSlide(index);
+            startHeroAutoCycle();
+        }
+
+        function startCountdown() {
+            let totalSeconds = 1799; // 29 Mins 59 Secs
+            const display = document.getElementById('dealCountdown');
+            setInterval(() => {
+                let minutes = Math.floor(totalSeconds / 60);
+                let seconds = totalSeconds % 60;
+                seconds = seconds < 10 ? '0' + seconds : seconds;
+                display.innerText = `${minutes}:${seconds}`;
+                if (--totalSeconds < 0) totalSeconds = 1799;
+            }, 1000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            startHeroAutoCycle();
+            startCountdown();
+        });
+
+     const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                }
+            });
+        }, { threshold: 0.2 });
+
+        const sliceSection = document.getElementById('sliceSection');
+        if (sliceSection) observer.observe(sliceSection);
+
+        // 3D Parallax Tilt Effect for Hot Deals
+        document.querySelectorAll('.tilt-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const xc = rect.width / 2;
+                const yc = rect.height / 2;
+                
+                // Calculate rotational angles bases on mouse coordinates
+                const angleX = (yc - y) / 12; 
+                const angleY = (x - xc) / 12;
+                
+                card.style.transform = `perspective(800px) rotateX(${angleX}deg) rotateY(${angleY}deg) scale(1.02)`;
+                card.style.boxShadow = '0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05)';
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)';
+                card.style.boxShadow = 'none';
+            });
+        });
+
+        
     </script>
 
     <script src="./js/app.js"></script>

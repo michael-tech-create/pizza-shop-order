@@ -2,31 +2,46 @@ package routes
 
 import (
 	"pizza-app/handlers"
+	"pizza-app/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRoutes(router *gin.Engine) {
 
-	// admin := router.Group("/")
 
 	router.GET("/menu", handlers.GetMenuHandler)
 
-	router.POST("/api/pizzas", handlers.CreatePizzaHandler)
 	router.GET("/api/pizzas/:id", handlers.GetPizzaByIdHandler)
-	router.PUT("/api/pizzas/:id", handlers.UpdatePizzaHandler)
-	router.DELETE("/api/pizzas/:id", handlers.DeletePizzaHandler)
-
-	router.POST("/api/pizzas/:id/images", handlers.UploadPizzaImageHandler)
 	router.GET("/api/pizzas/:id/images", handlers.GetPizzaImagesHandler)
-	router.DELETE("/api/images/:id", handlers.DeletePizzaImageHandler)
 
 	router.POST("/api/orders", handlers.GetPizzaOrder)
-	router.GET("/api/orders", handlers.GetOrdersHandler)
-	router.PATCH("/api/orders/:id/status", handlers.UpdateOrderStatus)
-	router.POST("/api/auth/login")
-
-	router.GET("/api/admin/stats", handlers.GetDashboardStatsHandler)
-	router.GET("/api/admin/best-seller", handlers.GetBestSellerHandler)
 	router.GET("/api/admin/search", handlers.SearchPizzaHandler)
+
+	router.POST("/api/auth/login", handlers.LoginHandler)
+
+
+	admin := router.Group("/")
+	admin.Use(middleware.RequireAuth())
+	{
+		admin.GET("/api/auth/verify", handlers.VerifySessionHandler)
+
+		// Pizza CRUD (mutating routes — read routes above stay public so
+		// the customer-facing menu page keeps working without a token)
+		admin.POST("/api/pizzas", handlers.CreatePizzaHandler)
+		admin.PUT("/api/pizzas/:id", handlers.UpdatePizzaHandler)
+		admin.DELETE("/api/pizzas/:id", handlers.DeletePizzaHandler)
+
+		// Pizza Images (mutating)
+		admin.POST("/api/pizzas/:id/images", handlers.UploadPizzaImageHandler)
+		admin.DELETE("/api/images/:id", handlers.DeletePizzaImageHandler)
+
+		// Orders (admin views + mutates status)
+		admin.GET("/api/orders", handlers.GetOrdersHandler)
+		admin.PATCH("/api/orders/:id/status", handlers.UpdateOrderStatus)
+
+		// Dashboard / stats / search
+		admin.GET("/api/admin/stats", handlers.GetDashboardStatsHandler)
+		admin.GET("/api/admin/best-seller", handlers.GetBestSellerHandler)
+	}
 }
