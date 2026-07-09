@@ -176,7 +176,7 @@ function renderOrdersTable(orders, tbody) {
     if (!orders || orders.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="5" class="px-6 py-16 text-center text-slate-400">
+                <td colspan="8" class="px-6 py-16 text-center text-slate-400">
                     <svg class="w-12 h-12 mx-auto mb-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                             d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
@@ -201,10 +201,10 @@ function renderOrdersTable(orders, tbody) {
         return `
             <tr class="hover:bg-amber-50/40 transition-colors">
                 <td class="px-6 py-4 font-semibold text-slate-700">#${o.order_id}</td>
+                <td class="px-6 py-4 text-slate-600">${o.customer_name || "—"}</td>
+                <td class="px-6 py-4 text-slate-600">${o.phone || "—"}</td>
+                <td class="px-6 py-4 text-slate-600">${o.address || "—"}</td>
                 <td class="px-6 py-4 text-slate-600">${o.pizza_name || "—"}</td>
-                <td class="px-6 py-4 text-slate-600">${o.address}</td>
-                <td class="px-6 py-4 text-slate-600">${o.phone}</td>
-                td class="px-6 py-4 text-slate-600">${o.customer_name}</td>
                 <td class="px-6 py-4 text-center font-medium text-slate-600">${o.quantity}</td>
                 <td class="px-6 py-4 text-right font-bold text-slate-800">${formatNaira(cost)}</td>
                 <td class="px-6 py-4 text-center">

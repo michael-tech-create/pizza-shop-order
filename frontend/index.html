@@ -8,18 +8,19 @@
     <link rel="stylesheet" href="./css/style.css">
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-    <style>
+       <script src="https://cdn.tailwindcss.com"></script>
+<style>
         body { font-family: 'Poppins', sans-serif; }
         
         .spin-wheel-transition {
             transition: transform 4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-
+ 
         /* Smooth transition for moving hero elements */
         .fade-transition {
             transition: opacity 0.6s ease-in-out;
         }
-
+ 
               /* 1. Live Tracker Ticker Animation */
         @keyframes ticker {
             0% { transform: translate3d(0, 0, 0); }
@@ -30,7 +31,7 @@
             width: max-content;
             animation: ticker 25s linear infinite;
         }
-
+ 
         /* 2. Topping Rain & Bounce Animation */
         @keyframes toppingFall {
             0% { transform: translateY(-200px) scale(0) rotate(0deg); opacity: 0; }
@@ -46,14 +47,276 @@
         .slice-container.is-visible .topping-item {
             animation: toppingFall 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
-
+ 
         /* 3. Smooth transition for Parallax Hover */
         .tilt-card {
             transform-style: preserve-3d;
             transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
         }
-
-
+ 
+                .bg-cheese-lava-overlay {
+            background: linear-gradient(45deg, rgba(220, 38, 38, 0.85), rgba(234, 88, 12, 0.85), rgba(250, 204, 21, 0.75), rgba(239, 68, 68, 0.85));
+            background-size: 300% 300%;
+            animation: gradientLava 8s ease infinite;
+        }
+        @keyframes gradientLava {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+ 
+        /* Floating Animations */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(3deg); }
+        }
+        .animate-float {
+            animation: floatSlow 4s ease-in-out infinite;
+        }
+        .animate-float-delayed {
+            animation: floatSlow 5s ease-in-out infinite 2s;
+        }
+ 
+        /* Parallax Layer Setup */
+        .parallax-layer {
+            transition: transform 0.1s ease-out;
+            will-change: transform;
+        }
+ 
+        /* Typing Effect */
+        .typing-wrapper {
+            display: inline-block;
+        }
+        .typing-text {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 4px solid white;
+            width: 0;
+            animation: typing 2.5s steps(30, end) forwards, blink-caret 0.8s step-end infinite;
+        }
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: white; }
+        }
+ 
+        /* Glowing CTA Buttons */
+        .glow-btn-primary {
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4), 0 0 30px rgba(251, 146, 60, 0.6);
+            transition: all 0.3s ease;
+        }
+        .glow-btn-primary:hover {
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.6), 0 0 45px rgba(251, 146, 60, 0.9);
+            transform: translateY(-2px) scale(1.02);
+        }
+        .glow-btn-secondary {
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .glow-btn-secondary:hover {
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+ 
+        /* ---- ADDITIONAL MOTION (no design changes, just more movement) ---- */
+ 
+        /* Scroll reveal for sections */
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .reveal-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+ 
+        /* Nav: subtle shrink + shadow lift on scroll */
+        nav.nav-scrolled {
+            box-shadow: 0 6px 20px -8px rgba(0,0,0,0.15);
+        }
+        nav .nav-inner {
+            transition: padding 0.3s ease;
+        }
+        nav.nav-scrolled .nav-inner {
+            padding-top: 0.6rem;
+            padding-bottom: 0.6rem;
+        }
+ 
+        /* Logo wobble */
+        @keyframes logoWiggle {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(-10deg) scale(1.08); }
+            75% { transform: rotate(10deg) scale(1.08); }
+        }
+        .animate-logo-wiggle {
+            display: inline-block;
+            animation: logoWiggle 3.5s ease-in-out infinite;
+            transform-origin: center;
+        }
+ 
+        /* Cart button idle pulse + bump-on-update */
+        @keyframes cartPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.35); }
+            50% { box-shadow: 0 0 0 8px rgba(249, 115, 22, 0); }
+        }
+        #cartBtn {
+            animation: cartPulse 2.8s ease-in-out infinite;
+        }
+        @keyframes cartBump {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.35) rotate(-8deg); }
+            60% { transform: scale(0.9) rotate(4deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+        .cart-bump {
+            animation: cartBump 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+ 
+        /* Ken Burns slow zoom-pan on hero image */
+        @keyframes kenBurns {
+            0% { transform: scale(1) translate(0, 0); }
+            50% { transform: scale(1.08) translate(-1%, -1%); }
+            100% { transform: scale(1) translate(0, 0); }
+        }
+        .animate-kenburns {
+            animation: kenBurns 12s ease-in-out infinite;
+        }
+ 
+        /* Hero dots: active dot gentle pulse */
+        @keyframes dotPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.55; }
+        }
+        .hero-dot.bg-orange-500 {
+            animation: dotPulse 1.6s ease-in-out infinite;
+        }
+ 
+        /* Ticker emojis: gentle bob so the strip feels livelier */
+        @keyframes emojiBob {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-3px) rotate(-6deg); }
+        }
+        .animate-ticker span:not(.text-orange-300) {
+            display: inline-block;
+            animation: emojiBob 1.8s ease-in-out infinite;
+        }
+        .animate-ticker span:nth-child(4n+1) { animation-delay: 0s; }
+        .animate-ticker span:nth-child(4n+2) { animation-delay: 0.2s; }
+        .animate-ticker span:nth-child(4n+3) { animation-delay: 0.4s; }
+ 
+        /* Bigger, livelier float for the parallax garnish icons */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-22px) rotate(8deg); }
+        }
+ 
+        /* Spin wheel: idle "come spin me" glow (no transform, so it never fights the real spin) + button breathing */
+        @keyframes wheelInviteGlow {
+            0%, 100% { filter: drop-shadow(0 0 0px rgba(249, 115, 22, 0)); }
+            50% { filter: drop-shadow(0 0 18px rgba(249, 115, 22, 0.55)); }
+        }
+        .wheel-wrapper:not(:hover) #spinWheel {
+            animation: wheelInviteGlow 3s ease-in-out infinite;
+        }
+        @keyframes btnBreathe {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.06); }
+        }
+        #spinBtn {
+            animation: btnBreathe 2s ease-in-out infinite;
+        }
+ 
+        /* Checkout modal: entrance motion */
+        @keyframes modalPop {
+            0% { opacity: 0; transform: scale(0.9) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        #checkoutModal:not(.hidden) > div {
+            animation: modalPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+ 
+        /* WhatsApp CTAs: soft breathing glow to draw the eye */
+        @keyframes waGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5); }
+            50% { box-shadow: 0 0 0 10px rgba(37, 211, 102, 0); }
+        }
+        a[href*="wa.me"] {
+            animation: waGlow 2.5s ease-in-out infinite;
+        }
+ 
+        /* Countdown pill: gentle heartbeat to signal urgency */
+        @keyframes countdownBeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+        #dealCountdown {
+            animation: countdownBeat 1s ease-in-out infinite;
+        }
+ 
+        /* Search bar icon: small bounce to invite typing */
+        @keyframes searchBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-2px); }
+        }
+        #search:placeholder-shown ~ div svg {
+            animation: searchBounce 2s ease-in-out infinite;
+        }
+ 
+        /* ---- CUSTOMER REVIEWS SECTION ---- */
+ 
+        /* Infinite auto-scrolling review row, pauses so people can read on hover */
+        .review-track {
+            animation: reviewScroll 45s linear infinite;
+        }
+        .review-marquee:hover .review-track {
+            animation-play-state: paused;
+        }
+        @keyframes reviewScroll {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-50%, 0, 0); }
+        }
+ 
+        /* Stars start invisible/collapsed, then pop in one by one once the section scrolls into view */
+        .star-rating .star {
+            opacity: 0;
+            transform: scale(0) rotate(-30deg);
+        }
+        .reveal-on-scroll.is-visible .star-rating .star {
+            animation: starPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .reveal-on-scroll.is-visible .star-rating .star:nth-child(1) { animation-delay: 0.1s; }
+        .reveal-on-scroll.is-visible .star-rating .star:nth-child(2) { animation-delay: 0.2s; }
+        .reveal-on-scroll.is-visible .star-rating .star:nth-child(3) { animation-delay: 0.3s; }
+        .reveal-on-scroll.is-visible .star-rating .star:nth-child(4) { animation-delay: 0.4s; }
+        .reveal-on-scroll.is-visible .star-rating .star:nth-child(5) { animation-delay: 0.5s; }
+        @keyframes starPop {
+            0% { opacity: 0; transform: scale(0) rotate(-30deg); }
+            70% { opacity: 1; transform: scale(1.25) rotate(8deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+ 
+        /* Decorative quote mark drifts gently */
+        @keyframes quoteFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .quote-mark {
+            animation: quoteFloat 4s ease-in-out infinite;
+        }
+ 
+        /* Verified badge: soft breathing glow */
+        @keyframes badgeGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.35); }
+            50% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+        }
+        .verified-badge {
+            animation: badgeGlow 2.4s ease-in-out infinite;
+        }
+ 
     </style>
 </head>
 
@@ -64,16 +327,16 @@
         <span id="dealCountdown" class="bg-white/20 px-2 py-0.5 rounded font-mono">29:59</span>
     </div>
 
-    <nav class="bg-white/70 backdrop-blur-lg sticky top-0 z-40 border-b border-gray-200 shadow-sm transition-all">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+    <nav class="bg-white/70 backdrop-blur-lg sticky top-0 z-40 border-b border-gray-200 shadow-sm transition-all" id="mainNav">
+        <div class="nav-inner max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
             <h1 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-                <span class="text-orange-500">🍕</span> Mc's Pizza
+                <span class="text-orange-500 animate-logo-wiggle"><img src="./public/images/icons8-pizza-32.png"/></span> Mc's Pizza
             </h1>
             <button
                 id="cartBtn"
                 class="bg-gray-900 hover:bg-orange-600 text-white font-semibold px-5 py-2.5 rounded-full shadow-lg shadow-gray-900/20 flex items-center gap-2 transition-all active:scale-95"
             >
-                <span>🛒</span> Cart 
+                <span><img src="./public/images/cart.png" class="w-10 h-10"/></span> Cart 
                 <span id="cartCount" class="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
             </button>
         </div>
@@ -85,7 +348,7 @@
             <img
                 id="featuredImage"
                 src="https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=2070&auto=format&fit=crop"
-                class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 fade-transition"
+                class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 fade-transition animate-kenburns"
                 alt="Featured Pizza"
             >
 
@@ -135,16 +398,17 @@
 
 
 
-    <div class="w-full bg-orange-600 text-white overflow-hidden py-3.5 shadow-inner border-y border-orange-700/30 mb-16 flex">
+    <div class="reveal-on-scroll w-full bg-gray-900 text-white overflow-hidden py-3.5 shadow-inner border-y border-orange-700/30 mb-16 flex">
         <div class="animate-ticker space-x-12 flex items-center whitespace-nowrap text-sm font-bold tracking-wide uppercase">
-            <span>🔥 1,240 Pizzas Baked Today</span> <span class="text-orange-300">•</span>
-            <span>🚚 Average Delivery Time: 22 Mins</span> <span class="text-orange-300">•</span>
-            <span>🧀 100% Mozzarella Used</span> <span class="text-orange-300">•</span>
-            <span>🌶️ Fresh Local Ingredients</span> <span class="text-orange-300">•</span>
-            <span>🔥 1,240 Pizzas Baked Today</span> <span class="text-orange-300">•</span>
-            <span>🚚 Average Delivery Time: 22 Mins</span> <span class="text-orange-300">•</span>
-            <span>🧀 100% Mozzarella Used</span> <span class="text-orange-300">•</span>
-            <span>🌶️ Fresh Local Ingredients</span> <span class="text-orange-300">•</span>
+            <span><img src="./public/images/gift.png"class="w-10"/>1,240 Pizzas Baked Today</span> <span class="text-orange-300">•</span>
+            <span><img src="./public/images/free-shipping.png" class="w-10"/>Average Delivery Time: 22 Mins</span> <span class="text-orange-300">•</span>
+            <span><img src="./public/cheesecake.png" class="w-10"/> 100% Mozzarella Used</span> <span class="text-orange-300">•</span>
+            <span><img src="./public/pp.png" class="w-10"/> Fresh Local Ingredients</span> <span class="text-orange-300">•</span>
+            <span><img src="./public/images/baked.png" class="w-10"/> 1,240 Pizzas Baked Today</span> <span class="text-orange-300">•</span>
+            <span><img src="./public/images/free-shipping.png" class="w-10"/> Average Delivery Time: 22 Mins</span> <span class="text-orange-300">•</span>
+            <span><img src="./public/cheesecake.png" class="w-10"/> 100% Mozzarella Used</span> <span class="text-orange-300">•</span>
+            <span><img src="./public/pp.png" class="w-10"/>Fresh Local Ingredients</span> <span class="text-orange-300">•</span>
+            <span><img src="./public/images/gift.png"class="w-10"/>1,240 Pizzas Baked Today</span> <span class="text-orange-300">•</span>
         </div>
     </div>
 
@@ -152,7 +416,7 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         
-        <div class="max-w-2xl mx-auto mb-12 relative">
+        <div class="reveal-on-scroll max-w-2xl mx-auto mb-12 relative z-20">
             <div class="relative group">
                 <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
                     <svg class="h-6 w-6 text-gray-400 group-focus-within:text-orange-500 transition-colors" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -170,12 +434,12 @@
             <div id="menu" class="absolute left-0 right-0 top-full mt-3 bg-white rounded-2xl shadow-2xl border border-gray-100 divide-y divide-gray-50 overflow-hidden z-30 [&:empty]:hidden"></div>
         </div>
 
-        <section>
+        <section class="reveal-on-scroll">
             <div id="pizzaContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
             </div>
         </section>
 
-        <section class="mb-10 mt-6">
+        <section class="reveal-on-scroll mb-10 mt-6">
             <div class="flex items-center justify-between mb-4 mt-6">
                 <h2 class="text-2xl font-bold text-orange-600">
                     Popular Pizzas
@@ -189,7 +453,218 @@
             </div>
         </section>
 
-        <section class="mt-16 mb-16">
+        <section class="reveal-on-scroll max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-10 mb-16">
+        
+        <div id="parallaxContainer" 
+             class="relative w-full h-[500px] lg:h-[600px] rounded-[2rem] overflow-hidden shadow-2xl flex items-center group cursor-default"
+             style="background-image: url('https://images.unsplash.com/photo-1590947132387-155cc02f3212?q=80&w=2070&auto=format&fit=crop'); background-size: cover; background-position: center;">
+            
+            <div class="absolute inset-0 bg-cheese-lava-overlay z-0"></div>
+            
+            <div class="absolute inset-0 z-10 overflow-hidden pointer-events-none">
+                <img src="https://cdn-icons-png.flaticon.com/512/5141/5141555.png" class="absolute top-10 left-1/4 w-12 opacity-80 animate-float parallax-layer drop-shadow-lg" style="--px: 0; --py: 0;" data-speed="1.5" alt="Basil">
+                <img src="https://cdn-icons-png.flaticon.com/512/10756/10756184.png" class="absolute bottom-20 left-10 w-16 opacity-90 animate-float-delayed parallax-layer drop-shadow-lg" style="--px: 0; --py: 0;" data-speed="2.5" alt="Pepperoni">
+                <img src="https://cdn-icons-png.flaticon.com/512/5141/5141555.png" class="absolute top-20 right-20 w-10 opacity-70 animate-float parallax-layer drop-shadow-lg scale-x-[-1]" style="--px: 0; --py: 0;" data-speed="-1.5" alt="Basil">
+                <img src="https://cdn-icons-png.flaticon.com/512/10756/10756184.png" class="absolute bottom-1/3 right-10 w-14 opacity-80 animate-float-delayed parallax-layer drop-shadow-lg" style="--px: 0; --py: 0;" data-speed="-2" alt="Pepperoni">
+            </div>
+
+            <div class="relative z-20 w-full lg:w-[45%] px-6 sm:px-12 lg:px-16 flex flex-col justify-center parallax-layer" style="--px: 0; --py: 0;" data-speed="0.8">
+                
+                <div class="typing-wrapper mb-6">
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight typing-text">
+                        Crafting the<br>Perfect Slice
+                    </h1>
+                </div>
+                
+                <p class="text-white/90 text-sm sm:text-lg mb-8 max-w-md font-medium leading-relaxed drop-shadow-md">
+                    Experience the ultimate cheese pull. Hot, fresh, and baked to absolute perfection in our stone ovens.
+                </p>
+            </div>
+
+            <div class="absolute left-1/2 lg:left-[60%] top-1/2 -translate-y-1/2 z-20 w-[350px] sm:w-[450px] lg:w-[650px] parallax-layer pointer-events-none" 
+                 style="transform: translate(calc(-50% + var(--px, 0px)), calc(-50% + var(--py, 0px)));" 
+                 data-speed="-3">
+                
+                <div class="relative w-full h-full animate-float">
+                    <img src="./public/test2.jpg" 
+                         class="w-[40px] h-auto drop-shadow-2xl scale-110 object-contain rounded-2xl" 
+                         alt="Floating Premium Pizza">
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+
+        <section class="reveal-on-scroll reviews-section mb-16 mt-6">
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-8 sm:gap-12 mb-10">
+                <div class="text-center sm:text-left shrink-0">
+                    <div class="text-6xl font-black text-gray-900 leading-none" id="ratingNumber">5.0</div>
+                    <div class="flex items-center gap-1 justify-center sm:justify-start mt-3 star-rating">
+                        <svg class="star w-6 h-6 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                        <svg class="star w-6 h-6 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                        <svg class="star w-6 h-6 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                        <svg class="star w-6 h-6 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                        <svg class="star w-6 h-6 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                    </div>
+                    <p class="text-gray-400 text-sm mt-2 font-medium">Based on 500+ orders</p>
+                </div>
+ 
+                <div class="hidden sm:block w-px bg-gray-100 self-stretch"></div>
+ 
+                <div class="flex-1 w-full">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-1">What Our Customers Say</h2>
+                    <p class="text-gray-400 text-sm mb-5">Real feedback from real McMichael Pizza orders across Nigeria.</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div class="bg-gray-50 rounded-xl p-3 text-center">
+                            <div class="text-xl font-black text-orange-600">98%</div>
+                            <div class="text-[11px] text-gray-400 font-medium mt-0.5">Would Order Again</div>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-3 text-center">
+                            <div class="text-xl font-black text-orange-600">22min</div>
+                            <div class="text-[11px] text-gray-400 font-medium mt-0.5">Avg Delivery</div>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-3 text-center">
+                            <div class="text-xl font-black text-orange-600">4.9</div>
+                            <div class="text-[11px] text-gray-400 font-medium mt-0.5">Food Quality</div>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-3 text-center">
+                            <div class="text-xl font-black text-orange-600">4.7</div>
+                            <div class="text-[11px] text-gray-400 font-medium mt-0.5">Packaging</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+ 
+            <div class="review-marquee overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+                <div class="review-track flex gap-6 w-max">
+ 
+                    <div class="tilt-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 p-6 w-[280px] sm:w-[320px] flex-shrink-0 relative overflow-hidden">
+                        <span class="quote-mark absolute -top-3 -right-1 text-8xl font-black text-orange-50 select-none">"</span>
+                        <div class="flex items-center gap-3 mb-4 relative z-10">
+                            <div class="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center text-white font-black text-lg shrink-0">CA</div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 text-sm">Chidinma A.</h4>
+                                <p class="text-xs text-gray-400">Lagos</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-0.5 mb-3 relative z-10 star-rating">
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                        </div>
+                        <p class="text-gray-600 text-sm leading-relaxed relative z-10">Ordered the Pepperoni Supreme on a Friday night and it arrived in 20 minutes, still hot. Cheese pull was unreal!</p>
+                        <span class="verified-badge inline-flex items-center gap-1 mt-4 text-[10px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded-full relative z-10">✓ Verified Order</span>
+                    </div>
+ 
+                    <div class="tilt-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 p-6 w-[280px] sm:w-[320px] flex-shrink-0 relative overflow-hidden">
+                        <span class="quote-mark absolute -top-3 -right-1 text-8xl font-black text-orange-50 select-none">"</span>
+                        <div class="flex items-center gap-3 mb-4 relative z-10">
+                            <div class="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-white font-black text-lg shrink-0">TO</div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 text-sm">Tunde O.</h4>
+                                <p class="text-xs text-gray-400">Abuja</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-0.5 mb-3 relative z-10 star-rating">
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-gray-200 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                        </div>
+                        <p class="text-gray-600 text-sm leading-relaxed relative z-10">Great value for the price. The Garden Harvest is now my go-to whenever I have friends over. Delivery guy was very polite too.</p>
+                        <span class="verified-badge inline-flex items-center gap-1 mt-4 text-[10px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded-full relative z-10">✓ Verified Order</span>
+                    </div>
+ 
+                    <div class="tilt-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 p-6 w-[280px] sm:w-[320px] flex-shrink-0 relative overflow-hidden">
+                        <span class="quote-mark absolute -top-3 -right-1 text-8xl font-black text-orange-50 select-none">"</span>
+                        <div class="flex items-center gap-3 mb-4 relative z-10">
+                            <div class="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center text-white font-black text-lg shrink-0">BK</div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 text-sm">Blessing K.</h4>
+                                <p class="text-xs text-gray-400">Port Harcourt</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-0.5 mb-3 relative z-10 star-rating">
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                        </div>
+                        <p class="text-gray-600 text-sm leading-relaxed relative z-10">The Spin & Win wheel got me a free movie rental, but honestly the BBQ Chicken Fiesta alone would've kept me coming back.</p>
+                        <span class="verified-badge inline-flex items-center gap-1 mt-4 text-[10px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded-full relative z-10">✓ Verified Order</span>
+                    </div>
+ 
+                    <div class="tilt-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 p-6 w-[280px] sm:w-[320px] flex-shrink-0 relative overflow-hidden">
+                        <span class="quote-mark absolute -top-3 -right-1 text-8xl font-black text-orange-50 select-none">"</span>
+                        <div class="flex items-center gap-3 mb-4 relative z-10">
+                            <div class="w-12 h-12 rounded-full bg-yellow-500 flex items-center justify-center text-white font-black text-lg shrink-0">EM</div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 text-sm">Efe M.</h4>
+                                <p class="text-xs text-gray-400">Lagos</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-0.5 mb-3 relative z-10 star-rating">
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                        </div>
+                        <p class="text-gray-600 text-sm leading-relaxed relative z-10">Ordering via WhatsApp was so easy and the checkout page confirmed everything clearly. Pizza was fresh, hot, and on time.</p>
+                        <span class="verified-badge inline-flex items-center gap-1 mt-4 text-[10px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded-full relative z-10">✓ Verified Order</span>
+                    </div>
+ 
+                    <!-- Duplicate set for a seamless infinite loop -->
+                    <div class="tilt-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 p-6 w-[280px] sm:w-[320px] flex-shrink-0 relative overflow-hidden" aria-hidden="true">
+                        <span class="quote-mark absolute -top-3 -right-1 text-8xl font-black text-orange-50 select-none">"</span>
+                        <div class="flex items-center gap-3 mb-4 relative z-10">
+                            <div class="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center text-white font-black text-lg shrink-0">CA</div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 text-sm">Chidinma A.</h4>
+                                <p class="text-xs text-gray-400">Lagos</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-0.5 mb-3 relative z-10 star-rating">
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                        </div>
+                        <p class="text-gray-600 text-sm leading-relaxed relative z-10">Ordered the Pepperoni Supreme on a Friday night and it arrived in 20 minutes, still hot. Cheese pull was unreal!</p>
+                        <span class="verified-badge inline-flex items-center gap-1 mt-4 text-[10px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded-full relative z-10">✓ Verified Order</span>
+                    </div>
+ 
+                    <div class="tilt-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 p-6 w-[280px] sm:w-[320px] flex-shrink-0 relative overflow-hidden" aria-hidden="true">
+                        <span class="quote-mark absolute -top-3 -right-1 text-8xl font-black text-orange-50 select-none">"</span>
+                        <div class="flex items-center gap-3 mb-4 relative z-10">
+                            <div class="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-white font-black text-lg shrink-0">TO</div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 text-sm">Tunde O.</h4>
+                                <p class="text-xs text-gray-400">Abuja</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-0.5 mb-3 relative z-10 star-rating">
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                            <svg class="star w-4 h-4 text-gray-200 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                        </div>
+                        <p class="text-gray-600 text-sm leading-relaxed relative z-10">Great value for the price. The Garden Harvest is now my go-to whenever I have friends over. Delivery guy was very polite too.</p>
+                        <span class="verified-badge inline-flex items-center gap-1 mt-4 text-[10px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded-full relative z-10">✓ Verified Order</span>
+                    </div>
+ 
+                </div>
+            </div>
+        </section>
+
+        <section class="reveal-on-scroll mt-16 mb-16">
             <div class="relative w-full h-[320px] sm:h-[380px] lg:h-[420px] rounded-[2rem] overflow-hidden shadow-xl group bg-gray-950">
                 <img
                     src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=2074&auto=format&fit=crop"
@@ -225,11 +700,11 @@
             </div>
         </section>
 
-        <section class="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-8 sm:p-12 mb-16 text-center max-w-3xl mx-auto">
+        <section class="reveal-on-scroll bg-white rounded-[2rem] border border-gray-100 shadow-sm p-8 sm:p-12 mb-16 text-center max-w-3xl mx-auto">
             <h2 class="text-3xl font-black text-gray-900 mb-2">🎁 Spin & Win!</h2>
             <p class="text-gray-500 mb-8 max-w-md mx-auto">Feeling lucky? Give the wheel a spin to win exclusive discounts!</p>
 
-            <div class="relative w-64 h-64 sm:w-80 sm:h-80 mx-auto">
+            <div class="wheel-wrapper relative w-64 h-64 sm:w-80 sm:h-80 mx-auto">
                 <svg class="w-12 h-12 text-gray-900 fill-current absolute -top-5 left-1/2 -translate-x-1/2 z-20 drop-shadow-md" viewBox="0 0 24 24">
                     <path d="M12 21l-9-9h18z" />
                 </svg>
@@ -258,36 +733,59 @@
 
     </main>
 
-    <footer class="bg-gray-900 border-t border-gray-800 text-gray-400 py-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
-            
-            <div class="flex flex-col items-center md:items-start gap-1">
-                <h3 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
-                    <span class="text-orange-500">🍕</span> Mc's Pizza
-                </h3>
-                <p class="text-xs text-gray-500">© 2026 McMichael Pizza. All rights reserved.</p>
-            </div>
-            
-            <div class="flex flex-col sm:flex-row items-center gap-4">
-                <span class="text-xs sm:text-sm text-gray-400 text-center sm:text-left">
-                    Prefer direct human booking or support assistance?
-                </span>
-                
-                <a 
-                    href="https://wa.me/2349033464071" 
-                    target="_blank"
-                    class="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#22c35e] text-white text-xs font-bold px-5 py-3 rounded-xl shadow-lg shadow-green-950/20 active:scale-95 transition-all whitespace-nowrap"
-                >
-                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.516 2.266 2.27 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.455L0 24zm6.59-4.846c1.66.986 3.292 1.482 4.634 1.482 5.443 0 9.871-4.425 9.873-9.873.001-2.641-1.025-5.115-2.887-6.979C16.344 1.919 13.874.891 11.23.891c-5.447 0-9.875 4.426-9.877 9.874-.001 2.052.559 3.933 1.621 5.456l-.993 3.626 3.734-.979zm11.063-7.234c-.298-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.371-.025-.521-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414-.074-.124-.272-.198-.57-.347z"/>
-                    </svg>
-                    Order via WhatsApp
-                </a>
-            </div>
-            
+<footer class="reveal-on-scroll bg-gray-900 border-t border-gray-800 text-gray-400 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-10 md:gap-6">
+        
+        <!-- Brand & Copyright -->
+        <div class="flex flex-col items-center md:items-start gap-1 w-full md:w-auto">
+            <h3 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
+                <span class="text-orange-500 animate-logo-wiggle"><img src="./public/images/icons8-pizza-32.png"/></span>Mc's Pizza
+            </h3>
+            <p class="text-xs text-gray-500">© 2026 McMichael Pizza. All rights reserved.</p>
         </div>
-    </footer>
 
+        <!-- Social & Payment Icons -->
+        <div class="flex items-center gap-5 w-full md:w-auto justify-center">
+            
+            <!-- Facebook Icon -->
+            <a href="#" aria-label="Facebook" class="group relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 border border-gray-700 hover:bg-blue-600 hover:border-blue-600 hover:-translate-y-1 hover:shadow-[0_4px_15px_rgba(37,99,235,0.4)] transition-all duration-300 ease-in-out">
+                <svg class="w-5 h-5 text-gray-400 group-hover:text-white transition-colors duration-300" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd" />
+                </svg>
+                <!-- Tooltip -->
+                <span class="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-[10px] font-bold text-white bg-gray-800 px-2 py-1 rounded shadow-lg">Facebook</span>
+            </a>
+
+            <!-- Paystack Icon -->
+            <a href="#" aria-label="Paystack" class="group relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 border border-gray-700 hover:bg-[#0BA4DB] hover:border-[#0BA4DB] hover:-translate-y-1 hover:shadow-[0_4px_15px_rgba(11,164,219,0.4)] transition-all duration-300 ease-in-out">
+                <svg class="w-5 h-5 text-gray-400 group-hover:text-white transition-colors duration-300" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M10.155 8.922h4.512v1.89h-4.512V8.922zm0 3.823h4.512v1.89h-4.512v-1.89zM5.32 5.099h14.12v13.802H5.32V5.099zm2.712 2.76v8.28h8.697v-8.28H8.032z" fill="currentColor"/>
+                </svg>
+                <!-- Tooltip -->
+                <span class="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-[10px] font-bold text-white bg-gray-800 px-2 py-1 rounded shadow-lg">Paystack</span>
+            </a>
+
+        </div>
+        
+        <div class="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+            <span class="text-xs sm:text-sm text-gray-400 text-center sm:text-right max-w-[200px] sm:max-w-none leading-tight">
+                Prefer direct human booking or support assistance?
+            </span>
+            
+            <a 
+                href="https://wa.me/2349033464071" 
+                target="_blank"
+                class="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#22c35e] text-white text-xs font-bold px-5 py-3 rounded-xl shadow-lg shadow-[#25D366]/20 hover:shadow-[#25D366]/40 hover:-translate-y-1 active:scale-95 transition-all duration-300 whitespace-nowrap"
+            >
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.516 2.266 2.27 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.455L0 24zm6.59-4.846c1.66.986 3.292 1.482 4.634 1.482 5.443 0 9.871-4.425 9.873-9.873.001-2.641-1.025-5.115-2.887-6.979C16.344 1.919 13.874.891 11.23.891c-5.447 0-9.875 4.426-9.877 9.874-.001 2.052.559 3.933 1.621 5.456l-.993 3.626 3.734-.979zm11.063-7.234c-.298-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.371-.025-.521-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414-.074-.124-.272-.198-.57-.347z"/>
+                </svg>
+                Order via WhatsApp
+            </a>
+        </div>
+        
+    </div>
+</footer>
     <div id="cartOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden transition-opacity" onclick="closeCart()"></div>
     
     <div
@@ -375,7 +873,7 @@
             </div>
         </div>
     </div>
-
+    <script src="js/pizza.js"></script>
     <script>
         function openCart() {
             document.getElementById('cart').classList.remove('translate-x-full');
@@ -531,6 +1029,32 @@
         const sliceSection = document.getElementById('sliceSection');
         if (sliceSection) observer.observe(sliceSection);
 
+        // Reveal every section marked for scroll-in motion
+        document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
+
+        // Nav: subtle shrink + shadow once the page scrolls
+        const mainNav = document.getElementById('mainNav');
+        if (mainNav) {
+            window.addEventListener('scroll', () => {
+                mainNav.classList.toggle('nav-scrolled', window.scrollY > 40);
+            });
+        }
+
+        // Cart badge: little bump whenever the count changes, so adding items feels alive
+        const cartCountEl = document.getElementById('cartCount');
+        if (cartCountEl) {
+            let lastCartCount = cartCountEl.textContent;
+            const cartBadgeObserver = new MutationObserver(() => {
+                if (cartCountEl.textContent !== lastCartCount) {
+                    lastCartCount = cartCountEl.textContent;
+                    cartCountEl.classList.remove('cart-bump');
+                    void cartCountEl.offsetWidth; // restart animation
+                    cartCountEl.classList.add('cart-bump');
+                }
+            });
+            cartBadgeObserver.observe(cartCountEl, { characterData: true, childList: true, subtree: true });
+        }
+
         // 3D Parallax Tilt Effect for Hot Deals
         document.querySelectorAll('.tilt-card').forEach(card => {
             card.addEventListener('mousemove', (e) => {
@@ -554,6 +1078,45 @@
                 card.style.boxShadow = 'none';
             });
         });
+
+                const parallaxContainer = document.getElementById('parallaxContainer');
+        const layers = document.querySelectorAll('.parallax-layer');
+
+        if (parallaxContainer) {
+            parallaxContainer.addEventListener('mousemove', (e) => {
+                const rect = parallaxContainer.getBoundingClientRect();
+                // Calculate cursor position relative to the center of the container
+                const x = e.clientX - rect.left - (rect.width / 2);
+                const y = e.clientY - rect.top - (rect.height / 2);
+
+                layers.forEach(layer => {
+                    const speed = parseFloat(layer.getAttribute('data-speed'));
+                    // Determine movement based on speed factor
+                    const xMove = (x * speed) / 50;
+                    const yMove = (y * speed) / 50;
+
+                    // Update CSS variables for smooth transformation
+                    layer.style.setProperty('--px', `${xMove}px`);
+                    layer.style.setProperty('--py', `${yMove}px`);
+                    
+                    // For elements not using the absolute center translate trick
+                    if (!layer.style.transform.includes('calc')) {
+                        layer.style.transform = `translate(${xMove}px, ${yMove}px)`;
+                    }
+                });
+            });
+
+            // Reset positions smoothly when mouse leaves
+            parallaxContainer.addEventListener('mouseleave', () => {
+                layers.forEach(layer => {
+                    layer.style.setProperty('--px', `0px`);
+                    layer.style.setProperty('--py', `0px`);
+                    if (!layer.style.transform.includes('calc')) {
+                        layer.style.transform = `translate(0px, 0px)`;
+                    }
+                });
+            });
+        }
 
         
     </script>

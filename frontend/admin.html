@@ -208,6 +208,9 @@
                                 onclick="sortOrders('order_id')">
                                 Order <span id="sort-order_id">↕</span>
                             </th>
+                            <th class="px-5 py-3">Customer</th>
+                            <th class="px-5 py-3">Phone</th>
+                            <th class="px-5 py-3 hidden lg:table-cell">Address</th>
                             <th class="px-5 py-3 cursor-pointer hover:text-orange-600 select-none"
                                 onclick="sortOrders('pizza_name')">
                                 Pizza <span id="sort-pizza_name">↕</span>
@@ -222,7 +225,7 @@
                     </thead>
                     <tbody id="ordersTable" class="divide-y divide-slate-50">
                         <tr>
-                            <td colspan="5" class="px-5 py-16 text-center text-slate-400">
+                            <td colspan="8" class="px-5 py-16 text-center text-slate-400">
                                 <svg class="animate-spin h-6 w-6 mx-auto mb-3 text-orange-400" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -511,7 +514,7 @@ async function refreshStats() {
 async function loadOrders() {
     const tbody = document.getElementById("ordersTable");
     tbody.innerHTML = `
-        <tr><td colspan="5" class="px-5 py-14 text-center text-slate-400">
+        <tr><td colspan="8" class="px-5 py-14 text-center text-slate-400">
             <svg class="animate-spin h-6 w-6 mx-auto mb-3 text-orange-400" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -524,7 +527,7 @@ async function loadOrders() {
         allOrders = await res.json() || [];
         filterOrders();
     } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-14 text-center text-red-400">
+        tbody.innerHTML = `<tr><td colspan="8" class="px-5 py-14 text-center text-red-400">
             Failed to load orders</td></tr>`;
         AppLogger.log(`Failed to load orders: ${e.message}`, "error", "SYSTEM");
     }
@@ -536,8 +539,11 @@ function filterOrders() {
 
     filteredOrders = allOrders.filter(o => {
         if (statusF && (o.status||"pending").toLowerCase() !== statusF) return false;
-        if (search && !String(o.order_id).includes(search) &&
-            !(o.pizza_name||"").toLowerCase().includes(search)) return false;
+        if (search &&
+            !String(o.order_id).includes(search) &&
+            !(o.pizza_name||"").toLowerCase().includes(search) &&
+            !(o.customer_name||"").toLowerCase().includes(search) &&
+            !(o.phone||"").toLowerCase().includes(search)) return false;
         return true;
     });
 
@@ -593,7 +599,7 @@ const statusEmoji = { pending:"🟠", preparing:"🔵", delivered:"🟢", cancel
 function renderOrderRows(orders) {
     const tbody = document.getElementById("ordersTable");
     if (!orders || orders.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-14 text-center text-slate-400 font-medium">
+        tbody.innerHTML = `<tr><td colspan="8" class="px-5 py-14 text-center text-slate-400 font-medium">
             No orders found</td></tr>`;
         return;
     }
@@ -603,6 +609,9 @@ function renderOrderRows(orders) {
         return `
             <tr class="hover:bg-amber-50/40 transition-colors">
                 <td class="px-5 py-3.5 font-semibold text-slate-700">#${o.order_id}</td>
+                <td class="px-5 py-3.5 text-slate-600">${o.customer_name || "—"}</td>
+                <td class="px-5 py-3.5 text-slate-600">${o.phone || "—"}</td>
+                <td class="px-5 py-3.5 text-slate-600 hidden lg:table-cell">${o.address || "—"}</td>
                 <td class="px-5 py-3.5 text-slate-600">${o.pizza_name || "—"}</td>
                 <td class="px-5 py-3.5 text-center text-slate-600">${o.quantity}</td>
                 <td class="px-5 py-3.5 text-right font-bold text-slate-800">${formatNaira(Number(o.total_cost||0))}</td>

@@ -3,23 +3,21 @@ const pizzaContainer = document.getElementById("pizzaContainer");
 const searchDropdown = document.getElementById("menu");
 const searchInput = document.getElementById("search");
 
-
-
 function createPizzaCard(pizza) {
     const defaultImage = "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=600&auto=format&fit=crop";
     const images = pizza.images?.length ? pizza.images : [{ image_url: defaultImage }];
     const mainImageUrl = images[0].image_url;
 
     const card = document.createElement("div");
-    card.className = "bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 group flex flex-col overflow-hidden";
-
+    card.className = "bg-white rounded-xl sm:rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 group flex flex-col overflow-hidden cursor-pointer";
+    card.dataset.id = pizza.id;
 
     const thumbnailsHTML = images.length > 1 ? `
-        <div class="flex gap-2 p-3 overflow-x-auto custom-scrollbar border-b border-gray-50 bg-gray-50/50">
+        <div class="flex gap-2 p-2 sm:p-3 overflow-x-auto custom-scrollbar border-b border-gray-50 bg-gray-50/50">
             ${images.map(img => `
                 <img
                     src="${img.image_url}"
-                    class="thumbnail-btn w-12 h-12 rounded-lg object-cover cursor-pointer border-2 border-transparent hover:border-orange-500 transition-colors"
+                    class="thumbnail-btn w-8 h-8 sm:w-12 sm:h-12 rounded-md sm:rounded-lg object-cover cursor-pointer border-2 border-transparent hover:border-orange-500 transition-colors flex-shrink-0"
                     data-image="${img.image_url}"
                     alt="thumbnail"
                 >
@@ -28,7 +26,7 @@ function createPizzaCard(pizza) {
     ` : '';
 
     card.innerHTML = `
-        <div class="relative h-56 overflow-hidden bg-gray-100">
+        <div class="relative h-32 sm:h-56 overflow-hidden bg-gray-100">
             <img
                 class="main-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 src="${mainImageUrl}"
@@ -38,16 +36,16 @@ function createPizzaCard(pizza) {
         
         ${thumbnailsHTML}
 
-        <div class="p-5 flex flex-col flex-grow">
-            <h3 class="text-xl font-bold text-gray-900 mb-1">${pizza.name}</h3>
-            <p class="text-gray-500 text-sm mb-4 line-clamp-2 flex-grow">${pizza.description || "A delicious freshly baked pizza."}</p>
+        <div class="p-3 sm:p-5 flex flex-col flex-grow">
+            <h3 class="text-base sm:text-xl font-bold text-gray-900 mb-1 truncate">${pizza.name}</h3>
+            <p class="text-gray-500 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 flex-grow">${pizza.description || "A delicious freshly baked pizza."}</p>
             
-            <div class="mt-auto flex justify-between items-center pt-4 border-t border-gray-50">
-                <span class="text-2xl font-black text-orange-600">
+            <div class="mt-auto flex flex-col xl:flex-row justify-between items-start xl:items-center pt-3 sm:pt-4 border-t border-gray-50 gap-2 xl:gap-0">
+                <span class="text-lg sm:text-2xl font-black text-orange-600">
                     ₦${Number(pizza.price).toLocaleString()}
                 </span>
                 <button
-                    class="add-to-cart bg-gray-900 hover:bg-orange-600 text-white font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-md active:scale-95 flex items-center gap-2"
+                    class="add-to-cart bg-gray-900 hover:bg-orange-600 text-white font-semibold px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg sm:rounded-xl transition-colors shadow-md active:scale-95 flex items-center justify-center gap-2 w-full xl:w-auto text-sm sm:text-base"
                     data-id="${pizza.id}"
                     data-name="${pizza.name}"
                     data-price="${pizza.price}"
@@ -59,17 +57,24 @@ function createPizzaCard(pizza) {
         </div>
     `;
 
-    // Modern, synchronous event binding (No more setTimeout hack!)
+    // Modern, synchronous event binding
     if (images.length > 1) {
         const mainImgEl = card.querySelector('.main-image');
         const thumbs = card.querySelectorAll('.thumbnail-btn');
         
         thumbs.forEach(thumb => {
             thumb.addEventListener("click", (e) => {
+                e.stopPropagation();
                 mainImgEl.src = e.target.dataset.image;
             });
         });
     }
+
+    // Clicking anywhere on the card opens the pizza detail page
+    card.addEventListener("click", (e) => {
+        if (e.target.closest(".add-to-cart") || e.target.closest(".thumbnail-btn")) return;
+        window.location.href = `pizza.html?id=${pizza.id}`;
+    });
 
     return card;
 }
@@ -88,14 +93,16 @@ function renderSearchDropdown(pizzas) {
         return;
     }
 
+    searchDropdown.className = "absolute top-full left-0 z-50 w-full bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden mt-2";
+
     searchDropdown.innerHTML = pizzas.map(pizza => {
         const imageUrl = pizza.images?.[0]?.image_url || "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=150&auto=format&fit=crop";
         
         return `
-            <div class="flex items-center gap-4 p-4 hover:bg-orange-50 cursor-pointer transition-colors" onclick="window.location.href='pizza.html?id=${pizza.id}'">
+            <div class="flex items-center gap-4 p-4 hover:bg-orange-50 border-b border-gray-50 last:border-none cursor-pointer transition-colors" onclick="window.location.href='pizza.html?id=${pizza.id}'">
                 <img src="${imageUrl}" alt="${pizza.name}" class="w-16 h-16 rounded-xl object-cover shadow-sm">
-                <div class="flex-grow">
-                    <h4 class="text-base font-bold text-gray-900">${pizza.name}</h4>
+                <div class="flex-grow min-w-0">
+                    <h4 class="text-base font-bold text-gray-900 truncate">${pizza.name}</h4>
                     <p class="text-sm text-gray-500 line-clamp-1">${pizza.description}</p>
                 </div>
                 <span class="font-black text-orange-600 whitespace-nowrap">₦${Number(pizza.price).toLocaleString()}</span>
@@ -149,21 +156,22 @@ if (searchInput) {
 // Main Load Function
 async function loadMenu() {
     try {
-        // Assuming getMenu() is defined elsewhere in your codebase (e.g., api.js)
         const pizzas = await getMenu(); 
 
         if (!pizzaContainer) return;
+        
+        // 1. Ensure the container has the responsive grid classes!
+        // Grid 2 columns by default (mobile), 3 on medium, 4 on large screens.
+        pizzaContainer.className = "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6";
         pizzaContainer.innerHTML = "";
 
         pizzas.forEach(pizza => {
             pizzaContainer.appendChild(createPizzaCard(pizza));
         });
 
-
         if (typeof loadFeaturedPizza === "function") {
             loadFeaturedPizza(pizzas);
         }
-
     
         if (typeof setupCartButtons === "function") {
             setupCartButtons();
@@ -172,10 +180,11 @@ async function loadMenu() {
     } catch (error) {
         console.error("Failed to load menu:", error);
         if (pizzaContainer) {
-            pizzaContainer.innerHTML = `<div class="col-span-full text-center text-red-500 py-10">Failed to load menu. Please try refreshing.</div>`;
+            // Restore default view on error so the message isn't constrained to a tiny grid cell
+            pizzaContainer.className = "block";
+            pizzaContainer.innerHTML = `<div class="text-center text-red-500 py-10">Failed to load menu. Please try refreshing.</div>`;
         }
     }
 }
-
 
 document.addEventListener("DOMContentLoaded", loadMenu);
