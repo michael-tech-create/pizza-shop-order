@@ -42,14 +42,16 @@ function createPizzaCard(pizza) {
             
             <div class="mt-auto flex flex-col xl:flex-row justify-between items-start xl:items-center pt-3 sm:pt-4 border-t border-gray-50 gap-2 xl:gap-0">
                 <span class="text-lg sm:text-2xl font-black text-orange-600">
-                    ₦${Number(pizza.price).toLocaleString()}
+                    From ₦${Number(pizza.price_small).toLocaleString()}
                 </span>
                 <button
                     class="add-to-cart bg-gray-900 hover:bg-orange-600 text-white font-semibold px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg sm:rounded-xl transition-colors shadow-md active:scale-95 flex items-center justify-center gap-2 w-full xl:w-auto text-sm sm:text-base"
                     data-id="${pizza.id}"
                     data-name="${pizza.name}"
-                    data-price="${pizza.price}"
+                    data-size="medium"
+                    data-price="${pizza.price_medium}"
                     data-image="${mainImageUrl}"
+                    title="Adds a Medium — open the pizza for other sizes"
                 >
                 Add
                 </button>
@@ -105,7 +107,7 @@ function renderSearchDropdown(pizzas) {
                     <h4 class="text-base font-bold text-gray-900 truncate">${pizza.name}</h4>
                     <p class="text-sm text-gray-500 line-clamp-1">${pizza.description}</p>
                 </div>
-                <span class="font-black text-orange-600 whitespace-nowrap">₦${Number(pizza.price).toLocaleString()}</span>
+                <span class="font-black text-orange-600 whitespace-nowrap">From ₦${Number(pizza.price_small).toLocaleString()}</span>
             </div>
         `;
     }).join("");

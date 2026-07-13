@@ -6,6 +6,9 @@ type Pizza struct {
 	Name        string       `json:"name"`
 	Price       int          `json:"price"`
 	Description string       `json:"description"`
+	PriceSmall  int          `json:"price_small"`
+	PriceMedium int          `json:"price_medium"`
+	PriceLarge  int          `json:"price_large"`		
 	Images      []PizzaImage `json:"images,omitempty"`
 }
 
@@ -58,6 +61,7 @@ type OrderResponse struct {
 	Quantity     int    `json:"quantity"`
 	TotalCost    int    `json:"total_cost"`
 	Status       string `json:"status"`
+	Size string `json:"orderResponse"`
 }
 
 type OrderItem struct {
@@ -66,6 +70,7 @@ ID      int `json:"id,omitempty"` // DB primary key
 	PizzaID  int `json:"pizza_id" binding:"required,gt=0"`
 	Quantity int `json:"quantity" binding:"required,gt=0"`
 	SubTotal int `json:"sub_total,omitempty"`
+	Size string `json:"pizza_size"`
 }
 
 type CreateOrderRequest struct {

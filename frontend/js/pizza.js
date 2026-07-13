@@ -1,11 +1,71 @@
-
 const API_URL = "http://localhost:8080";
 
 let currentPizza = null;
 let currentImages = [];
 let selectedQty = 1;
 
-let selectedSize = "Medium";
+let selectedSize = "medium";
+
+function currentPriceForSize() {
+    if (!currentPizza) return 0;
+    switch (selectedSize) {
+        case "small": return currentPizza.price_small;
+        case "large": return currentPizza.price_large;
+        default:      return currentPizza.price_medium;
+    }
+}
+
+function updatePriceDisplay() {
+    if (priceEl) priceEl.textContent = `₦${Number(currentPriceForSize()).toLocaleString("en-NG")}`;
+}
+
+function renderSizeSelector() {
+    if (!priceEl || !currentPizza) return;
+
+    // Remove any previous selector before re-inserting, in case this ever
+    // runs more than once for the same page load.
+    document.getElementById("sizeSelector")?.remove();
+
+    const sizes = [
+        { key: "small",  label: "Small",  price: currentPizza.price_small },
+        { key: "medium", label: "Medium", price: currentPizza.price_medium },
+        { key: "large",  label: "Large",  price: currentPizza.price_large },
+    ];
+
+    const html = `
+        <div id="sizeSelector" class="flex gap-2 my-3">
+            ${sizes.map(s => `
+                <button
+                    type="button"
+                    data-size="${s.key}"
+                    onclick="selectSize('${s.key}')"
+                    class="size-btn px-4 py-2 rounded-xl border-2 text-sm font-semibold transition-all ${
+                        s.key === selectedSize
+                            ? "border-orange-500 bg-orange-50 text-orange-600"
+                            : "border-gray-200 text-gray-600 hover:border-orange-300"
+                    }"
+                >${s.label}</button>
+            `).join("")}
+        </div>
+    `;
+
+    priceEl.insertAdjacentHTML("afterend", html);
+}
+
+function selectSize(size) {
+    selectedSize = size;
+    updatePriceDisplay();
+
+    document.querySelectorAll(".size-btn").forEach(btn => {
+        const isActive = btn.dataset.size === size;
+        btn.classList.toggle("border-orange-500", isActive);
+        btn.classList.toggle("bg-orange-50", isActive);
+        btn.classList.toggle("text-orange-600", isActive);
+        btn.classList.toggle("border-gray-200", !isActive);
+        btn.classList.toggle("text-gray-600", !isActive);
+    });
+}
+window.selectSize = selectSize;
 
 
 
@@ -50,12 +110,14 @@ function addPizzaToCart() {
     if (!currentPizza) return;
 
     const image = currentImages[0]?.image_url || "";
+    const price = currentPriceForSize();
 
     for (let i = 0; i < selectedQty; i++) {
         addToCart({
             id:    currentPizza.id,
             name:  currentPizza.name,
-            price: currentPizza.price,
+            size:  selectedSize,
+            price,
             image,
         });
     }
@@ -103,7 +165,8 @@ async function loadPizzaDetails() {
 
         if (nameEl)  nameEl.textContent  = currentPizza.name;
         if (descEl)  descEl.textContent  = currentPizza.description || "A freshly baked artisan pizza.";
-        if (priceEl) priceEl.textContent = `₦${Number(currentPizza.price).toLocaleString("en-NG")}`;
+        renderSizeSelector();
+        updatePriceDisplay();
 
         const fallback = "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=800&auto=format&fit=crop";
 

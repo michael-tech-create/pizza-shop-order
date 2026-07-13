@@ -6,6 +6,8 @@
     <title>McMichael Pizza</title>
   
     <link rel="stylesheet" href="./css/style.css">
+    <script type="module" src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet">
        <script src="https://cdn.tailwindcss.com"></script>
@@ -371,9 +373,10 @@
                     </p>
 
                     <div class="flex flex-wrap items-center gap-4 sm:gap-8">
-                        <button id="featuredButton" class="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white px-8 py-3.5 sm:py-4 rounded-full font-bold text-base sm:text-lg shadow-lg shadow-orange-600/30 transition-all hover:-translate-y-1 active:scale-95">
+                        <a href="#pizzaContainer"><button id="featuredButton" class="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white px-8 py-3.5 sm:py-4 rounded-full font-bold text-base sm:text-lg shadow-lg shadow-orange-600/30 transition-all hover:-translate-y-1 active:scale-95">
                             Order Now
                         </button>
+                        </a>
                         
                         <div class="flex flex-col">
                             <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Price</span>
@@ -436,6 +439,7 @@
 
         <section class="reveal-on-scroll">
             <div id="pizzaContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+
             </div>
         </section>
 
@@ -795,7 +799,7 @@
         <div class="p-6 flex-1 overflow-hidden flex flex-col">
             <div class="flex justify-between items-center pb-4 border-b border-gray-100 mb-6">
                 <h2 class="text-2xl font-black text-gray-900 flex items-center gap-2">
-                    🛍️ Your Cart
+                  <ion-icon name="cart-outline" class="text-4xl font-bold "></ion-icon>Your Cart
                 </h2>
                 <button onclick="closeCart()" class="p-2 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-full transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -924,8 +928,6 @@
                 spinBtn.disabled = false;
             }, 4000);
         }
-
-        // --- NEW SLIDESHOW LOGIC FOR MOVING HERO SECTION ---
         const slidesData = [
             {
                 image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=2070&auto=format&fit=crop",

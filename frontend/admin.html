@@ -38,7 +38,7 @@
 
         <div class="flex items-center gap-3">
             <div class="bg-orange-100 p-2 rounded-lg">
-                <a href="index.html"><span class="text-xl">🍕</span></a>
+                <a href="index.html"><img src="./public/images/icons8-pizza-32.png"/></span></a>
             </div>
             <div>
                 <h1 class="text-orange-800 text-lg font-bold leading-tight">McMichael Admin</h1>
@@ -268,8 +268,12 @@
                         <input type="text" id="newPizzaName" class="input-field" placeholder="e.g. Suya Chicken">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Price (₦)</label>
-                        <input type="number" id="newPizzaPrice" class="input-field" placeholder="e.g. 4500" min="1">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Prices (₦)</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <input type="number" id="newPizzaPriceSmall" class="input-field" placeholder="Small" min="1">
+                            <input type="number" id="newPizzaPriceMedium" class="input-field" placeholder="Medium" min="1">
+                            <input type="number" id="newPizzaPriceLarge" class="input-field" placeholder="Large" min="1">
+                        </div>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Description</label>
@@ -338,10 +342,20 @@
             <div class="p-5 space-y-5">
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Select Pizza</label>
-                    <select id="imagePizzaSelect" class="input-field"
-                            onchange="currentPizzaId = Number(this.value); loadPizzaImages(currentPizzaId)">
-                        <option value="">— pick a pizza —</option>
-                    </select>
+<div class="relative w-full max-w-xs group">
+  <select 
+    id="imagePizzaSelect" 
+    class="w-full appearance-none rounded-2xl bg-gray-200 border-2 border-transparent px-5 py-3.5 pr-11 text-base text-gray-800 cursor-pointer outline-none transition-all duration-200 hover:bg-gray-300 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15"
+    onchange="currentPizzaId = Number(this.value); loadPizzaImages(currentPizzaId)">
+    <option value="" class="bg-white text-gray-800">pick a pizza</option>
+  </select>
+  <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-500 transition-transform duration-200 group-focus-within:rotate-180">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+    </svg>
+  </div>
+</div>
+
                 </div>
 
                 <div id="dropZone"
@@ -392,8 +406,12 @@
                 <input type="text" id="editPizzaName" class="input-field" placeholder="Pizza name">
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Price (₦)</label>
-                <input type="number" id="editPizzaPrice" class="input-field" min="1">
+                <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Prices (₦)</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <input type="number" id="editPizzaPriceSmall" class="input-field" placeholder="Small" min="1">
+                    <input type="number" id="editPizzaPriceMedium" class="input-field" placeholder="Medium" min="1">
+                    <input type="number" id="editPizzaPriceLarge" class="input-field" placeholder="Large" min="1">
+                </div>
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Description</label>
@@ -612,7 +630,7 @@ function renderOrderRows(orders) {
                 <td class="px-5 py-3.5 text-slate-600">${o.customer_name || "—"}</td>
                 <td class="px-5 py-3.5 text-slate-600">${o.phone || "—"}</td>
                 <td class="px-5 py-3.5 text-slate-600 hidden lg:table-cell">${o.address || "—"}</td>
-                <td class="px-5 py-3.5 text-slate-600">${o.pizza_name || "—"}</td>
+                <td class="px-5 py-3.5 text-slate-600">${o.pizza_name || "—"} <span class="text-xs text-slate-400 uppercase">${o.size ? `(${o.size})` : ""}</span></td>
                 <td class="px-5 py-3.5 text-center text-slate-600">${o.quantity}</td>
                 <td class="px-5 py-3.5 text-right font-bold text-slate-800">${formatNaira(Number(o.total_cost||0))}</td>
                 <td class="px-5 py-3.5 text-center">
@@ -692,11 +710,15 @@ function renderPizzaRows(pizzas) {
         <tr class="hover:bg-amber-50/40 transition-colors">
             <td class="px-4 py-3 text-slate-400 text-xs">#${p.id}</td>
             <td class="px-4 py-3 font-semibold text-slate-800">${p.name}</td>
-            <td class="px-4 py-3 font-bold text-orange-600">${formatNaira(p.price)}</td>
+            <td class="px-4 py-3 font-bold text-orange-600 text-xs">
+                S ${formatNaira(p.price_small)}<br>
+                M ${formatNaira(p.price_medium)}<br>
+                L ${formatNaira(p.price_large)}
+            </td>
             <td class="px-4 py-3 text-slate-500 text-xs max-w-[200px] truncate hidden md:table-cell">${p.description || "—"}</td>
             <td class="px-4 py-3 text-center">
                 <div class="flex items-center justify-center gap-1.5">
-                    <button onclick="openEditModal(${p.id},'${escape(p.name)}',${p.price},'${escape(p.description||"")}')"
+                    <button onclick="openEditModal(${p.id},'${escape(p.name)}',${p.price_small},${p.price_medium},${p.price_large},'${escape(p.description||"")}')"
                         class="text-xs bg-teal-50 hover:bg-teal-100 text-teal-700 font-semibold px-2.5 py-1.5 rounded-lg transition-colors">
                         Edit
                     </button>
@@ -710,53 +732,79 @@ function renderPizzaRows(pizzas) {
 }
 
 async function createPizza() {
-    const name  = document.getElementById("newPizzaName").value.trim();
-    const price = Number(document.getElementById("newPizzaPrice").value);
-    const desc  = document.getElementById("newPizzaDesc").value.trim();
+    const name        = document.getElementById("newPizzaName").value.trim();
+    const priceSmall  = Number(document.getElementById("newPizzaPriceSmall").value);
+    const priceMedium = Number(document.getElementById("newPizzaPriceMedium").value);
+    const priceLarge  = Number(document.getElementById("newPizzaPriceLarge").value);
+    const desc        = document.getElementById("newPizzaDesc").value.trim();
 
-    if (!name)      { showToast("Pizza name is required", "error"); return; }
-    if (price <= 0) { showToast("Price must be greater than ₦0", "error"); return; }
+    if (!name) { showToast("Pizza name is required", "error"); return; }
+    if (priceSmall <= 0 || priceMedium <= 0 || priceLarge <= 0) {
+        showToast("All three prices must be greater than ₦0", "error");
+        return;
+    }
 
     try {
         const res = await AuthGuard.authFetch(`${API_URL}/api/pizzas`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, price, description: desc }),
+            body: JSON.stringify({
+                name,
+                price_small: priceSmall,
+                price_medium: priceMedium,
+                price_large: priceLarge,
+                description: desc,
+            }),
         });
         if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Create failed"); }
         showToast(`"${name}" added to menu ✓`, "success");
-        document.getElementById("newPizzaName").value  = "";
-        document.getElementById("newPizzaPrice").value = "";
-        document.getElementById("newPizzaDesc").value  = "";
+        document.getElementById("newPizzaName").value        = "";
+        document.getElementById("newPizzaPriceSmall").value  = "";
+        document.getElementById("newPizzaPriceMedium").value = "";
+        document.getElementById("newPizzaPriceLarge").value  = "";
+        document.getElementById("newPizzaDesc").value        = "";
         loadPizzas();
-        AppLogger.log(`Pizza created: "${name}" ₦${price.toLocaleString()}`, "success", "PIZZA");
+        AppLogger.log(`Pizza created: "${name}" (S ₦${priceSmall.toLocaleString()} / M ₦${priceMedium.toLocaleString()} / L ₦${priceLarge.toLocaleString()})`, "success", "PIZZA");
     } catch (e) { showToast(e.message, "error"); }
 }
 
 //Edit modal
-function openEditModal(id, name, price, desc) {
-    document.getElementById("editPizzaId").value    = id;
-    document.getElementById("editPizzaName").value  = unescape(name);
-    document.getElementById("editPizzaPrice").value = price;
-    document.getElementById("editPizzaDesc").value  = unescape(desc);
+function openEditModal(id, name, priceSmall, priceMedium, priceLarge, desc) {
+    document.getElementById("editPizzaId").value           = id;
+    document.getElementById("editPizzaName").value         = unescape(name);
+    document.getElementById("editPizzaPriceSmall").value   = priceSmall;
+    document.getElementById("editPizzaPriceMedium").value  = priceMedium;
+    document.getElementById("editPizzaPriceLarge").value   = priceLarge;
+    document.getElementById("editPizzaDesc").value         = unescape(desc);
     document.getElementById("editModal").classList.remove("hidden");
 }
 function closeEditModal() { document.getElementById("editModal").classList.add("hidden"); }
 
 async function submitEditPizza() {
-    const id    = document.getElementById("editPizzaId").value;
-    const name  = document.getElementById("editPizzaName").value.trim();
-    const price = Number(document.getElementById("editPizzaPrice").value);
-    const desc  = document.getElementById("editPizzaDesc").value.trim();
+    const id          = document.getElementById("editPizzaId").value;
+    const name        = document.getElementById("editPizzaName").value.trim();
+    const priceSmall  = Number(document.getElementById("editPizzaPriceSmall").value);
+    const priceMedium = Number(document.getElementById("editPizzaPriceMedium").value);
+    const priceLarge  = Number(document.getElementById("editPizzaPriceLarge").value);
+    const desc        = document.getElementById("editPizzaDesc").value.trim();
 
-    if (!name)      { showToast("Name is required", "error"); return; }
-    if (price <= 0) { showToast("Price must be > ₦0", "error"); return; }
+    if (!name) { showToast("Name is required", "error"); return; }
+    if (priceSmall <= 0 || priceMedium <= 0 || priceLarge <= 0) {
+        showToast("All three prices must be > ₦0", "error");
+        return;
+    }
 
     try {
         const res = await AuthGuard.authFetch(`${API_URL}/api/pizzas/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, price, description: desc }),
+            body: JSON.stringify({
+                name,
+                price_small: priceSmall,
+                price_medium: priceMedium,
+                price_large: priceLarge,
+                description: desc,
+            }),
         });
         if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
         showToast("Pizza updated ✓", "success");
@@ -793,10 +841,12 @@ async function populatePizzaSelect() {
         const res    = await fetch(`${API_URL}/menu`);
         const pizzas = await res.json() || [];
         const sel    = document.getElementById("imagePizzaSelect");
-        sel.innerHTML = `<option value="">— pick a pizza —</option>` +
-            pizzas.map(p => `<option value="${p.id}">${p.name}</option>`).join("");
+        
+        sel.innerHTML = `<option value="" class="bg-white text-gray-500 border-none">— pick a pizza —</option>` +
+            pizzas.map(p => `<option class="bg-white text-gray-900 py-2 border-none" value="${p.id}">${p.name}</option>`).join("");
     } catch (e) { console.warn("populatePizzaSelect:", e); }
 }
+
 
 async function loadPizzaImages(pizzaId) {
     if (!pizzaId) return;

@@ -37,8 +37,8 @@ func CreatePizzaHandler(c *gin.Context) {
 		return
 	}
 
-	if newPizza.Price <= 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "price must be greater than 0"})
+	if newPizza.PriceSmall <= 0 || newPizza.PriceMedium <= 0 || newPizza.PriceLarge <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "small, medium, and large prices must all be greater than 0"})
 		return
 	}
 
@@ -322,4 +322,3 @@ func VerifySessionHandler(c *gin.Context) {
 		"username": username,
 	})
 }
- 

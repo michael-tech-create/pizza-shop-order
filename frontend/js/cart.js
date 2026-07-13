@@ -19,6 +19,7 @@ function setupCartButtons() {
             addToCart({
                 id:    itemID,
                 name:  button.dataset.name || "Delicious Pizza",
+                size:  button.dataset.size || "medium",
                 price: Number(button.dataset.price) || 0,
                 image: button.dataset.image || "",
             });
@@ -44,13 +45,17 @@ function groupCartItems(items) {
         const id = Number(item.id) || Number(item.pizza_id) || 0;
         if (id <= 0) continue; // Skip corrupted entries
 
-        const existing = grouped.get(id);
+        const size = item.size || "medium";
+        const key = `${id}_${size}`; // small/medium/large of the same pizza are distinct line items
+
+        const existing = grouped.get(key);
         if (existing) {
             existing.quantity += (Number(item.quantity) || 1);
         } else {
-            grouped.set(id, { 
+            grouped.set(key, { 
                 ...item, 
                 id: id, 
+                size: size,
                 quantity: Number(item.quantity) || 1 
             });
         }
@@ -81,6 +86,7 @@ function renderCart() {
                     <div>
                         <p class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
                             ${item.name}
+                            <span class="text-xs text-gray-400 uppercase font-semibold">${item.size || "medium"}</span>
                             ${item.quantity > 1 ? `<span class="bg-orange-50 text-orange-600 font-semibold text-xs px-2 py-0.5 rounded-md">x${item.quantity}</span>` : ""}
                         </p>
                         <p class="text-sm font-black text-gray-900 mt-0.5">${formatNaira(itemTotal)}</p>
@@ -89,7 +95,7 @@ function renderCart() {
 
                 <div class="flex items-center gap-2.5 bg-gray-100/80 p-1 rounded-xl border border-gray-200/40">
                     <button
-                        onclick="decreaseQuantity(${item.id})"
+                        onclick="decreaseQuantity(${item.id}, '${item.size}')"
                         class="bg-white hover:bg-orange-50 hover:text-orange-600 text-gray-600 font-bold w-7 h-7 rounded-lg shadow-sm flex items-center justify-center active:scale-90 transition-all text-xs"
                         aria-label="Decrease quantity"
                     >—</button>
@@ -97,7 +103,7 @@ function renderCart() {
                     <span class="text-xs font-bold text-gray-800 px-1 min-w-[12px] text-center">${item.quantity}</span>
 
                     <button
-                        onclick="increaseQuantity(${item.id})"
+                        onclick="increaseQuantity(${item.id}, '${item.size}')"
                         class="bg-white hover:bg-orange-50 hover:text-orange-600 text-gray-600 font-bold w-7 h-7 rounded-lg shadow-sm flex items-center justify-center active:scale-90 transition-all text-sm"
                         aria-label="Increase quantity"
                     >+</button>
@@ -118,20 +124,20 @@ function renderCart() {
     if (cartTotalEl) cartTotalEl.textContent = total.toLocaleString("en-NG");
 }
 
-function increaseQuantity(id) {
+function increaseQuantity(id, size) {
     const targetId = Number(id);
-    const item = cart.find(i => (Number(i.id) || Number(i.pizza_id)) === targetId);
+    const item = cart.find(i => (Number(i.id) || Number(i.pizza_id)) === targetId && (i.size || "medium") === size);
     if (item) {
-        cart.push({ id: targetId, name: item.name, price: item.price, image: item.image });
+        cart.push({ id: targetId, name: item.name, size: item.size, price: item.price, image: item.image });
         saveCart();
     }
     updateCartCount();
     renderCart();
 }
 
-function decreaseQuantity(id) {
+function decreaseQuantity(id, size) {
     const targetId = Number(id);
-    const index = cart.findIndex(i => (Number(i.id) || Number(i.pizza_id)) === targetId);
+    const index = cart.findIndex(i => (Number(i.id) || Number(i.pizza_id)) === targetId && (i.size || "medium") === size);
     if (index !== -1) {
         cart.splice(index, 1);
         saveCart();
