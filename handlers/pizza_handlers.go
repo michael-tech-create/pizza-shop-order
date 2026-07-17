@@ -296,7 +296,7 @@ func LoginHandler(c *gin.Context) {
  
 	admin, err := repositories.VerifyAdminCredentials(req.Username, req.Password)
 	if err != nil {
-		// Always 401 with the same generic message — never reveal whether
+		// Always 401 with the same generic message never reveal whether
 		// the username exists or the password was wrong.
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
 		return

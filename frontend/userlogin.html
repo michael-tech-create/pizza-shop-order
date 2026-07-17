@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>MicMichaelPizza</title>
+    <style>
+        /* CSS Animation for the moving welcome text */
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            width: 100%;
+        }
+        .marquee-text {
+            display: inline-block;
+            animation: marquee 12s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        /* Smooth transitions for form switching */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-no-repeat bg-cover bg-center h-full min-h-screen flex items-center justify-center p-4 font-[Inter]"
+      style="background-image: linear-gradient(rgba(143, 113, 113, 0.4), rgba(0, 0, 0, 0.8)), url('https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=2000'); background-repeat: no-repeat;">
+    
+    <!-- Added bg-black/40 to enhance the glassmorphism blur effect -->
+    <div class="backdrop-blur-md bg-black/ rounded-2xl shadow-2xl shadow-black w-full max-w-md p-8" id="ParentDiv">
+        <div class="w-full">
+        
+            <div class="text-center mb-6 mt-2">
+                <div class="marquee-container rounded-lg bg-white/5 py-2 mb-2">
+                    <h1 class="marquee-text text-2xl font-bold text-white tracking-tight">
+                        Welcome to MicMichaelPizza 
+                    </h1>
+                </div>
+                <p id="formDescription" class="text-gray-300 text-sm mt-1.5 font-medium transition-all">login to your account</p>
+            </div>
+
+      
+            <div class="flex bg-black/50 rounded-xl p-1 mb-8 border border-white/10">
+                <button onclick="switchTab('login')" id="tabLogin" class="w-1/2 py-2 text-sm font-bold text-white bg-white/20 rounded-lg transition-all shadow-sm">Login</button>
+                <button onclick="switchTab('signup')" id="tabSignup" class="w-1/2 py-2 text-sm font-bold text-gray-400 hover:text-white rounded-lg transition-all">Sign Up</button>
+            </div>
+
+            <div id="errorBanner" class="hidden mb-5 flex items-start gap-2.5 bg-red-500/20 border border-red-500/50 text-red-200 text-sm font-medium rounded-xl px-4 py-3 backdrop-blur-sm">
+                <svg class="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <span id="errorText">Invalid credentials</span>
+            </div>
+
+            <form id="loginForm" class="fade-in" autocomplete="on" novalidate>
+                <div class="mb-5">
+                    <label for="login-username" class="block text-xs font-bold text-gray-300 mb-2 uppercase tracking-wider">Username</label>
+                    <input type="text" id="login-username" name="username" 
+                           class="w-full bg-black/30 border border-white/20 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors placeholder:text-gray-500"
+                           placeholder="Enter admin username" required autofocus>
+                </div>
+
+                <div class="mb-6">
+                    <label for="login-password" class="block text-xs font-bold text-gray-300 mb-2 uppercase tracking-wider">Password</label>
+                    <input type="password" id="login-password" name="password" 
+                           class="w-full bg-black/30 border border-white/20 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors placeholder:text-gray-500"
+                           placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-colors active:scale-[0.98]">
+                    Sign In
+                </button>
+            </form>
+
+            <form id="signupForm" class="hidden fade-in" autocomplete="off" novalidate>
+                <div class="mb-4">
+                    <label for="signup-username" class="block text-xs font-bold text-gray-300 mb-2 uppercase tracking-wider">Username</label>
+                    <input type="text" id="signup-username" name="username" 
+                           class="w-full bg-black/30 border border-white/20 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors placeholder:text-gray-500"
+                           placeholder="Choose a username" required>
+                </div>
+
+                <div class="mb-4">
+                    <label for="signup-email" class="block text-xs font-bold text-gray-300 mb-2 uppercase tracking-wider">Email Address</label>
+                    <input type="email" id="signup-email" name="email" 
+                           class="w-full bg-black/30 border border-white/20 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors placeholder:text-gray-500"
+                           placeholder="user@gmail.com" required>
+                </div>
+
+                <div class="mb-6">
+                    <label for="signup-password" class="block text-xs font-bold text-gray-300 mb-2 uppercase tracking-wider">Password</label>
+                    <input type="password" id="signup-password" name="password" 
+                           class="w-full bg-black/30 border border-white/20 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors placeholder:text-gray-500"
+                           placeholder="Create a strong password" required>
+                </div>
+
+                <button type="submit" class="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-colors active:scale-[0.98]">
+                    Create Account
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const tabLogin = document.getElementById('tabLogin');
+            const tabSignup = document.getElementById('tabSignup');
+            const formDescription = document.getElementById('formDescription');
+
+            if (tab === 'login') {
+             
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                
+    
+                tabLogin.classList.add('bg-white/20', 'text-white', 'shadow-sm');
+                tabLogin.classList.remove('text-gray-400');
+                tabSignup.classList.remove('bg-white/20', 'text-white', 'shadow-sm');
+                tabSignup.classList.add('text-gray-400');
+
+                formDescription.innerText = "create your account";
+            } else {
+          
+                signupForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+                
+    
+                tabSignup.classList.add('bg-white/20', 'text-white', 'shadow-sm');
+                tabSignup.classList.remove('text-gray-400');
+                tabLogin.classList.remove('bg-white/20', 'text-white', 'shadow-sm');
+                tabLogin.classList.add('text-gray-400');
+        
+                formDescription.innerText = "Register a new account";
+            }
+        }
+    </script>
+</body>
+</html>
