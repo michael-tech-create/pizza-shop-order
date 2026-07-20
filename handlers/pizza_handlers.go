@@ -122,8 +122,10 @@ var req models.CreateOrderRequest
         return
     }
 
+	customerID := middleware.OptionalCustomerID(c)
+
     // Pass the slice of items to the repository
-    order, err := repositories.CreateOrder(req.CustomerName, req.Phone, req.Address, req.Items)
+    order, err := repositories.CreateOrder(req.CustomerName, req.Phone, req.Address, req.Items, customerID)
     if err != nil {
         // Log the error in the terminal to see specific DB issues
         log.Printf("Repository error: %v", err)

@@ -14,15 +14,20 @@ import (
 
 func CreatePizza(pizza models.Pizza) error {
 	query := `
-	INSERT INTO pizzas (name, price_small, price_medium, price_large, description)
-	VALUES ($1, $2, $3, $4, $5)
+	INSERT INTO pizzas (name, price_small, price_medium, price_large, description, category_id)
+	VALUES ($1, $2, $3, $4, $5, $6)
 	`
-	_, err := database.DB.Exec(query, pizza.Name, pizza.PriceSmall, pizza.PriceMedium, pizza.PriceLarge, pizza.Description)
+	_, err := database.DB.Exec(query, pizza.Name, pizza.PriceSmall, pizza.PriceMedium, pizza.PriceLarge, pizza.Description, pizza.CategoryID)
 	return err
 }
 
 func GetAllPizzas() ([]models.Pizza, error) {
-	query := `SELECT id, name, price_small, price_medium, price_large, description FROM pizzas`
+	query := `
+		SELECT p.id, p.name, p.price_small, p.price_medium, p.price_large, p.description,
+		       p.category_id, COALESCE(c.name, '') AS category_name
+		FROM pizzas p
+		LEFT JOIN categories c ON p.category_id = c.id
+	`
 	rows, err := database.DB.Query(query)
 	if err != nil {
 		return nil, err
@@ -32,7 +37,8 @@ func GetAllPizzas() ([]models.Pizza, error) {
 	var pizzas []models.Pizza
 	for rows.Next() {
 		var pizza models.Pizza
-		err := rows.Scan(&pizza.ID, &pizza.Name, &pizza.PriceSmall, &pizza.PriceMedium, &pizza.PriceLarge, &pizza.Description)
+		err := rows.Scan(&pizza.ID, &pizza.Name, &pizza.PriceSmall, &pizza.PriceMedium, &pizza.PriceLarge, &pizza.Description,
+			&pizza.CategoryID, &pizza.CategoryName)
 		if err != nil {
 			return nil, err
 		}
@@ -47,10 +53,17 @@ func GetAllPizzas() ([]models.Pizza, error) {
 }
 
 func GetPizzaByID(id int) (models.Pizza, error) {
-	query := `SELECT id, name, price_small, price_medium, price_large, description FROM pizzas WHERE id = $1`
+	query := `
+		SELECT p.id, p.name, p.price_small, p.price_medium, p.price_large, p.description,
+		       p.category_id, COALESCE(c.name, '') AS category_name
+		FROM pizzas p
+		LEFT JOIN categories c ON p.category_id = c.id
+		WHERE p.id = $1
+	`
 	var pizza models.Pizza
 
-	err := database.DB.QueryRow(query, id).Scan(&pizza.ID, &pizza.Name, &pizza.PriceSmall, &pizza.PriceMedium, &pizza.PriceLarge, &pizza.Description)
+	err := database.DB.QueryRow(query, id).Scan(&pizza.ID, &pizza.Name, &pizza.PriceSmall, &pizza.PriceMedium, &pizza.PriceLarge, &pizza.Description,
+		&pizza.CategoryID, &pizza.CategoryName)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return models.Pizza{}, fmt.Errorf("pizza with id %d not found", id)
@@ -63,10 +76,10 @@ func GetPizzaByID(id int) (models.Pizza, error) {
 func UpdatePizza(id int, pizza models.Pizza) (models.Pizza, error) {
 	query := `
 	UPDATE pizzas 
-	SET name = $1, price_small = $2, price_medium = $3, price_large = $4, description = $5
-	WHERE id = $6
+	SET name = $1, price_small = $2, price_medium = $3, price_large = $4, description = $5, category_id = $6
+	WHERE id = $7
 	`
-	_, err := database.DB.Exec(query, pizza.Name, pizza.PriceSmall, pizza.PriceMedium, pizza.PriceLarge, pizza.Description, id)
+	_, err := database.DB.Exec(query, pizza.Name, pizza.PriceSmall, pizza.PriceMedium, pizza.PriceLarge, pizza.Description, pizza.CategoryID, id)
 	if err != nil {
 		return models.Pizza{}, err
 	}
@@ -90,9 +103,11 @@ func DeletePizza(id int) (models.Pizza, error) {
 
 func SearchPizza(queryStr string) ([]models.Pizza, error) {
     query := `
-        SELECT id, name, price_small, price_medium, price_large, description 
-        FROM pizzas
-        WHERE LOWER(name) LIKE LOWER($1) OR LOWER(description) LIKE LOWER($1)
+        SELECT p.id, p.name, p.price_small, p.price_medium, p.price_large, p.description,
+               p.category_id, COALESCE(c.name, '') AS category_name
+        FROM pizzas p
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE LOWER(p.name) LIKE LOWER($1) OR LOWER(p.description) LIKE LOWER($1)
     `
     rows, err := database.DB.Query(query, "%"+queryStr+"%")
     if err != nil {
@@ -104,7 +119,8 @@ func SearchPizza(queryStr string) ([]models.Pizza, error) {
 
     for rows.Next() {
         var p models.Pizza
-        err := rows.Scan(&p.ID, &p.Name, &p.PriceSmall, &p.PriceMedium, &p.PriceLarge, &p.Description)
+        err := rows.Scan(&p.ID, &p.Name, &p.PriceSmall, &p.PriceMedium, &p.PriceLarge, &p.Description,
+            &p.CategoryID, &p.CategoryName)
         if err != nil {
             return nil, err
         }
@@ -147,7 +163,14 @@ func SavePizzaImage(pizzaID int, imageURL string) error {
 
 // ORDERS LOGIC INTERFACES
 
-func CreateOrder(customerName string, phone string, address string, items []models.OrderItem) (models.Order, error) {
+// ErrPizzaNotFound means an item in the order references a pizza_id that
+// doesn't exist in this database — e.g. a stale cart from before a menu
+// change, or from a different environment. This is the customer's cart
+// being out of date, not a server malfunction, so handlers should turn
+// this into a 400, not a 500.
+var ErrPizzaNotFound = errors.New("one or more items in your cart no longer exist — please refresh the menu and try again")
+
+func CreateOrder(customerName string, phone string, address string, items []models.OrderItem, customerID *int) (models.Order, error) {
 	tx, err := database.DB.Begin()
 	if err != nil {
 		return models.Order{}, err
@@ -155,9 +178,9 @@ func CreateOrder(customerName string, phone string, address string, items []mode
 	defer tx.Rollback() // Rollback if any step fails
 
 	var orderID int
-	err = tx.QueryRow(`INSERT INTO orders (customer_name, phone, address, total_cost, status) 
-                       VALUES ($1, $2, $3, 0, 'pending') RETURNING id`,
-		customerName, phone, address).Scan(&orderID)
+	err = tx.QueryRow(`INSERT INTO orders (customer_name, phone, address, total_cost, status, customer_id) 
+                       VALUES ($1, $2, $3, 0, 'pending', $4) RETURNING id`,
+		customerName, phone, address, customerID).Scan(&orderID)
 	if err != nil {
 		return models.Order{}, err
 	}
@@ -168,6 +191,9 @@ func CreateOrder(customerName string, phone string, address string, items []mode
 		err := tx.QueryRow("SELECT price_small, price_medium, price_large FROM pizzas WHERE id = $1", item.PizzaID).
 			Scan(&priceSmall, &priceMedium, &priceLarge)
 		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return models.Order{}, ErrPizzaNotFound
+			}
 			return models.Order{}, err
 		}
 
@@ -205,7 +231,7 @@ func CreateOrder(customerName string, phone string, address string, items []mode
 
 func GetAllOrdersWithPizzaName() ([]models.OrderResponse, error) {
 	query := `
-		SELECT o.id, o.customer_name, o.phone, o.address, p.name, oi.size, oi.quantity, o.total_cost, o.status
+		SELECT o.id, o.customer_name, o.phone, o.address, p.name, oi.size, oi.quantity, o.total_cost, o.status, o.customer_id
 		FROM orders o
 		JOIN order_items oi ON o.id = oi.order_id
 		JOIN pizzas p ON oi.pizza_id = p.id
@@ -220,7 +246,9 @@ func GetAllOrdersWithPizzaName() ([]models.OrderResponse, error) {
 	var orders []models.OrderResponse
 	for rows.Next() {
 		var o models.OrderResponse
-		err := rows.Scan(&o.OrderID, &o.CustomerName, &o.Phone, &o.Address, &o.PizzaName, &o.Size, &o.Quantity, &o.TotalCost, &o.Status)
+		// o.CustomerID is *int — database/sql supports scanning NULL
+		// directly into a nil **int destination, no sql.NullInt64 needed.
+		err := rows.Scan(&o.OrderID, &o.CustomerName, &o.Phone, &o.Address, &o.PizzaName, &o.Size, &o.Quantity, &o.TotalCost, &o.Status, &o.CustomerID)
 		if err != nil {
 			return nil, err
 		}

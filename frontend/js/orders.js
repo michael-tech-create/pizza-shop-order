@@ -122,9 +122,19 @@ async function startCheckout() {
             items: formattedItems
         };
 
+        // If the customer is logged in, attach their session so this
+        // order links to their account and shows up in "My Orders".
+        // Guest checkout works identically either way — this header is
+        // simply omitted if customer-auth.js isn't on the page or the
+        // customer isn't logged in.
+        const orderHeaders = { "Content-Type": "application/json" };
+        if (typeof isCustomerLoggedIn === "function" && isCustomerLoggedIn()) {
+            orderHeaders["Authorization"] = `Bearer ${getCustomerToken()}`;
+        }
+
         const res = await fetch(`${API_BASE}/api/orders`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: orderHeaders,
             body: JSON.stringify(payload)
         });
 
@@ -134,41 +144,39 @@ async function startCheckout() {
         }
 
         // { id, total_cost, ... } — the newly created order
-        // const order = await res.json();
+        const order = await res.json();
 
-        // if (btn) btn.textContent = "Redirecting to payment…";
+        if (btn) btn.textContent = "Redirecting to payment…";
 
-        // // Paystack requires an email to start a transaction. Checkout only
-        // // collects a phone number, so a placeholder is generated here —
-        // // Paystack only checks the format, not deliverability. If you'd
-        // // rather have real receipts reach customers, add a "co-email"
-        // // input to the checkout modal and use its value instead.
-        // const digitsOnly = phone.replace(/\D/g, "");
-        // const placeholderEmail = `${digitsOnly}@guest.mcmichaelpizza.com`;
+        // Paystack requires an email to start a transaction. Checkout only
+        // collects a phone number, so a placeholder is generated here —
+        // Paystack only checks the format, not deliverability. If you'd
+        // rather have real receipts reach customers, add a "co-email"
+        // input to the checkout modal and use its value instead.
+        const digitsOnly = phone.replace(/\D/g, "");
+        const placeholderEmail = `${digitsOnly}@guest.mcmichaelpizza.com`;
 
-        // const payRes = await fetch(`${API_BASE}/api/orders`, {
-        //     method: "POST",
-        //     headers: { "Content-Type": "application/json" },
-        //     body: JSON.stringify({ order_id: order.id, email: placeholderEmail })
-        // });
+        const payRes = await fetch(`${API_BASE}/api/payments/initialize`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ order_id: order.id, email: placeholderEmail })
+        });
 
-        // if (!payRes.ok) {
-        //     const payErr = await payRes.json();
-        //     // The order was created and is sitting as unpaid in the admin
-        //     // dashboard — the customer can be followed up with manually,
-        //     // or this branch is a good place to add a "retry payment" flow.
-        //     throw new Error(payErr.error || "Order placed, but payment could not be started");
-        // }
+        if (!payRes.ok) {
+            const payErr = await payRes.json();
+            // The order was created and is sitting as unpaid in the admin
+            // dashboard — the customer can be followed up with manually,
+            // or this branch is a good place to add a "retry payment" flow.
+            throw new Error(payErr.error || "Order placed, but payment could not be started");
+        }
 
-        // const { authorization_url } = await payRes.json();
+        const { authorization_url } = await payRes.json();
 
         clearCart();
         resetCheckoutFlow();
 
-        showToast(`Order is successful`);
-
-        // // Send the customer to Paystack's hosted checkout page
-        // window.location.href = authorization_url;
+        // Send the customer to Paystack's hosted checkout page
+        window.location.href = authorization_url;
 
     } catch (err) {
         console.error("Checkout error:", err);
@@ -191,19 +199,9 @@ function resetCheckoutFlow() {
 
 async function loadOrders() {
     try {
-        const token = localStorage.getItem("token");
-
-        const res = await fetch(`${API_BASE}/api/orders`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        if (!res.ok) {
-            throw new Error(`HTTP ${res.status}`);
-        }
-
-        return await res.json();
+        const res = await fetch(`${API_BASE}/api/orders`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json() || [];
     } catch (err) {
         console.error("loadOrders:", err);
         return [];
@@ -265,9 +263,7 @@ async function updateOrderStatus(orderId, status, selectEl) {
     try {
         const res = await fetch(`${API_BASE}/api/orders/${orderId}/status`, {
             method:  "PATCH",
-            headers: { "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`
-            },
+            headers: { "Content-Type": "application/json" },
             body:    JSON.stringify({ status }),
         });
         if (!res.ok) {

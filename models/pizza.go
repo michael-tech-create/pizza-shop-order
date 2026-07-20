@@ -1,15 +1,17 @@
 package models
+
 import "time"
 
 type Pizza struct {
-	ID          int          `json:"id"`
-	Name        string       `json:"name"`
-	Price       int          `json:"price"`
-	Description string       `json:"description"`
-	PriceSmall  int          `json:"price_small"`
-	PriceMedium int          `json:"price_medium"`
-	PriceLarge  int          `json:"price_large"`		
-	Images      []PizzaImage `json:"images,omitempty"`
+	ID           int          `json:"id"`
+	Name         string       `json:"name"`
+	Description  string       `json:"description"`
+	PriceSmall   int          `json:"price_small"`
+	PriceMedium  int          `json:"price_medium"`
+	PriceLarge   int          `json:"price_large"`
+	CategoryID   *int         `json:"category_id"`
+	CategoryName string       `json:"category_name,omitempty"`
+	Images       []PizzaImage `json:"images,omitempty"`
 }
 
 type PizzaImage struct {
@@ -32,15 +34,14 @@ type BestSellingPizza struct {
 }
 
 type Order struct {
-ID           int         `json:"id"`
+	ID           int         `json:"id"`
 	CustomerName string      `json:"customer_name"`
 	Phone        string      `json:"phone"`
 	Address      string      `json:"address"`
 	TotalCost    int         `json:"total_cost"`
 	Status       string      `json:"status"`
 	Items        []OrderItem `json:"items,omitempty"`
-	
-	
+	CustomerID   *int 		  `json:"customer_id"`
 }
 
 type PizzaDetailResponse struct {
@@ -61,20 +62,21 @@ type OrderResponse struct {
 	Quantity     int    `json:"quantity"`
 	TotalCost    int    `json:"total_cost"`
 	Status       string `json:"status"`
-	Size string `json:"orderResponse"`
+	Size         string `json:"size"`
+	CustomerID   *int   `json:"customer_id"`
 }
 
 type OrderItem struct {
-ID      int `json:"id,omitempty"` // DB primary key
-	OrderID  int `json:"order_id,omitempty"`
-	PizzaID  int `json:"pizza_id" binding:"required,gt=0"`
-	Quantity int `json:"quantity" binding:"required,gt=0"`
-	SubTotal int `json:"sub_total,omitempty"`
-	Size string `json:"pizza_size"`
+	ID       int    `json:"id,omitempty"` // DB primary key
+	OrderID  int    `json:"order_id,omitempty"`
+	PizzaID  int    `json:"pizza_id" binding:"required,gt=0"`
+	Quantity int    `json:"quantity" binding:"required,gt=0"`
+	SubTotal int    `json:"sub_total,omitempty"`
+	Size     string `json:"size" binding:"required,oneof=small medium large"`
 }
 
 type CreateOrderRequest struct {
-CustomerName string      `json:"customer_name" binding:"required"`
+	CustomerName string      `json:"customer_name" binding:"required"`
 	Phone        string      `json:"phone" binding:"required"`
 	Address      string      `json:"address" binding:"required"`
 	Items        []OrderItem `json:"items" binding:"required,min=1,dive"`
@@ -86,20 +88,20 @@ type Admin struct {
 	PasswordHash string    `json:"-"`
 	CreatedAt    time.Time `json:"created_at"`
 }
- 
+
 // LoginRequest is the payload sent from login.html.
 type LoginRequest struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
- 
+
 // LoginResponse is returned on successful authentication.
 type LoginResponse struct {
 	Token     string `json:"token"`
 	Username  string `json:"username"`
-	ExpiresAt int64  `json:"expires_at"` // unix seconds, lets the frontend show "session expires in..."
+	ExpiresAt int64  `json:"expires_at"`
 }
- 
+
 // AuthClaims is encoded into the JWT payload.
 type AuthClaims struct {
 	AdminID  int    `json:"admin_id"`
@@ -107,21 +109,24 @@ type AuthClaims struct {
 	Exp      int64  `json:"exp"`
 	Iat      int64  `json:"iat"`
 }
- 
-
+//To start paystack transaction for that order's total
 var Pizzas = []Pizza{
 	{
 		ID:          1,
 		Name:        "Pepperoni",
-		Price:       12,
+		PriceSmall:  3600,
+		PriceMedium: 4500,
+		PriceLarge:  5850,
 		Description: "Spicy pepperoni with extra cheese",
 	},
 	{
 		ID:          2,
 		Name:        "BBQ Chicken",
-		Price:       12,
+		PriceSmall:  3600,
+		PriceMedium: 4500,
+		PriceLarge:  5850,
 		Description: "Original smoky BBQ flavor",
 	},
 }
-
+ 
 var NextPizzaID = 3

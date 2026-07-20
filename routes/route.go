@@ -9,17 +9,40 @@ import (
 
 func SetupRoutes(router *gin.Engine) {
 
-
 	router.GET("/menu", handlers.GetMenuHandler)
 
 	router.GET("/api/pizzas/:id", handlers.GetPizzaByIdHandler)
 	router.GET("/api/pizzas/:id/images", handlers.GetPizzaImagesHandler)
 
 	router.POST("/api/orders", handlers.GetPizzaOrder)
-	router.GET("/api/admin/search", handlers.SearchPizzaHandler)
 
 	router.POST("/api/auth/login", handlers.LoginHandler)
 
+	// Categories — public read so the menu filter can populate itself
+	// router.GET("/api/categories", handlers.GetCategoriesHandler)
+
+	// Customer accounts — public signup/login. Guest checkout at
+	// /api/orders doesn't require any of this; these just enable the
+	// optional "create an account" path for order history.
+	router.POST("/api/customers/signup", handlers.CustomerSignupHandler)
+	router.POST("/api/customers/login", handlers.CustomerLoginHandler)
+
+	customer := router.Group("/")
+	customer.Use(middleware.RequireCustomerAuth())
+	{
+		customer.GET("/api/customers/orders", handlers.GetMyOrdersHandler)
+	}
+
+	// Payments — public routes. /initialize and /verify are called by the
+	// customer-facing checkout flow (no admin session exists yet at that
+	// point), and /webhook is called by Paystack's servers directly, which
+	// can't attach a Bearer token. Security instead comes from: the amount
+	// always being read from our own DB (never client input), the
+	// reference being a server-generated lookup key, and the webhook
+	// requiring a valid X-Paystack-Signature.
+	router.POST("/api/payments/initialize", handlers.InitializePaymentHandler)
+	router.GET("/api/payments/verify/:reference", handlers.VerifyPaymentHandler)
+	router.POST("/api/payments/webhook", handlers.PaystackWebhookHandler)
 
 	admin := router.Group("/")
 	admin.Use(middleware.RequireAuth())
@@ -43,5 +66,10 @@ func SetupRoutes(router *gin.Engine) {
 		// Dashboard / stats / search
 		admin.GET("/api/admin/stats", handlers.GetDashboardStatsHandler)
 		admin.GET("/api/admin/best-seller", handlers.GetBestSellerHandler)
+		admin.GET("/api/admin/search", handlers.SearchPizzaHandler)
+
+		// admin.POST("/api/categories", handlers.CreateCategoryHandler)
+		// admin.PUT("/api/categories/:id", handlers.UpdateCategoryHandler)
+		// admin.DELETE("/api/categories/:id", handlers.DeleteCategoryHandler)
 	}
 }

@@ -29,17 +29,19 @@
             <a href="index.html" class="flex items-center gap-2 text-gray-900 font-black text-xl hover:text-orange-600 transition-colors">
                 <span>🍕</span> Mc's Pizza
             </a>
-            <button
-                id="cartBtn"
-                onclick="document.getElementById('cartSummaryPanel').scrollIntoView({behavior:'smooth'})"
-                class="bg-gray-900 hover:bg-orange-600 text-white font-semibold px-4 py-2 rounded-full flex items-center gap-2 transition-all text-sm"
-            >
-                🛒 Cart
-                <span id="cartCount" class="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
-            </button>
+            <div class="flex items-center gap-4">
+                <div id="customerNavSlot" class="text-sm"></div>
+                <button
+                    id="cartBtn"
+                    onclick="document.getElementById('cartSummaryPanel').scrollIntoView({behavior:'smooth'})"
+                    class="bg-gray-900 hover:bg-orange-600 text-white font-semibold px-4 py-2 rounded-full flex items-center gap-2 transition-all text-sm"
+                >
+                    🛒 Cart
+                    <span id="cartCount" class="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                </button>
+            </div>
         </div>
     </nav>
-
     <div class="max-w-5xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-5 gap-8">
 
         <div class="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -111,7 +113,7 @@
         <div id="cartSummaryPanel" class="lg:col-span-2">
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-24">
                 <h3 class="font-black text-gray-900 mb-4 flex items-center gap-2">
-                   <ion-icon name="cart-outline" class="text-4xl font-bold "></ion-icon> Your Cart
+                    🛍️ Your Cart
                 </h3>
                 <div id="cartItems" class="space-y-1 max-h-72 overflow-y-auto pr-1"></div>
                 <div class="border-t border-gray-100 mt-4 pt-4 flex justify-between items-center">
@@ -127,6 +129,7 @@
     </div>
 
 
+    <script src="./js/customer-auth.js"></script>
     <script src="./js/cart.js"></script>
     <script src="./js/orders.js"></script>
     <script>
