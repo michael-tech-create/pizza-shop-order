@@ -84,10 +84,12 @@ func VerifyCustomerCredentials(phone, password string) (models.Customer, error) 
 // another's orders.
 func GetOrdersByCustomerID(customerID int) ([]models.CustomerOrderHistoryItem, error) {
 	query := `
-		SELECT o.id, p.name, oi.size, oi.quantity, o.total_cost, o.status, o.payment_status
+		SELECT o.id, p.name, oi.size, oi.quantity, o.total_cost, o.status, o.payment_status,
+		       (r.id IS NOT NULL) AS reviewed
 		FROM orders o
 		JOIN order_items oi ON o.id = oi.order_id
 		JOIN pizzas p ON oi.pizza_id = p.id
+		LEFT JOIN reviews r ON r.order_id = o.id
 		WHERE o.customer_id = $1
 		ORDER BY o.id DESC
 	`
@@ -100,7 +102,7 @@ func GetOrdersByCustomerID(customerID int) ([]models.CustomerOrderHistoryItem, e
 	history := []models.CustomerOrderHistoryItem{}
 	for rows.Next() {
 		var h models.CustomerOrderHistoryItem
-		if err := rows.Scan(&h.OrderID, &h.PizzaName, &h.Size, &h.Quantity, &h.TotalCost, &h.Status, &h.PaymentStatus); err != nil {
+		if err := rows.Scan(&h.OrderID, &h.PizzaName, &h.Size, &h.Quantity, &h.TotalCost, &h.Status, &h.PaymentStatus, &h.Reviewed); err != nil {
 			return nil, err
 		}
 		history = append(history, h)

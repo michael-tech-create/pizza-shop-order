@@ -68,7 +68,7 @@ func InitializePaystackTransaction(orderID int, email string) (authURL string, r
 		"email":        email,
 		"amount":       amountKobo,
 		"reference":    fmt.Sprintf("order_%d_%d", orderID, totalCost),
-		"callback_url": os.Getenv("PAYSTACK_CALLBACK_URL"), // e.g. https://yoursite.com/payment-callback.html
+		"callback_url": os.Getenv("PAYSTACK_CALLBACK_URL"),
 		"metadata": map[string]interface{}{
 			"order_id": orderID,
 		},

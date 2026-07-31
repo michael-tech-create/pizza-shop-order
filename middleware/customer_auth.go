@@ -81,9 +81,10 @@ func VerifyCustomerToken(token string) (*models.CustomerAuthClaims, error) {
 func RequireCustomerAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		header := c.GetHeader("Authorization")
+		// log.Printf("RequireCostumerAuth: received header = %q", header)
 		const prefix = "Bearer "
 		if header == "" || !strings.HasPrefix(header, prefix) {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "please log in to view this"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "MAKER123 please log in to view this"})
 			return
 		}
 		token := strings.TrimPrefix(header, prefix)

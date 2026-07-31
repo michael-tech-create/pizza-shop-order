@@ -15,7 +15,7 @@
     <nav class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
             <a href="index.html" class="flex items-center gap-2 text-gray-900 font-black text-xl hover:text-orange-600 transition-colors">
-                🍕 Mc's Pizza
+                <span class="text-orange-500 animate-logo-wiggle"><img src="./public/images/icons8-pizza-32.png"/></span> Mc's Pizza
             </a>
             <div id="customerNavSlot"></div>
         </div>
@@ -49,7 +49,7 @@
             const container = document.getElementById("ordersList");
 
             if (!isCustomerLoggedIn()) {
-                window.location.href = "customer-auth.html";
+                window.location.href = "userlogin.html";
                 return;
             }
 
@@ -61,7 +61,7 @@
                 if (res.status === 401) {
                     // Token expired/invalid — send back to login
                     clearCustomerSession();
-                    window.location.href = "customer-auth.html";
+                    window.location.href = "userlogin.html";
                     return;
                 }
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);

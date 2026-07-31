@@ -52,4 +52,5 @@ type CustomerOrderHistoryItem struct {
 	TotalCost     int    `json:"total_cost"`
 	Status        string `json:"status"`
 	PaymentStatus string `json:"payment_status"`
+	Reviewed      bool   `json:"reviewed"`
 }

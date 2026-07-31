@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"pizza-app/middleware"
 	"strconv"
 	"time"
-	"pizza-app/middleware"
 
 	"pizza-app/models"
 	"pizza-app/repositories"
@@ -114,26 +114,33 @@ func DeletePizzaHandler(c *gin.Context) {
 }
 
 func GetPizzaOrder(c *gin.Context) {
-var req models.CreateOrderRequest
+	var req models.CreateOrderRequest
 
-    // Ensure the payload matches the struct in models/pizza.go
-    if err := c.ShouldBindJSON(&req); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid order details"})
-        return
-    }
+	// Ensure the payload matches the struct in models/pizza.go
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid order details"})
+		return
+	}
 
+	// If the customer happens to be logged in (valid Bearer token present),
+	// this links the order to their account for order history — but it's
+	// never required, so guest checkout keeps working exactly as before.
 	customerID := middleware.OptionalCustomerID(c)
 
-    // Pass the slice of items to the repository
-    order, err := repositories.CreateOrder(req.CustomerName, req.Phone, req.Address, req.Items, customerID)
-    if err != nil {
-        // Log the error in the terminal to see specific DB issues
-        log.Printf("Repository error: %v", err)
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not save order"})
-        return
-    }
+	// Pass the slice of items to the repository
+	order, err := repositories.CreateOrder(req.CustomerName, req.Phone, req.Address, req.Items, customerID)
+	if err != nil {
+		if err == repositories.ErrPizzaNotFound {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		// Log the error in the terminal to see specific DB issues
+		log.Printf("Repository error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not save order"})
+		return
+	}
 
-    c.JSON(http.StatusCreated, order)
+	c.JSON(http.StatusCreated, order)
 }
 
 func GetOrdersHandler(c *gin.Context) {
@@ -199,24 +206,23 @@ func GetBestSellerHandler(c *gin.Context) {
 }
 
 func SearchPizzaHandler(c *gin.Context) {
-    query := c.Query("q")
-    log.Println("Search query:", query)
+	query := c.Query("q")
+	log.Println("Search query:", query)
 
-    var pizzas []models.Pizza
-    var err error
+	var pizzas []models.Pizza
+	var err error
 
+	if query == "" {
+		pizzas, err = repositories.GetAllPizzas() // Create a simple SELECT * function
+	} else {
+		pizzas, err = repositories.SearchPizza(query)
+	}
 
-    if query == "" {
-        pizzas, err = repositories.GetAllPizzas() // Create a simple SELECT * function
-    } else {
-        pizzas, err = repositories.SearchPizza(query)
-    }
-
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
-    c.JSON(http.StatusOK, pizzas)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, pizzas)
 }
 
 func UploadPizzaImageHandler(c *gin.Context) {
@@ -290,12 +296,12 @@ func DeletePizzaImageHandler(c *gin.Context) {
 // POST /api/auth/login
 func LoginHandler(c *gin.Context) {
 	var req models.LoginRequest
- 
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "username and password are required"})
 		return
 	}
- 
+
 	admin, err := repositories.VerifyAdminCredentials(req.Username, req.Password)
 	if err != nil {
 		// Always 401 with the same generic message never reveal whether
@@ -303,13 +309,13 @@ func LoginHandler(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
 		return
 	}
- 
+
 	token, expiresAt, err := middleware.GenerateToken(admin.ID, admin.Username)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create session"})
 		return
 	}
- 
+
 	c.JSON(http.StatusOK, models.LoginResponse{
 		Token:     token,
 		Username:  admin.Username,

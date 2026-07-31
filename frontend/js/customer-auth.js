@@ -86,7 +86,7 @@ function renderCustomerNavSlot() {
         `;
     } else {
         slot.innerHTML = `
-            <a href="customer-auth.html" class="text-sm font-semibold text-gray-700 hover:text-orange-600">
+            <a href="userlogin.html" class="text-sm font-semibold text-gray-700 hover:text-orange-600">
                 Log in
             </a>
         `;
