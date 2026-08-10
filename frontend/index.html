@@ -4,7 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>McMichael Pizza</title>
-  
+
+    <!-- Require a logged-in customer to view this page at all. Must load
+         before anything else so an unauthenticated visitor is redirected
+         immediately, without a flash of the menu/content first. -->
+    <script>window.REQUIRE_CUSTOMER_LOGIN = true;</script>
+    <script src="./js/customer-auth.js"></script>
+
     <link rel="stylesheet" href="./css/style.css">
     <script type="module" src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.js"></script>
@@ -318,6 +324,31 @@
         .verified-badge {
             animation: badgeGlow 2.4s ease-in-out infinite;
         }
+
+            /* CSS Clip Path for 5-Point Star Shape */
+   /* .star-shape {
+        clip-path: polygon(
+            50% 0%, 
+            61% 35%, 
+            98% 35%, 
+            68% 57%, 
+            79% 91%, 
+            50% 70%, 
+            21% 91%, 
+            32% 57%, 
+            2% 35%, 
+            39% 35%
+        );
+    }
+        
+
+    /* Class added via JS on click */
+    .star-shape {
+        border-radius: 6px;
+    }
+    .rotate-active {
+        transform: rotate(360deg) scale(1.05);
+    }
  
     </style>
 </head>
@@ -334,13 +365,16 @@
             <h1 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-2">
                 <span class="text-orange-500 animate-logo-wiggle"><img src="./public/images/icons8-pizza-32.png"/></span> Mc's Pizza
             </h1>
-            <button
-                id="cartBtn"
-                class="bg-gray-900 hover:bg-orange-600 text-white font-semibold px-5 py-2.5 rounded-full shadow-lg shadow-gray-900/20 flex items-center gap-2 transition-all active:scale-95"
-            >
-                <span><img src="./public/images/cart.png" class="w-10 h-10"/></span> Cart 
-                <span id="cartCount" class="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
-            </button>
+            <div class="flex items-center gap-4">
+                <div id="customerNavSlot" class="text-sm"></div>
+                <button
+                    id="cartBtn"
+                    class="bg-gray-900 hover:bg-orange-600 text-white font-semibold px-5 py-2.5 rounded-full shadow-lg shadow-gray-900/20 flex items-center gap-2 transition-all active:scale-95"
+                >
+                    <span><img src="./public/images/cart.png" class="w-10 h-10"/></span> Cart 
+                    <span id="cartCount" class="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                </button>
+            </div>
         </div>
     </nav>
 
@@ -415,7 +449,130 @@
         </div>
     </div>
 
+    <style>
+        @keyframes pizzaSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes steamRise {
+            0%   { transform: translateY(0) scale(1); opacity: 0; }
+            25%  { opacity: .55; }
+            100% { transform: translateY(-70px) scale(1.25); opacity: 0; }
+        }
+        @keyframes cheeseGlisten { 0%, 100% { opacity: .18; } 50% { opacity: .5; } }
+        @keyframes ovenPulse { 0%, 100% { opacity: .3; } 50% { opacity: .5; } }
 
+        .pizza-turntable { transform-origin: 200px 200px; animation: pizzaSpin 22s linear infinite; }
+        .steam-wisp { animation: steamRise 4.5s ease-in-out infinite; }
+        .steam-wisp:nth-of-type(2) { animation-delay: 1.3s; }
+        .steam-wisp:nth-of-type(3) { animation-delay: 2.6s; }
+        .cheese-blob { animation: cheeseGlisten 3.2s ease-in-out infinite; }
+        .cheese-blob:nth-of-type(2) { animation-delay: 1s; }
+        .cheese-blob:nth-of-type(3) { animation-delay: 2s; }
+        .oven-glow { animation: ovenPulse 5s ease-in-out infinite; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .pizza-turntable, .steam-wisp, .cheese-blob, .oven-glow { animation: none; }
+        }
+    </style>
+
+    <section class="reveal-on-scroll max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+
+            <div>
+                <span class="inline-flex items-center gap-2 bg-orange-50 text-orange-600 px-4 py-2 rounded-full text-xs sm:text-sm font-bold mb-5 tracking-wider uppercase">
+                    Fresh to Order
+                </span>
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 leading-tight mb-5">
+                    Every pizza starts<br class="hidden sm:block"> from scratch
+                </h2>
+                <p class="text-gray-500 text-base sm:text-lg leading-relaxed mb-8 max-w-md">
+                    No freezers, no shortcuts. The moment your order comes in, your dough is hand-stretched,
+                    sauced, and loaded with real mozzarella — then straight into a hot oven and out to your door.
+                </p>
+
+                <ul class="space-y-4 mb-8">
+                    <li class="flex items-center gap-3 text-gray-700 font-medium">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs font-bold">✓</span>
+                        Dough made same-day, never frozen
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-700 font-medium">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs font-bold">✓</span>
+                        Small, Medium, or Large — every pizza, every time
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-700 font-medium">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs font-bold">✓</span>
+                        Hot from the oven, straight to your door
+                    </li>
+                </ul>
+
+                <a href="#pizzaContainer">
+                    <button class="bg-gray-900 hover:bg-orange-600 text-white px-8 py-3.5 rounded-full font-bold text-base shadow-lg shadow-gray-900/20 transition-all hover:-translate-y-1 active:scale-95">
+                        See the Menu
+                    </button>
+                </a>
+            </div>
+
+            <div class="relative">
+                <svg viewBox="0 0 400 400" class="w-full max-w-[420px] mx-auto" aria-hidden="true">
+                    <defs>
+                        <radialGradient id="ovenGlow" cx="50%" cy="55%" r="60%">
+                            <stop offset="0%" stop-color="#fb923c" stop-opacity="0.4"/>
+                            <stop offset="100%" stop-color="#fb923c" stop-opacity="0"/>
+                        </radialGradient>
+                        <radialGradient id="crustGrad" cx="50%" cy="45%" r="60%">
+                            <stop offset="0%" stop-color="#e8b168"/>
+                            <stop offset="100%" stop-color="#c98a3f"/>
+                        </radialGradient>
+                        <radialGradient id="cheeseGrad" cx="45%" cy="40%" r="65%">
+                            <stop offset="0%" stop-color="#fde68a"/>
+                            <stop offset="100%" stop-color="#fbbf24"/>
+                        </radialGradient>
+                    </defs>
+
+                    <circle class="oven-glow" cx="200" cy="215" r="190" fill="url(#ovenGlow)"/>
+
+                    <g fill="none" stroke="#fff7ed" stroke-width="7" stroke-linecap="round" opacity="0.9">
+                        <path class="steam-wisp" d="M150 95 C 138 74, 165 58, 154 34"/>
+                        <path class="steam-wisp" d="M200 85 C 188 62, 216 48, 204 22"/>
+                        <path class="steam-wisp" d="M252 95 C 240 74, 267 58, 256 34"/>
+                    </g>
+
+                    <g class="pizza-turntable">
+                        <circle cx="200" cy="200" r="185" fill="url(#crustGrad)"/>
+                        <circle cx="200" cy="200" r="185" fill="none" stroke="#a8672c" stroke-width="4" opacity="0.4"/>
+                        <circle cx="200" cy="200" r="158" fill="#c0392b"/>
+                        <circle cx="200" cy="200" r="148" fill="url(#cheeseGrad)" opacity="0.95"/>
+
+                        <ellipse cx="150" cy="160" rx="26" ry="16" fill="#fef3c7" opacity="0.5"/>
+                        <ellipse cx="240" cy="220" rx="30" ry="18" fill="#fef3c7" opacity="0.4"/>
+                        <ellipse cx="190" cy="260" rx="22" ry="14" fill="#fef3c7" opacity="0.45"/>
+
+                        <g fill="#8b1e1e">
+                            <circle cx="150" cy="140" r="15"/>
+                            <circle cx="240" cy="150" r="15"/>
+                            <circle cx="270" cy="220" r="15"/>
+                            <circle cx="220" cy="270" r="15"/>
+                            <circle cx="150" cy="250" r="15"/>
+                            <circle cx="120" cy="200" r="15"/>
+                            <circle cx="200" cy="200" r="15"/>
+                        </g>
+                        <g fill="#b23b3b" opacity="0.7">
+                            <circle cx="150" cy="140" r="7"/>
+                            <circle cx="240" cy="150" r="7"/>
+                            <circle cx="270" cy="220" r="7"/>
+                            <circle cx="220" cy="270" r="7"/>
+                            <circle cx="150" cy="250" r="7"/>
+                            <circle cx="120" cy="200" r="7"/>
+                            <circle cx="200" cy="200" r="7"/>
+                        </g>
+
+                        <ellipse class="cheese-blob" cx="175" cy="175" rx="10" ry="6" fill="#fff" opacity="0.3"/>
+                        <ellipse class="cheese-blob" cx="230" cy="235" rx="12" ry="7" fill="#fff" opacity="0.3"/>
+                        <ellipse class="cheese-blob" cx="200" cy="150" rx="8" ry="5" fill="#fff" opacity="0.3"/>
+                    </g>
+                </svg>
+            </div>
+
+        </div>
+    </section>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         
@@ -436,6 +593,8 @@
        
             <div id="menu" class="absolute left-0 right-0 top-full mt-3 bg-white rounded-2xl shadow-2xl border border-gray-100 divide-y divide-gray-50 overflow-hidden z-30 [&:empty]:hidden"></div>
         </div>
+
+        <div id="categoryFilters" class="reveal-on-scroll flex flex-wrap justify-center gap-2 mb-8"></div>
 
         <section class="reveal-on-scroll">
             <div id="pizzaContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
@@ -499,174 +658,246 @@
         </div>
     </section>
 
+    <section class="reveal-on-scroll max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+
+        <!-- Text Content -->
+        <div>
+            <span class="inline-flex items-center gap-2 bg-orange-50 text-orange-600 px-4 py-2 rounded-full text-xs sm:text-sm font-bold mb-5 tracking-wider uppercase">
+               Enjoy with Family and Friends
+            </span>
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 leading-tight mb-5">
+                A good pizza is nice, when share by family<br class="hidden sm:block"> Come and Order
+            </h2>
+            <p class="text-gray-500 text-base sm:text-lg leading-relaxed mb-8 max-w-md">
+               taste, good for outing.
+            </p>
+
+            <ul class="space-y-4 mb-8">
+                <li class="flex items-center gap-3 text-gray-700 font-medium">
+                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs font-bold">✓</span>
+                    Dough made same-day, never frozen
+                </li>
+                <li class="flex items-center gap-3 text-gray-700 font-medium">
+                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs font-bold">✓</span>
+                    Small, Medium, or Large — every pizza, every time
+                </li>
+                <li class="flex items-center gap-3 text-gray-700 font-medium">
+                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs font-bold">✓</span>
+                    Hot from the oven, straight to your door
+                </li>
+            </ul>
+
+            <a href="#pizzaContainer">
+                <button class="bg-gray-900 hover:bg-orange-600 text-white px-8 py-3.5 rounded-full font-bold text-base shadow-lg shadow-gray-900/20 transition-all hover:-translate-y-1 active:scale-95">
+                    view categories
+                </button>
+            </a>
+        </div>
+
+        <!-- Video Content -->
+        <div class="relative flex justify-center">
+            <video 
+                src="./public/images/family2.mp4" 
+                autoplay 
+                loop 
+                muted 
+                playsinline 
+                class="w-full max-w-[420px] rounded-2xl shadow-xl shadow-orange-900/10 object-cover"
+            >
+                Your browser does not support the video tag.
+            </video>
+            
+            <!-- Optional: A subtle glow behind the video to match the warm pizza theme -->
+            <div class="absolute -inset-4 bg-orange-400/20 blur-3xl -z-10 rounded-full"></div>
+        </div>
+
+    </div>
+</section>
 
         <section class="reveal-on-scroll reviews-section mb-16 mt-6">
             <div class="flex flex-col sm:flex-row items-center sm:items-start gap-8 sm:gap-12 mb-10">
                 <div class="text-center sm:text-left shrink-0">
-                    <div class="text-6xl font-black text-gray-900 leading-none" id="ratingNumber">5.0</div>
-                    <div class="flex items-center gap-1 justify-center sm:justify-start mt-3 star-rating">
-                        <svg class="star w-6 h-6 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                        <svg class="star w-6 h-6 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                        <svg class="star w-6 h-6 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                        <svg class="star w-6 h-6 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                        <svg class="star w-6 h-6 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                    </div>
-                    <p class="text-gray-400 text-sm mt-2 font-medium">Based on 500+ orders</p>
+                    <div class="text-6xl font-black text-gray-900 leading-none" id="ratingNumber">—</div>
+                    <div class="flex items-center gap-1 justify-center sm:justify-start mt-3 star-rating" id="ratingStars"></div>
+                    <p class="text-gray-400 text-sm mt-2 font-medium" id="ratingCount">Loading reviews…</p>
                 </div>
- 
+
                 <div class="hidden sm:block w-px bg-gray-100 self-stretch"></div>
- 
+
                 <div class="flex-1 w-full">
                     <h2 class="text-2xl font-bold text-gray-900 mb-1">What Our Customers Say</h2>
-                    <p class="text-gray-400 text-sm mb-5">Real feedback from real McMichael Pizza orders across Nigeria.</p>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <div class="bg-gray-50 rounded-xl p-3 text-center">
-                            <div class="text-xl font-black text-orange-600">98%</div>
-                            <div class="text-[11px] text-gray-400 font-medium mt-0.5">Would Order Again</div>
-                        </div>
-                        <div class="bg-gray-50 rounded-xl p-3 text-center">
-                            <div class="text-xl font-black text-orange-600">22min</div>
-                            <div class="text-[11px] text-gray-400 font-medium mt-0.5">Avg Delivery</div>
-                        </div>
-                        <div class="bg-gray-50 rounded-xl p-3 text-center">
-                            <div class="text-xl font-black text-orange-600">4.9</div>
-                            <div class="text-[11px] text-gray-400 font-medium mt-0.5">Food Quality</div>
-                        </div>
-                        <div class="bg-gray-50 rounded-xl p-3 text-center">
-                            <div class="text-xl font-black text-orange-600">4.7</div>
-                            <div class="text-[11px] text-gray-400 font-medium mt-0.5">Packaging</div>
-                        </div>
-                    </div>
+                    <p class="text-gray-400 text-sm mb-5">Real feedback from real McMichael Pizza orders — every review is tied to a verified, delivered order.</p>
                 </div>
             </div>
- 
+
             <div class="review-marquee overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
-                <div class="review-track flex gap-6 w-max">
- 
-                    <div class="tilt-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 p-6 w-[280px] sm:w-[320px] flex-shrink-0 relative overflow-hidden">
-                        <span class="quote-mark absolute -top-3 -right-1 text-8xl font-black text-orange-50 select-none">"</span>
-                        <div class="flex items-center gap-3 mb-4 relative z-10">
-                            <div class="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center text-white font-black text-lg shrink-0">CA</div>
-                            <div>
-                                <h4 class="font-bold text-gray-900 text-sm">Chidinma A.</h4>
-                                <p class="text-xs text-gray-400">Lagos</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-0.5 mb-3 relative z-10 star-rating">
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                        </div>
-                        <p class="text-gray-600 text-sm leading-relaxed relative z-10">Ordered the Pepperoni Supreme on a Friday night and it arrived in 20 minutes, still hot. Cheese pull was unreal!</p>
-                        <span class="verified-badge inline-flex items-center gap-1 mt-4 text-[10px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded-full relative z-10">✓ Verified Order</span>
+                <div class="review-track flex gap-6 w-max" id="reviewTrack">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 w-[280px] sm:w-[320px] flex-shrink-0 text-center text-gray-400 text-sm">
+                        Loading reviews…
                     </div>
- 
-                    <div class="tilt-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 p-6 w-[280px] sm:w-[320px] flex-shrink-0 relative overflow-hidden">
-                        <span class="quote-mark absolute -top-3 -right-1 text-8xl font-black text-orange-50 select-none">"</span>
-                        <div class="flex items-center gap-3 mb-4 relative z-10">
-                            <div class="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-white font-black text-lg shrink-0">TO</div>
-                            <div>
-                                <h4 class="font-bold text-gray-900 text-sm">Tunde O.</h4>
-                                <p class="text-xs text-gray-400">Abuja</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-0.5 mb-3 relative z-10 star-rating">
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-gray-200 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                        </div>
-                        <p class="text-gray-600 text-sm leading-relaxed relative z-10">Great value for the price. The Garden Harvest is now my go-to whenever I have friends over. Delivery guy was very polite too.</p>
-                        <span class="verified-badge inline-flex items-center gap-1 mt-4 text-[10px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded-full relative z-10">✓ Verified Order</span>
-                    </div>
- 
-                    <div class="tilt-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 p-6 w-[280px] sm:w-[320px] flex-shrink-0 relative overflow-hidden">
-                        <span class="quote-mark absolute -top-3 -right-1 text-8xl font-black text-orange-50 select-none">"</span>
-                        <div class="flex items-center gap-3 mb-4 relative z-10">
-                            <div class="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center text-white font-black text-lg shrink-0">BK</div>
-                            <div>
-                                <h4 class="font-bold text-gray-900 text-sm">Blessing K.</h4>
-                                <p class="text-xs text-gray-400">Port Harcourt</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-0.5 mb-3 relative z-10 star-rating">
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                        </div>
-                        <p class="text-gray-600 text-sm leading-relaxed relative z-10">The Spin & Win wheel got me a free movie rental, but honestly the BBQ Chicken Fiesta alone would've kept me coming back.</p>
-                        <span class="verified-badge inline-flex items-center gap-1 mt-4 text-[10px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded-full relative z-10">✓ Verified Order</span>
-                    </div>
- 
-                    <div class="tilt-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 p-6 w-[280px] sm:w-[320px] flex-shrink-0 relative overflow-hidden">
-                        <span class="quote-mark absolute -top-3 -right-1 text-8xl font-black text-orange-50 select-none">"</span>
-                        <div class="flex items-center gap-3 mb-4 relative z-10">
-                            <div class="w-12 h-12 rounded-full bg-yellow-500 flex items-center justify-center text-white font-black text-lg shrink-0">EM</div>
-                            <div>
-                                <h4 class="font-bold text-gray-900 text-sm">Efe M.</h4>
-                                <p class="text-xs text-gray-400">Lagos</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-0.5 mb-3 relative z-10 star-rating">
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                        </div>
-                        <p class="text-gray-600 text-sm leading-relaxed relative z-10">Ordering via WhatsApp was so easy and the checkout page confirmed everything clearly. Pizza was fresh, hot, and on time.</p>
-                        <span class="verified-badge inline-flex items-center gap-1 mt-4 text-[10px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded-full relative z-10">✓ Verified Order</span>
-                    </div>
- 
-                    <!-- Duplicate set for a seamless infinite loop -->
-                    <div class="tilt-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 p-6 w-[280px] sm:w-[320px] flex-shrink-0 relative overflow-hidden" aria-hidden="true">
-                        <span class="quote-mark absolute -top-3 -right-1 text-8xl font-black text-orange-50 select-none">"</span>
-                        <div class="flex items-center gap-3 mb-4 relative z-10">
-                            <div class="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center text-white font-black text-lg shrink-0">CA</div>
-                            <div>
-                                <h4 class="font-bold text-gray-900 text-sm">Chidinma A.</h4>
-                                <p class="text-xs text-gray-400">Lagos</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-0.5 mb-3 relative z-10 star-rating">
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                        </div>
-                        <p class="text-gray-600 text-sm leading-relaxed relative z-10">Ordered the Pepperoni Supreme on a Friday night and it arrived in 20 minutes, still hot. Cheese pull was unreal!</p>
-                        <span class="verified-badge inline-flex items-center gap-1 mt-4 text-[10px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded-full relative z-10">✓ Verified Order</span>
-                    </div>
- 
-                    <div class="tilt-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 p-6 w-[280px] sm:w-[320px] flex-shrink-0 relative overflow-hidden" aria-hidden="true">
-                        <span class="quote-mark absolute -top-3 -right-1 text-8xl font-black text-orange-50 select-none">"</span>
-                        <div class="flex items-center gap-3 mb-4 relative z-10">
-                            <div class="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-white font-black text-lg shrink-0">TO</div>
-                            <div>
-                                <h4 class="font-bold text-gray-900 text-sm">Tunde O.</h4>
-                                <p class="text-xs text-gray-400">Abuja</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-0.5 mb-3 relative z-10 star-rating">
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-orange-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                            <svg class="star w-4 h-4 text-gray-200 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
-                        </div>
-                        <p class="text-gray-600 text-sm leading-relaxed relative z-10">Great value for the price. The Garden Harvest is now my go-to whenever I have friends over. Delivery guy was very polite too.</p>
-                        <span class="verified-badge inline-flex items-center gap-1 mt-4 text-[10px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded-full relative z-10">✓ Verified Order</span>
-                    </div>
- 
                 </div>
             </div>
         </section>
+
+        <script>
+        (function() {
+            function escapeHtml(str) {
+                const div = document.createElement("div");
+                div.textContent = str == null ? "" : String(str);
+                return div.innerHTML;
+            }
+
+            const STAR_PATH = "M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.447a1 1 0 00-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.368-2.447a1 1 0 00-1.176 0l-3.368 2.447c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 00-.363-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z";
+            function starSvg(filled, size) {
+                const cls = size === "sm" ? "w-4 h-4" : "w-6 h-6";
+                const color = filled ? "text-orange-400" : "text-gray-200";
+                return `<svg class="star ${cls} ${color} fill-current" viewBox="0 0 20 20"><path d="${STAR_PATH}"/></svg>`;
+            }
+
+            const AVATAR_COLORS = ["bg-orange-500","bg-amber-500","bg-red-500","bg-yellow-500","bg-teal-500","bg-rose-500"];
+
+            async function loadReviews() {
+                const starsEl  = document.getElementById("ratingStars");
+                const numberEl = document.getElementById("ratingNumber");
+                const countEl  = document.getElementById("ratingCount");
+                const trackEl  = document.getElementById("reviewTrack");
+
+                try {
+                    const res = await fetch("http://localhost:8080/api/reviews");
+                    if (!res.ok) throw new Error("Failed to load reviews");
+                    const data = await res.json();
+                    const reviews = data.reviews || [];
+                    const stats = data.stats || { average_rating: 0, total_reviews: 0 };
+
+                    const avg = Math.round((stats.average_rating || 0) * 10) / 10;
+                    numberEl.textContent = stats.total_reviews > 0 ? avg.toFixed(1) : "—";
+                    countEl.textContent = stats.total_reviews > 0
+                        ? `Based on ${stats.total_reviews} review${stats.total_reviews === 1 ? "" : "s"}`
+                        : "No reviews yet — be the first!";
+
+                    const roundedAvg = Math.round(avg);
+                    starsEl.innerHTML = [1,2,3,4,5].map(n => starSvg(n <= roundedAvg, "lg")).join("");
+
+                    if (reviews.length === 0) {
+                        trackEl.innerHTML = `
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-[280px] sm:w-[320px] flex-shrink-0 text-center text-gray-400 text-sm">
+                                No reviews yet — place an order and be the first to review!
+                            </div>`;
+                        return;
+                    }
+
+                    // Duplicate a short list so the auto-scroll marquee has
+                    // enough width to loop smoothly even with few reviews.
+                    const displayReviews = reviews.length < 6
+                        ? [...reviews, ...reviews, ...reviews]
+                        : reviews;
+
+                    trackEl.innerHTML = displayReviews.map((r, i) => {
+                        const name = r.customer_display_name || "Anonymous";
+                        const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+                        const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+                        const comment = r.comment && r.comment.trim()
+                            ? escapeHtml(r.comment)
+                            : "Great pizza — will order again!";
+
+                        return `
+                            <div class="tilt-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 p-6 w-[280px] sm:w-[320px] flex-shrink-0 relative overflow-hidden">
+                                <span class="quote-mark absolute -top-3 -right-1 text-8xl font-black text-orange-50 select-none">"</span>
+                                <div class="flex items-center gap-3 mb-4 relative z-10">
+                                    <div class="w-12 h-12 rounded-full ${color} flex items-center justify-center text-white font-black text-lg shrink-0">${escapeHtml(initials)}</div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900 text-sm">${escapeHtml(name)}</h4>
+                                        <p class="text-xs text-gray-400">${escapeHtml(r.pizza_name || "")}</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-0.5 mb-3 relative z-10 star-rating">
+                                    ${[1,2,3,4,5].map(n => starSvg(n <= r.rating, "sm")).join("")}
+                                </div>
+                                <p class="text-gray-600 text-sm leading-relaxed relative z-10">${comment}</p>
+                                <span class="verified-badge inline-flex items-center gap-1 mt-4 text-[10px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded-full relative z-10">✓ Verified Order</span>
+                            </div>
+                        `;
+                    }).join("");
+
+                } catch (err) {
+                    console.error("Failed to load reviews:", err);
+                    countEl.textContent = "Couldn't load reviews";
+                    trackEl.innerHTML = `
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-[280px] sm:w-[320px] flex-shrink-0 text-center text-red-400 text-sm">
+                            Couldn't load reviews right now.
+                        </div>`;
+                }
+            }
+
+            document.addEventListener("DOMContentLoaded", loadReviews);
+        })();
+        </script>
+
+
+        <section class="reveal-on-scroll max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+
+        <div>
+            <span class="inline-flex items-center gap-2 text-orange-700 px-4 py-2 rounded-full text-xs sm:text-sm font-extrabold mb-5 tracking-wider uppercase">
+                <span><img src="./public/images/pizza.png" class="w-5 h-5"/></span> Weekend Special
+            </span>
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 leading-tight mb-5">
+                Weekend Pizza Details
+            </h2>
+            <p class="text-gray-600 text-base sm:text-lg leading-relaxed mb-8 max-w-md">
+                Make your weekend extra delicious! Order any of our signature pizzas this Friday through Sunday and enjoy fresh artisanal dough, premium toppings, and exclusive combo savings.
+            </p>
+
+            <ul class="space-y-4 mb-8">
+                <li class="flex items-center gap-3 text-gray-700 font-medium">
+                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-xs font-bold">✓</span>
+                    Buy 2 Large Pizzas, get 1 free Garlic Knots
+                </li>
+                <li class="flex items-center gap-3 text-gray-700 font-medium">
+                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-xs font-bold">✓</span>
+                    Exclusive Weekend Craft Crust options
+                </li>
+                <li class="flex items-center gap-3 text-gray-700 font-medium">
+                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-xs font-bold">✓</span>
+                    Fast 30-minute delivery all weekend long
+                </li>
+            </ul>
+
+            <a href="#pizzaContainer">
+                <button class="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3.5 rounded-full font-bold text-base shadow-lg shadow-orange-600/30 transition-all hover:-translate-y-1 active:scale-95">
+                    Order Weekend Special
+                </button>
+            </a>
+        </div>
+
+        <div class="relative flex justify-center items-center">
+            
+            <div 
+                id="starVideoContainer"
+                onclick="rotateStar()"
+                class="star-shape cursor-pointer transition-transform duration-1000 ease-in-out w-[320px] h-[320px] sm:w-[400px] sm:h-[400px] bg-orange-500 p-1 flex items-center justify-center relative shadow-2xl hover:scale-105"
+                title="Click me to rotate!"
+            >
+                <video 
+                    src="./public/images/5394108_Coll_wavebreak_People_1280x720.mp4" 
+                    autoplay 
+                    loop 
+                    muted 
+                    playsinline 
+                    class="w-full h-full object-cover star-shape"
+                >
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+<!-- 
+            <span class="absolute -bottom-6 bg-gray-900 text-white text-xs px-3 py-1 rounded-full shadow pointer-events-none">
+                 Click star to rotateLS
+            </span> -->
+        </div>
+
+    </div>
+</section>
 
         <section class="reveal-on-scroll mt-16 mb-16">
             <div class="relative w-full h-[320px] sm:h-[380px] lg:h-[420px] rounded-[2rem] overflow-hidden shadow-xl group bg-gray-950">
@@ -1119,6 +1350,14 @@
                 });
             });
         }
+
+    let currentRota = 0;
+
+    function rotateStar() {
+        const container = document.getElementById('starVideoContainer');
+        currentRotation += 360;
+        container.style.transform = `rotate(${currentRota}deg)`;
+    };
 
         
     </script>

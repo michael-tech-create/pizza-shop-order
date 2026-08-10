@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"pizza-app/database"
 	"pizza-app/models"
+	"strings"
 
+	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -32,23 +34,33 @@ func GetAllPizzas() ([]models.Pizza, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
 	var pizzas []models.Pizza
+	var ids []int
 	for rows.Next() {
 		var pizza models.Pizza
 		err := rows.Scan(&pizza.ID, &pizza.Name, &pizza.PriceSmall, &pizza.PriceMedium, &pizza.PriceLarge, &pizza.Description,
 			&pizza.CategoryID, &pizza.CategoryName)
 		if err != nil {
+			rows.Close()
 			return nil, err
 		}
-
-		images, err := GetPizzaImages(pizza.ID)
-		if err == nil {
-			pizza.Images = images
-		}
 		pizzas = append(pizzas, pizza)
+		ids = append(ids, pizza.ID)
 	}
+	rows.Close()
+
+	// One extra round trip for ALL pizzas' images combined, instead of
+	// one round trip PER pizza (was N+1 — a menu of 10 pizzas meant 11
+	// total queries; now it's always exactly 2, regardless of menu size).
+	imagesByPizza, err := getImagesForPizzaIDs(ids)
+	if err != nil {
+		return nil, err
+	}
+	for i := range pizzas {
+		pizzas[i].Images = imagesByPizza[pizzas[i].ID]
+	}
+
 	return pizzas, nil
 }
 
@@ -102,36 +114,43 @@ func DeletePizza(id int) (models.Pizza, error) {
 }
 
 func SearchPizza(queryStr string) ([]models.Pizza, error) {
-    query := `
+	query := `
         SELECT p.id, p.name, p.price_small, p.price_medium, p.price_large, p.description,
                p.category_id, COALESCE(c.name, '') AS category_name
         FROM pizzas p
         LEFT JOIN categories c ON p.category_id = c.id
         WHERE LOWER(p.name) LIKE LOWER($1) OR LOWER(p.description) LIKE LOWER($1)
     `
-    rows, err := database.DB.Query(query, "%"+queryStr+"%")
-    if err != nil {
-        return nil, err
-    }
-    defer rows.Close()
+	rows, err := database.DB.Query(query, "%"+queryStr+"%")
+	if err != nil {
+		return nil, err
+	}
 
-    pizzas := []models.Pizza{} 
+	pizzas := []models.Pizza{}
+	var ids []int
 
-    for rows.Next() {
-        var p models.Pizza
-        err := rows.Scan(&p.ID, &p.Name, &p.PriceSmall, &p.PriceMedium, &p.PriceLarge, &p.Description,
-            &p.CategoryID, &p.CategoryName)
-        if err != nil {
-            return nil, err
-        }
+	for rows.Next() {
+		var p models.Pizza
+		err := rows.Scan(&p.ID, &p.Name, &p.PriceSmall, &p.PriceMedium, &p.PriceLarge, &p.Description,
+			&p.CategoryID, &p.CategoryName)
+		if err != nil {
+			rows.Close()
+			return nil, err
+		}
+		pizzas = append(pizzas, p)
+		ids = append(ids, p.ID)
+	}
+	rows.Close()
 
-        images, err := GetPizzaImages(p.ID)
-        if err == nil {
-            p.Images = images
-        }
-        pizzas = append(pizzas, p)
-    }
-    return pizzas, nil
+	imagesByPizza, err := getImagesForPizzaIDs(ids)
+	if err != nil {
+		return nil, err
+	}
+	for i := range pizzas {
+		pizzas[i].Images = imagesByPizza[pizzas[i].ID]
+	}
+
+	return pizzas, nil
 }
 
 // PIZZA IMAGES RELATIONSHIP FUNCTIONS
@@ -153,6 +172,32 @@ func GetPizzaImages(pizzaID int) ([]models.PizzaImage, error) {
 		images = append(images, img)
 	}
 	return images, nil
+}
+
+// getImagesForPizzaIDs fetches images for MANY pizzas in a single query,
+// used by GetAllPizzas/SearchPizza to avoid firing one query per pizza
+// (which was an N+1 query bug — see comments at those call sites).
+func getImagesForPizzaIDs(pizzaIDs []int) (map[int][]models.PizzaImage, error) {
+	result := make(map[int][]models.PizzaImage)
+	if len(pizzaIDs) == 0 {
+		return result, nil
+	}
+
+	query := `SELECT id, pizza_id, image_url FROM pizza_images WHERE pizza_id = ANY($1)`
+	rows, err := database.DB.Query(query, pq.Array(pizzaIDs))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var img models.PizzaImage
+		if err := rows.Scan(&img.ID, &img.PizzaID, &img.ImageURL); err != nil {
+			return nil, err
+		}
+		result[img.PizzaID] = append(result[img.PizzaID], img)
+	}
+	return result, nil
 }
 
 func SavePizzaImage(pizzaID int, imageURL string) error {
@@ -185,16 +230,48 @@ func CreateOrder(customerName string, phone string, address string, items []mode
 		return models.Order{}, err
 	}
 
-	var totalCost int
+	// Batch-fetch prices for every DISTINCT pizza referenced, in one
+	// round trip — was previously one SELECT per item (N+1, same shape
+	// as the images bug fixed earlier).
+	idSet := make(map[int]bool)
+	var ids []int
 	for _, item := range items {
-		var priceSmall, priceMedium, priceLarge int
-		err := tx.QueryRow("SELECT price_small, price_medium, price_large FROM pizzas WHERE id = $1", item.PizzaID).
-			Scan(&priceSmall, &priceMedium, &priceLarge)
-		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				return models.Order{}, ErrPizzaNotFound
-			}
+		if !idSet[item.PizzaID] {
+			idSet[item.PizzaID] = true
+			ids = append(ids, item.PizzaID)
+		}
+	}
+
+	type sizePrices struct{ small, medium, large int }
+	priceByID := make(map[int]sizePrices)
+
+	priceRows, err := tx.Query(`SELECT id, price_small, price_medium, price_large FROM pizzas WHERE id = ANY($1)`, pq.Array(ids))
+	if err != nil {
+		return models.Order{}, err
+	}
+	for priceRows.Next() {
+		var id, s, m, l int
+		if err := priceRows.Scan(&id, &s, &m, &l); err != nil {
+			priceRows.Close()
 			return models.Order{}, err
+		}
+		priceByID[id] = sizePrices{s, m, l}
+	}
+	priceRows.Close()
+
+	// Build ONE multi-row INSERT for all order_items instead of N
+	// separate INSERT round trips. Still fully parameterized — only the
+	// number of placeholder groups is dynamic, never the values
+	// themselves, so this is not vulnerable to SQL injection.
+	var totalCost int
+	valuePlaceholders := make([]string, 0, len(items))
+	valueArgs := make([]interface{}, 0, len(items)*5)
+	argPos := 1
+
+	for _, item := range items {
+		p, ok := priceByID[item.PizzaID]
+		if !ok {
+			return models.Order{}, ErrPizzaNotFound
 		}
 
 		// item.Size is already restricted to small/medium/large by the
@@ -203,24 +280,29 @@ func CreateOrder(customerName string, phone string, address string, items []mode
 		var price int
 		switch item.Size {
 		case "small":
-			price = priceSmall
+			price = p.small
 		case "large":
-			price = priceLarge
+			price = p.large
 		default:
-			price = priceMedium
+			price = p.medium
 		}
 
 		subTotal := price * item.Quantity
 		totalCost += subTotal
 
-		_, err = tx.Exec("INSERT INTO order_items (order_id, pizza_id, size, quantity, sub_total) VALUES ($1, $2, $3, $4, $5)",
-			orderID, item.PizzaID, item.Size, item.Quantity, subTotal)
-		if err != nil {
-			return models.Order{}, err
-		}
+		valuePlaceholders = append(valuePlaceholders,
+			fmt.Sprintf("($%d,$%d,$%d,$%d,$%d)", argPos, argPos+1, argPos+2, argPos+3, argPos+4))
+		valueArgs = append(valueArgs, orderID, item.PizzaID, item.Size, item.Quantity, subTotal)
+		argPos += 5
 	}
 
-	// 3. Update the final total cost
+	insertQuery := "INSERT INTO order_items (order_id, pizza_id, size, quantity, sub_total) VALUES " +
+		strings.Join(valuePlaceholders, ",")
+	if _, err := tx.Exec(insertQuery, valueArgs...); err != nil {
+		return models.Order{}, err
+	}
+
+	// Update the final total cost
 	_, err = tx.Exec("UPDATE orders SET total_cost = $1 WHERE id = $2", totalCost, orderID)
 	if err != nil {
 		return models.Order{}, err
@@ -270,21 +352,22 @@ func UpdateOrderStatus(id int, status string) error {
 func GetDashboardStats() (models.DashboardStats, error) {
 	var stats models.DashboardStats
 
-	revenueQuery := `SELECT COALESCE(SUM(total_cost), 0) FROM orders WHERE status = 'delivered'`
-	err := database.DB.QueryRow(revenueQuery).Scan(&stats.Revenue)
-	if err != nil {
-		return stats, err
-	}
-
-	countQuery := `
-		SELECT 
-			COUNT(*),
-			COUNT(*) FILTER (WHERE status = 'pending'),
-			COUNT(*) FILTER (WHERE status = 'delivered'),
-			COUNT(*) FILTER (WHERE status = 'cancelled')
+	// Previously two separate round trips to Supabase (revenue, then
+	// counts) — combined into one query cuts this endpoint's network
+	// latency roughly in half. The revenue subquery is scoped to
+	// 'delivered' orders only, same as before; the COUNT(*) FILTER
+	// clauses cover every status in a single pass over the same table.
+	query := `
+		SELECT
+			COALESCE((SELECT SUM(total_cost) FROM orders WHERE status = 'delivered'), 0) AS revenue,
+			COUNT(*) AS total_orders,
+			COUNT(*) FILTER (WHERE status = 'pending')   AS pending_orders,
+			COUNT(*) FILTER (WHERE status = 'delivered') AS delivered_orders,
+			COUNT(*) FILTER (WHERE status = 'cancelled') AS cancelled_orders
 		FROM orders
 	`
-	err = database.DB.QueryRow(countQuery).Scan(
+	err := database.DB.QueryRow(query).Scan(
+		&stats.Revenue,
 		&stats.TotalOrders,
 		&stats.PendingOrders,
 		&stats.DeliveredOrders,

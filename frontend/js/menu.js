@@ -2,6 +2,60 @@
 const pizzaContainer = document.getElementById("pizzaContainer");
 const searchDropdown = document.getElementById("menu");
 const searchInput = document.getElementById("search");
+const categoryFiltersEl = document.getElementById("categoryFilters");
+
+let allPizzas = [];
+let activeCategoryId = null; // null = "All"
+
+// ── Category filter tabs ──
+async function loadCategoryFilters() {
+    if (!categoryFiltersEl) return;
+    try {
+        const res = await fetch("http://localhost:8080/api/categories");
+        if (!res.ok) return;
+        const categories = await res.json();
+        renderCategoryFilters(categories);
+    } catch (e) {
+        console.error("Failed to load categories:", e);
+    }
+}
+
+function renderCategoryFilters(categories) {
+    const tabClass = (isActive) => [
+        "px-4 py-2 rounded-full text-sm font-semibold transition-all",
+        isActive
+            ? "bg-orange-600 text-white shadow-md shadow-orange-600/20"
+            : "bg-white text-gray-600 border border-gray-200 hover:border-orange-300 hover:text-orange-600"
+    ].join(" ");
+
+    const allBtn = `<button data-cat="" class="cat-filter-btn ${tabClass(activeCategoryId === null)}">All</button>`;
+    const catBtns = categories.map(c => `
+        <button data-cat="${c.id}" class="cat-filter-btn ${tabClass(activeCategoryId === c.id)}">${c.name}</button>
+    `).join("");
+
+    categoryFiltersEl.innerHTML = allBtn + catBtns;
+
+    categoryFiltersEl.querySelectorAll(".cat-filter-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const val = btn.dataset.cat;
+            activeCategoryId = val === "" ? null : Number(val);
+            renderCategoryFilters(categories); // refresh active styling
+            applyMenuFilter();
+        });
+    });
+}
+
+function applyMenuFilter() {
+    if (!pizzaContainer) return;
+    const filtered = activeCategoryId === null
+        ? allPizzas
+        : allPizzas.filter(p => p.category_id === activeCategoryId);
+
+    pizzaContainer.innerHTML = "";
+    filtered.forEach(pizza => pizzaContainer.appendChild(createPizzaCard(pizza)));
+
+    if (typeof setupCartButtons === "function") setupCartButtons();
+}
 
 function createPizzaCard(pizza) {
     const defaultImage = "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=600&auto=format&fit=crop";
@@ -127,12 +181,9 @@ if (searchInput) {
 
         searchTimeout = setTimeout(async () => {
             try {
-                const token = localStorage.getItem('adminToken')
-
-                const response = await fetch(`http://localhost:8080/api/admin/search?q=${encodeURIComponent(query)}`, {
+                const response = await fetch(`http://localhost:8080/api/search?q=${encodeURIComponent(query)}`, {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
                 });

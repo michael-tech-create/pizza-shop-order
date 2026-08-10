@@ -2,13 +2,13 @@ package database
 
 import (
 	"database/sql"
+	"time"
 
-	"log"
 	"fmt"
+	"log"
 	"os"
 
-	_ "github.com/lib/pq" 
-	
+	_ "github.com/lib/pq"
 )
 
 var DB *sql.DB
@@ -39,7 +39,12 @@ func ConnectDataBase() {
 		log.Fatal("Database is offline or unreachable" , err)
 	}
 
-	log.Println("database connected successfully")
+	// log.Println("database connected successfully")
+
+	db.SetMaxOpenConns(20)
+	db.SetMaxIdleConns(20)
+	db.SetConnMaxLifetime(30 * time.Minute)
+	db.SetConnMaxIdleTime(5 * time.Minute)
 
 
 	DB = db

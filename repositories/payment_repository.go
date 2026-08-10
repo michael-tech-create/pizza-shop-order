@@ -11,6 +11,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 
 	"pizza-app/database"
 )
@@ -18,6 +19,11 @@ import (
 const paystackBaseURL = "https://api.paystack.co"
 
 var ErrOrderNotFound = errors.New("order not found")
+
+// paystackHTTPClient has an explicit timeout — without one, a slow or
+// unresponsive Paystack request would hang this handler (and the
+// connection holding it) indefinitely instead of failing cleanly.
+var paystackHTTPClient = &http.Client{Timeout: 15 * time.Second}
 
 // --- Paystack API response shapes (internal — only the fields we use) ---
 
@@ -78,7 +84,7 @@ func InitializePaystackTransaction(orderID int, email string) (authURL string, r
 	req.Header.Set("Authorization", "Bearer "+secret)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := paystackHTTPClient.Do(req)
 	if err != nil {
 		return "", "", err
 	}
@@ -114,7 +120,7 @@ func VerifyPaystackTransaction(reference string) (status string, orderID int, er
 	req, _ := http.NewRequest("GET", paystackBaseURL+"/transaction/verify/"+reference, nil)
 	req.Header.Set("Authorization", "Bearer "+secret)
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := paystackHTTPClient.Do(req)
 	if err != nil {
 		return "", 0, err
 	}

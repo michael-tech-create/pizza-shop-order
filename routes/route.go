@@ -14,12 +14,21 @@ func SetupRoutes(router *gin.Engine) {
 	router.GET("/api/pizzas/:id", handlers.GetPizzaByIdHandler)
 	router.GET("/api/pizzas/:id/images", handlers.GetPizzaImagesHandler)
 
+	// Public search — used by the customer-facing menu search box.
+	// admin.GET("/api/admin/search", ...) below stays too, since the
+	// admin dashboard's own search UI already calls that one.
+	router.GET("/api/search", handlers.SearchPizzaHandler)
+
 	router.POST("/api/orders", handlers.GetPizzaOrder)
 
 	router.POST("/api/auth/login", handlers.LoginHandler)
 
 	// Categories — public read so the menu filter can populate itself
-	// router.GET("/api/categories", handlers.GetCategoriesHandler)
+	router.GET("/api/categories", handlers.GetCategoriesHandler)
+
+	// Reviews — public read for the homepage; submitting one requires a
+	// logged-in customer whose own delivered order it must reference.
+	router.GET("/api/reviews", handlers.GetPublicReviewsHandler)
 
 	// Customer accounts — public signup/login. Guest checkout at
 	// /api/orders doesn't require any of this; these just enable the
@@ -31,6 +40,7 @@ func SetupRoutes(router *gin.Engine) {
 	customer.Use(middleware.RequireCustomerAuth())
 	{
 		customer.GET("/api/customers/orders", handlers.GetMyOrdersHandler)
+		customer.POST("/api/reviews", handlers.CreateReviewHandler)
 	}
 
 	// Payments — public routes. /initialize and /verify are called by the
@@ -68,8 +78,8 @@ func SetupRoutes(router *gin.Engine) {
 		admin.GET("/api/admin/best-seller", handlers.GetBestSellerHandler)
 		admin.GET("/api/admin/search", handlers.SearchPizzaHandler)
 
-		// admin.POST("/api/categories", handlers.CreateCategoryHandler)
-		// admin.PUT("/api/categories/:id", handlers.UpdateCategoryHandler)
-		// admin.DELETE("/api/categories/:id", handlers.DeleteCategoryHandler)
+		admin.POST("/api/categories", handlers.CreateCategoryHandler)
+		admin.PUT("/api/categories/:id", handlers.UpdateCategoryHandler)
+		admin.DELETE("/api/categories/:id", handlers.DeleteCategoryHandler)
 	}
 }

@@ -114,6 +114,10 @@
                 class="tab-inactive px-4 py-3 text-sm transition-all">
             Images
         </button>
+        <button onclick="switchTab('categories')" id="tab-categories"
+                class="tab-inactive px-4 py-3 text-sm transition-all">
+            Categories
+        </button>
         <a href="activity.html"
            class="tab-inactive px-4 py-3 text-sm flex items-center gap-1.5 sm:hidden">
             
@@ -276,6 +280,12 @@
                         </div>
                     </div>
                     <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Category</label>
+                        <select id="newPizzaCategory" class="input-field">
+                            <option value="">Uncategorized</option>
+                        </select>
+                    </div>
+                    <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Description</label>
                         <textarea id="newPizzaDesc" rows="3" class="input-field resize-none"
                             placeholder="e.g. Spicy suya-marinated chicken with peppers"></textarea>
@@ -384,6 +394,50 @@
             </div>
         </div>
     </section>
+
+    <!-- ════════════════════════════════
+         TAB: CATEGORIES
+    ════════════════════════════════ -->
+    <section id="section-categories" class="hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+            <div class="bg-white rounded-2xl shadow-sm border border-amber-100 overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-100">
+                    <h2 class="font-bold text-slate-800">Add Category</h2>
+                </div>
+                <div class="p-5 space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Category Name</label>
+                        <input type="text" id="newCategoryName" class="input-field" placeholder="e.g. Loaded Specials">
+                    </div>
+                    <button onclick="createCategory()"
+                        class="w-full bg-teal-600 hover:bg-teal-700 active:scale-95 text-white font-semibold py-2.5 rounded-xl shadow-md shadow-teal-600/20 transition-all">
+                        ✚ Save Category
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-amber-100 overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-100">
+                    <h2 class="font-bold text-slate-800">Categories</h2>
+                </div>
+                <div class="p-2">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                <th class="px-3 py-2">Name</th>
+                                <th class="px-3 py-2 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoryTable" class="divide-y divide-slate-50">
+                            <tr><td colspan="2" class="px-3 py-6 text-center text-slate-400">Loading…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </section>
 </main>
 
 
@@ -412,6 +466,12 @@
                     <input type="number" id="editPizzaPriceMedium" class="input-field" placeholder="Medium" min="1">
                     <input type="number" id="editPizzaPriceLarge" class="input-field" placeholder="Large" min="1">
                 </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Category</label>
+                <select id="editPizzaCategory" class="input-field">
+                    <option value="">Uncategorized</option>
+                </select>
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Description</label>
@@ -488,7 +548,7 @@ function formatNaira(n) {
 
 // ── Tab switching ──────────────────────────────────────
 function switchTab(tab) {
-    ["orders","menu","images"].forEach(t => {
+    ["orders","menu","images","categories"].forEach(t => {
         document.getElementById(`section-${t}`).classList.toggle("hidden", t !== tab);
         const btn = document.getElementById(`tab-${t}`);
         btn.className = t === tab
@@ -496,6 +556,7 @@ function switchTab(tab) {
             : "tab-inactive px-4 py-3 text-sm transition-all flex items-center gap-2";
     });
     if (tab === "images") populatePizzaSelect();
+    if (tab === "categories") loadCategories();
 }
 
 // ── Stats + Best Seller ────────────────────────────────
@@ -709,7 +770,10 @@ function renderPizzaRows(pizzas) {
     tbody.innerHTML = pizzas.map(p => `
         <tr class="hover:bg-amber-50/40 transition-colors">
             <td class="px-4 py-3 text-slate-400 text-xs">#${p.id}</td>
-            <td class="px-4 py-3 font-semibold text-slate-800">${p.name}</td>
+            <td class="px-4 py-3 font-semibold text-slate-800">
+                ${p.name}
+                ${p.category_name ? `<span class="block text-[10px] font-semibold text-teal-600 mt-0.5">${p.category_name}</span>` : ""}
+            </td>
             <td class="px-4 py-3 font-bold text-orange-600 text-xs">
                 S ${formatNaira(p.price_small)}<br>
                 M ${formatNaira(p.price_medium)}<br>
@@ -718,7 +782,7 @@ function renderPizzaRows(pizzas) {
             <td class="px-4 py-3 text-slate-500 text-xs max-w-[200px] truncate hidden md:table-cell">${p.description || "—"}</td>
             <td class="px-4 py-3 text-center">
                 <div class="flex items-center justify-center gap-1.5">
-                    <button onclick="openEditModal(${p.id},'${escape(p.name)}',${p.price_small},${p.price_medium},${p.price_large},'${escape(p.description||"")}')"
+                    <button onclick="openEditModal(${p.id},'${escape(p.name)}',${p.price_small},${p.price_medium},${p.price_large},'${escape(p.description||"")}',${p.category_id ?? "null"})"
                         class="text-xs bg-teal-50 hover:bg-teal-100 text-teal-700 font-semibold px-2.5 py-1.5 rounded-lg transition-colors">
                         Edit
                     </button>
@@ -731,12 +795,124 @@ function renderPizzaRows(pizzas) {
         </tr>`).join("");
 }
 
+// ── Category dropdowns (shared by add + edit forms) ──
+async function populateCategoryDropdowns() {
+    try {
+        const res = await fetch(`${API_URL}/api/categories`);
+        if (!res.ok) return;
+        const categories = await res.json();
+        const options = `<option value="">Uncategorized</option>` +
+            categories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+        const newSel = document.getElementById("newPizzaCategory");
+        const editSel = document.getElementById("editPizzaCategory");
+        if (newSel) newSel.innerHTML = options;
+        if (editSel) editSel.innerHTML = options;
+    } catch (e) { console.error("Failed to load categories:", e); }
+}
+
+// ── Categories tab: list + CRUD ──
+async function loadCategories() {
+    const tbody = document.getElementById("categoryTable");
+    tbody.innerHTML = `<tr><td colspan="2" class="px-3 py-6 text-center text-slate-400">Loading…</td></tr>`;
+    try {
+        const res = await fetch(`${API_URL}/api/categories`);
+        if (!res.ok) throw new Error("Failed to load categories");
+        const categories = await res.json();
+        renderCategoryRows(categories);
+    } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="2" class="px-3 py-6 text-center text-red-400">Couldn't load categories</td></tr>`;
+    }
+}
+
+function renderCategoryRows(categories) {
+    const tbody = document.getElementById("categoryTable");
+    if (!categories.length) {
+        tbody.innerHTML = `<tr><td colspan="2" class="px-3 py-6 text-center text-slate-400">No categories yet</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = categories.map(c => `
+        <tr class="hover:bg-amber-50/40 transition-colors">
+            <td class="px-3 py-3 font-semibold text-slate-800">${c.name}</td>
+            <td class="px-3 py-3 text-right">
+                <div class="flex items-center justify-end gap-1.5">
+                    <button onclick="editCategoryPrompt(${c.id}, '${escape(c.name)}')"
+                        class="text-xs bg-teal-50 hover:bg-teal-100 text-teal-700 font-semibold px-2.5 py-1.5 rounded-lg transition-colors">
+                        Edit
+                    </button>
+                    <button onclick="deleteCategory(${c.id}, '${escape(c.name)}')"
+                        class="text-xs bg-red-50 hover:bg-red-100 text-red-700 font-semibold px-2.5 py-1.5 rounded-lg transition-colors">
+                        Delete
+                    </button>
+                </div>
+            </td>
+        </tr>`).join("");
+}
+
+async function createCategory() {
+    const nameInput = document.getElementById("newCategoryName");
+    const name = nameInput.value.trim();
+    if (!name) { showToast("Category name is required", "error"); return; }
+
+    try {
+        const res = await AuthGuard.authFetch(`${API_URL}/api/categories`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name }),
+        });
+        if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Could not create category"); }
+        showToast(`"${name}" added ✓`, "success");
+        nameInput.value = "";
+        loadCategories();
+        populateCategoryDropdowns();
+        AppLogger.log(`Category created: "${name}"`, "success", "CATEGORY");
+    } catch (e) { showToast(e.message, "error"); }
+}
+
+// Simple prompt-based rename — keeps this additive without needing a
+// whole second modal just for a one-field edit.
+async function editCategoryPrompt(id, escapedName) {
+    const currentName = unescape(escapedName);
+    const newName = window.prompt("Rename category:", currentName);
+    if (newName === null) return; // cancelled
+    const trimmed = newName.trim();
+    if (!trimmed || trimmed === currentName) return;
+
+    try {
+        const res = await AuthGuard.authFetch(`${API_URL}/api/categories/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: trimmed }),
+        });
+        if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Could not update category"); }
+        showToast("Category updated ✓", "success");
+        loadCategories();
+        populateCategoryDropdowns();
+        AppLogger.log(`Category #${id} renamed to "${trimmed}"`, "success", "CATEGORY");
+    } catch (e) { showToast(e.message, "error"); }
+}
+
+async function deleteCategory(id, escapedName) {
+    const name = unescape(escapedName);
+    if (!window.confirm(`Delete "${name}"? Pizzas in this category become uncategorized — they aren't deleted.`)) return;
+
+    try {
+        const res = await AuthGuard.authFetch(`${API_URL}/api/categories/${id}`, { method: "DELETE" });
+        if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Could not delete category"); }
+        showToast(`"${name}" deleted`, "success");
+        loadCategories();
+        populateCategoryDropdowns();
+        AppLogger.log(`Category #${id} ("${name}") deleted`, "success", "CATEGORY");
+    } catch (e) { showToast(e.message, "error"); }
+}
+
 async function createPizza() {
     const name        = document.getElementById("newPizzaName").value.trim();
     const priceSmall  = Number(document.getElementById("newPizzaPriceSmall").value);
     const priceMedium = Number(document.getElementById("newPizzaPriceMedium").value);
     const priceLarge  = Number(document.getElementById("newPizzaPriceLarge").value);
     const desc        = document.getElementById("newPizzaDesc").value.trim();
+    const categoryVal = document.getElementById("newPizzaCategory").value;
+    const categoryId  = categoryVal ? Number(categoryVal) : null;
 
     if (!name) { showToast("Pizza name is required", "error"); return; }
     if (priceSmall <= 0 || priceMedium <= 0 || priceLarge <= 0) {
@@ -754,6 +930,7 @@ async function createPizza() {
                 price_medium: priceMedium,
                 price_large: priceLarge,
                 description: desc,
+                category_id: categoryId,
             }),
         });
         if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Create failed"); }
@@ -763,19 +940,21 @@ async function createPizza() {
         document.getElementById("newPizzaPriceMedium").value = "";
         document.getElementById("newPizzaPriceLarge").value  = "";
         document.getElementById("newPizzaDesc").value        = "";
+        document.getElementById("newPizzaCategory").value    = "";
         loadPizzas();
         AppLogger.log(`Pizza created: "${name}" (S ₦${priceSmall.toLocaleString()} / M ₦${priceMedium.toLocaleString()} / L ₦${priceLarge.toLocaleString()})`, "success", "PIZZA");
     } catch (e) { showToast(e.message, "error"); }
 }
 
 //Edit modal
-function openEditModal(id, name, priceSmall, priceMedium, priceLarge, desc) {
+function openEditModal(id, name, priceSmall, priceMedium, priceLarge, desc, categoryId) {
     document.getElementById("editPizzaId").value           = id;
     document.getElementById("editPizzaName").value         = unescape(name);
     document.getElementById("editPizzaPriceSmall").value   = priceSmall;
     document.getElementById("editPizzaPriceMedium").value  = priceMedium;
     document.getElementById("editPizzaPriceLarge").value   = priceLarge;
     document.getElementById("editPizzaDesc").value         = unescape(desc);
+    document.getElementById("editPizzaCategory").value     = categoryId ?? "";
     document.getElementById("editModal").classList.remove("hidden");
 }
 function closeEditModal() { document.getElementById("editModal").classList.add("hidden"); }
@@ -787,6 +966,8 @@ async function submitEditPizza() {
     const priceMedium = Number(document.getElementById("editPizzaPriceMedium").value);
     const priceLarge  = Number(document.getElementById("editPizzaPriceLarge").value);
     const desc        = document.getElementById("editPizzaDesc").value.trim();
+    const categoryVal = document.getElementById("editPizzaCategory").value;
+    const categoryId  = categoryVal ? Number(categoryVal) : null;
 
     if (!name) { showToast("Name is required", "error"); return; }
     if (priceSmall <= 0 || priceMedium <= 0 || priceLarge <= 0) {
@@ -804,6 +985,7 @@ async function submitEditPizza() {
                 price_medium: priceMedium,
                 price_large: priceLarge,
                 description: desc,
+                category_id: categoryId,
             }),
         });
         if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
@@ -981,6 +1163,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     adminRefresh();
+    populateCategoryDropdowns();
     AppLogger.log(`Admin dashboard opened by ${uname || "unknown"}`, "info", "UI");
 });
 </script>
