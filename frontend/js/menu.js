@@ -216,11 +216,11 @@ async function loadMenu() {
         // 1. Ensure the container has the responsive grid classes!
         // Grid 2 columns by default (mobile), 3 on medium, 4 on large screens.
         pizzaContainer.className = "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6";
-        pizzaContainer.innerHTML = "";
 
-        pizzas.forEach(pizza => {
-            pizzaContainer.appendChild(createPizzaCard(pizza));
-        });
+        allPizzas = pizzas;
+        applyMenuFilter(); // renders using the current category filter (default: All)
+
+        loadCategoryFilters();
 
         if (typeof loadFeaturedPizza === "function") {
             loadFeaturedPizza(pizzas);

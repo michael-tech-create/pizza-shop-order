@@ -15,7 +15,7 @@
     <nav class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
             <a href="index.html" class="flex items-center gap-2 text-gray-900 font-black text-xl hover:text-orange-600 transition-colors">
-                <span class="text-orange-500 animate-logo-wiggle"><img src="./public/images/icons8-pizza-32.png"/></span> Mc's Pizza
+                🍕 Mc's Pizza
             </a>
             <div id="customerNavSlot"></div>
         </div>
@@ -77,24 +77,101 @@
                     return;
                 }
 
-                container.innerHTML = orders.map(o => `
-                    <div class="bg-white rounded-2xl border border-gray-100 p-5 flex items-center justify-between">
-                        <div>
-                            <p class="font-bold text-gray-900">#${o.order_id} · ${o.pizza_name} <span class="text-xs text-gray-400 uppercase">(${o.size})</span></p>
-                            <p class="text-sm text-gray-500 mt-0.5">Qty ${o.quantity} · ${formatNaira(o.total_cost)}</p>
+                container.innerHTML = orders.map(o => {
+                    const canReview = o.status === "delivered" && !o.reviewed;
+                    return `
+                    <div class="bg-white rounded-2xl border border-gray-100 p-5">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-bold text-gray-900">#${o.order_id} · ${o.pizza_name} <span class="text-xs text-gray-400 uppercase">(${o.size})</span></p>
+                                <p class="text-sm text-gray-500 mt-0.5">Qty ${o.quantity} · ${formatNaira(o.total_cost)}</p>
+                            </div>
+                            <div class="flex flex-col items-end gap-1.5">
+                                <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${badge[o.status] || badge.pending}">${o.status}</span>
+                                <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${payBadge[o.payment_status] || payBadge.pending}">${o.payment_status || "pending"}</span>
+                            </div>
                         </div>
-                        <div class="flex flex-col items-end gap-1.5">
-                            <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${badge[o.status] || badge.pending}">${o.status}</span>
-                            <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${payBadge[o.payment_status] || payBadge.pending}">${o.payment_status || "pending"}</span>
-                        </div>
+                        ${o.reviewed ? `
+                            <p class="text-xs text-teal-600 font-semibold mt-3">✓ You reviewed this order</p>
+                        ` : canReview ? `
+                            <div class="mt-4 pt-4 border-t border-gray-100">
+                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Leave a review</p>
+                                <div class="flex items-center gap-1 mb-2">
+                                    ${[1,2,3,4,5].map(n => `
+                                        <button type="button" onclick="setRating(${o.order_id}, ${n})" data-star="${n}"
+                                            class="star-btn-${o.order_id} text-2xl text-gray-300 hover:text-orange-400 transition-colors leading-none">★</button>
+                                    `).join("")}
+                                </div>
+                                <textarea id="comment-${o.order_id}" rows="2" placeholder="How was it? (optional)"
+                                    class="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 mb-2 focus:outline-none focus:border-orange-400"></textarea>
+                                <div class="flex items-center gap-3">
+                                    <button onclick="submitReview(${o.order_id})" id="reviewBtn-${o.order_id}"
+                                        class="bg-orange-600 hover:bg-orange-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
+                                        Submit Review
+                                    </button>
+                                    <span id="reviewError-${o.order_id}" class="text-xs text-red-500 hidden"></span>
+                                </div>
+                            </div>
+                        ` : ""}
                     </div>
-                `).join("");
+                `;}).join("");
 
             } catch (err) {
                 console.error("Failed to load orders:", err);
                 container.innerHTML = `<div class="text-center text-red-400 py-16">Couldn't load your orders. Please try again.</div>`;
             }
         }
+
+        const selectedRatings = {};
+
+        function setRating(orderId, rating) {
+            selectedRatings[orderId] = rating;
+            document.querySelectorAll(`.star-btn-${orderId}`).forEach(btn => {
+                const starNum = Number(btn.dataset.star);
+                btn.classList.toggle("text-orange-400", starNum <= rating);
+                btn.classList.toggle("text-gray-300", starNum > rating);
+            });
+        }
+        window.setRating = setRating;
+
+        async function submitReview(orderId) {
+            const errorEl = document.getElementById(`reviewError-${orderId}`);
+            errorEl.classList.add("hidden");
+
+            const rating = selectedRatings[orderId];
+            if (!rating) {
+                errorEl.textContent = "Tap a star to rate your order";
+                errorEl.classList.remove("hidden");
+                return;
+            }
+
+            const comment = document.getElementById(`comment-${orderId}`).value.trim();
+            const btn = document.getElementById(`reviewBtn-${orderId}`);
+            btn.disabled = true;
+            btn.textContent = "Submitting…";
+
+            try {
+                const res = await fetch(`${AUTH_API_URL}/api/reviews`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${getCustomerToken()}`,
+                    },
+                    body: JSON.stringify({ order_id: orderId, rating, comment }),
+                });
+                if (!res.ok) {
+                    const d = await res.json();
+                    throw new Error(d.error || "Could not submit review");
+                }
+                loadMyOrders(); // refresh to show the "✓ reviewed" state
+            } catch (err) {
+                errorEl.textContent = err.message;
+                errorEl.classList.remove("hidden");
+                btn.disabled = false;
+                btn.textContent = "Submit Review";
+            }
+        }
+        window.submitReview = submitReview;
 
         document.addEventListener("DOMContentLoaded", loadMyOrders);
     </script>

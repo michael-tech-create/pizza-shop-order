@@ -349,6 +349,34 @@
     .rotate-active {
         transform: rotate(360deg) scale(1.05);
     }
+
+    /* ---- PORTAL ANIMATIONS ---- */
+@keyframes portalScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.portal-marquee-container {
+    width: 200%;
+    display: flex;
+}
+
+.portal-marquee-text {
+    animation: portalScroll 15s linear infinite;
+    width: max-content;
+}
+
+/* When the portal is activated via JavaScript */
+.portal-active #firstPic {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(1.2); /* Creates a cool zooming effect as it fades */
+}
+
+.portal-active #secondPicLink {
+    opacity: 1;
+    pointer-events: auto; /* Makes the link clickable */
+}
  
     </style>
 </head>
@@ -966,6 +994,49 @@
             </div>
         </section>
 
+        <!-- MAGIC PORTAL SECTION -->
+<section class="reveal-on-scroll max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 mb-16">
+    <div class="text-center mb-8">
+        <h2 class="text-3xl font-black text-gray-900">The Secret Slice</h2>
+        <p class="text-gray-500">Click the box to reveal a hidden world...</p>
+    </div>
+
+    <!-- The Wrapper -->
+    <div id="portalWrapper" class="relative w-full h-[400px] sm:h-[500px] rounded-[2rem] overflow-hidden shadow-2xl shadow-orange-900/20 bg-gray-900 border-2 border-orange-500/30">
+
+        <!-- STATE 1: First Image (Click to reveal) -->
+        <div id="firstPic" class="absolute inset-0 z-20 cursor-pointer transition-all duration-1000 hover:scale-105" onclick="activatePortal()">
+            <!-- Replace src with your First Image -->
+            <img src="https://images.unsplash.com/photo-1613564834361-9436948817d1?q=80&w=1000&auto=format&fit=crop" class="w-full h-full object-cover" alt="Mystery Box">
+            
+            <!-- Dark Overlay and Bouncing Button -->
+            <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <span class="bg-orange-500 text-white px-8 py-4 rounded-full font-bold text-lg animate-bounce shadow-[0_0_20px_rgba(249,115,22,0.8)]">
+                    Click the Picture!
+                </span>
+            </div>
+        </div>
+
+        <a href="https://www.pizzahut.ng/" id="secondPicLink" class="absolute inset-0 z-10 block opacity-0 pointer-events-none transition-opacity duration-1000">
+        
+            <img src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=2069&auto=format&fit=crop" class="w-full h-full object-cover" alt="The Pizzaverse">
+
+     
+            <div class="absolute inset-0 flex flex-col items-center justify-center overflow-hidden">
+                <div class="portal-marquee-container">
+                    <div class="portal-marquee-text text-5xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-400 whitespace-nowrap drop-shadow-lg">
+                        ENTER THE PIZZAVERSE • WELCOME TO ANOTHER WORLD • CLICK TO TRAVEL • ENTER THE PIZZAVERSE • WELCOME TO ANOTHER WORLD • CLICK TO TRAVEL •
+                    </div>
+                </div>
+                
+                <div class="mt-12 px-8 py-3 bg-white text-orange-600 font-bold rounded-full shadow-[0_0_20px_rgba(255,255,255,0.4)] transition-transform hover:scale-110">
+                    Take Me There! 
+                </div>
+            </div>
+        </a>
+    </div>
+</section>
+
     </main>
 
 <footer class="reveal-on-scroll bg-gray-900 border-t border-gray-800 text-gray-400 py-12">
@@ -1359,6 +1430,11 @@
         container.style.transform = `rotate(${currentRota}deg)`;
     };
 
+    // Magic Portal Function
+function activatePortal() {
+    document.getElementById('portalWrapper').classList.add('portal-active');
+}
+
         
     </script>
 
@@ -1366,6 +1442,7 @@
     <script src="./js/cart.js"></script>
     <script src="./js/menu.js"></script>
     <script src="./js/orders.js"></script>
+
 
 </body>
 </html>
