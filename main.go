@@ -3,15 +3,17 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"pizza-app/routes"
 
 	"github.com/gin-gonic/gin"
 
 	"pizza-app/database"
 
+	"time"
+
 	"github.com/gin-contrib/cors"
 	"github.com/joho/godotenv"
-	"time"
 )
 
 func main() {
@@ -80,7 +82,14 @@ router.Use(cors.New(cors.Config{
 
 	routes.SetupRoutes(router)
 
-	fmt.Println("server starting at http://localhost:8080")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
-	router.Run(":8080")
+	fmt.Printf("Server starting on port%s\n",port)
+
+	if err := router.Run(":" + port); err != nil {
+		log.Fatalf("server failed to start: %v",err)
+	}
 }
