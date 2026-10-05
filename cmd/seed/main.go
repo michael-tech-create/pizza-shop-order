@@ -37,12 +37,18 @@ func main() {
 		log.Fatal("password should be at least 8 characters")
 	}
 
+	// Load the same .env your main server uses, so DB_HOST/DB_USER/etc.
+	// match. If your .env lives elsewhere relative to this file, adjust
+	// the path here, e.g. godotenv.Load("../../.env").
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("could not load .env file: ", err)
 	}
 
 	database.ConnectDataBase()
 
+	// Guard against accidentally creating a duplicate. GetAdminByUsername
+	// returns ErrInvalidCredentials when not found, so that specific error
+	// is the "safe to proceed" case — anything else is a real DB problem.
 	if _, err := repositories.GetAdminByUsername(*username); err == nil {
 		log.Fatalf("admin '%s' already exists — pick a different username or delete the existing row first", *username)
 	} else if err != repositories.ErrInvalidCredentials {

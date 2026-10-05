@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -14,6 +15,7 @@ import (
 func GetCategoriesHandler(c *gin.Context) {
 	categories, err := repositories.GetAllCategories()
 	if err != nil {
+		log.Printf("GetAllCategories error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not load categories"})
 		return
 	}
@@ -28,8 +30,9 @@ func CreateCategoryHandler(c *gin.Context) {
 		return
 	}
 
-	cat, err := repositories.CreateCategory(req.Name)
+	cat, err := repositories.CreateCategory(req.Name, req.ImageURL)
 	if err != nil {
+		log.Printf("CreateCategory error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create category — name may already exist"})
 		return
 	}
@@ -50,12 +53,13 @@ func UpdateCategoryHandler(c *gin.Context) {
 		return
 	}
 
-	cat, err := repositories.UpdateCategory(idInt, req.Name)
+	cat, err := repositories.UpdateCategory(idInt, req.Name, req.ImageURL)
 	if err != nil {
 		if err == repositories.ErrCategoryNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "category not found"})
 			return
 		}
+		log.Printf("UpdateCategory error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update category"})
 		return
 	}
@@ -75,6 +79,7 @@ func DeleteCategoryHandler(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "category not found"})
 			return
 		}
+		log.Printf("DeleteCategory error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not delete category"})
 		return
 	}

@@ -19,7 +19,7 @@ import (
 const customerTokenTTL = 30 * 24 * time.Hour
 
 // GenerateCustomerToken creates a signed session token for a customer
-// account. Reuses sign() and jwtSecret from auth.go (same package) —
+// account. Reuses sign() and signingKey() from auth.go (same package) —
 // the signing mechanism is identical, only the claims struct differs,
 // which is what keeps a customer token from ever being mistaken for
 // (or accepted as) an admin token.
@@ -84,7 +84,7 @@ func RequireCustomerAuth() gin.HandlerFunc {
 		// log.Printf("RequireCostumerAuth: received header = %q", header)
 		const prefix = "Bearer "
 		if header == "" || !strings.HasPrefix(header, prefix) {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "MAKER123 please log in to view this"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "please log in to view this"})
 			return
 		}
 		token := strings.TrimPrefix(header, prefix)

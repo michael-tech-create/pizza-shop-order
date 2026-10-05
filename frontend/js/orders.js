@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8080";
+const API_BASE = "";
 
 function showToast(message, type = "success") {
     document.getElementById("orderToast")?.remove();
@@ -196,10 +196,17 @@ function resetCheckoutFlow() {
     const s = document.getElementById("orderSummary");
     if (s) s.innerHTML = "";
 }
-
 async function loadOrders() {
     try {
-        const res = await fetch(`${API_BASE}/api/orders`);
+        // Changed to "adminToken" to match your login script
+        const token = localStorage.getItem("adminToken") || "";
+        
+        const res = await fetch(`${API_BASE}/api/orders`, {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+        
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return await res.json() || [];
     } catch (err) {
@@ -207,7 +214,6 @@ async function loadOrders() {
         return [];
     }
 }
-
 function renderOrdersTable(orders, tbody) {
     if (!tbody) return;
 
@@ -261,11 +267,18 @@ function renderOrdersTable(orders, tbody) {
 
 async function updateOrderStatus(orderId, status, selectEl) {
     try {
+        // Changed to "adminToken" here as well
+        const token = localStorage.getItem("adminToken") || "";
+        
         const res = await fetch(`${API_BASE}/api/orders/${orderId}/status`, {
             method:  "PATCH",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}` 
+            },
             body:    JSON.stringify({ status }),
         });
+        
         if (!res.ok) {
             const d = await res.json();
             throw new Error(d.error || "Update failed");

@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -23,17 +24,22 @@ import (
 // tokenTTL controls how long a session lasts before re-login is required.
 const tokenTTL = 12 * time.Hour
 
-// jwtSecret is read once at package init. In production this MUST come
-// from an environment variable — never hardcode it. A fallback is provided
-// only so local dev doesn't crash if JWT_SECRET is unset, but this should
-// always be overridden via .env in real deployments.
-var jwtSecret = func() []byte {
+// RequireConfiguredSecret refuses to boot a release server without
+// JWT_SECRET. Call it from main after godotenv.Load so a .env value counts.
+func RequireConfiguredSecret() {
+	if os.Getenv("JWT_SECRET") == "" && os.Getenv("GIN_MODE") == "release" {
+		log.Fatal("JWT_SECRET must be set when GIN_MODE=release")
+	}
+}
+
+// signingKey is read on each use. Package init runs before main loads .env,
+// so a value captured at init would ignore JWT_SECRET from that file.
+func signingKey() []byte {
 	if s := os.Getenv("JWT_SECRET"); s != "" {
 		return []byte(s)
 	}
-	// Dev-only fallback — DO NOT rely on this in production.
 	return []byte("dev-insecure-secret-change-me-in-env")
-}()
+}
 
 
 
@@ -65,7 +71,7 @@ func GenerateToken(adminID int, username string) (string, int64, error) {
 
 // sign computes the HMAC-SHA256 signature of the given payload, base64url-encoded.
 func sign(payload string) string {
-	mac := hmac.New(sha256.New, jwtSecret)
+	mac := hmac.New(sha256.New, signingKey())
 	mac.Write([]byte(payload))
 	return base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
 }

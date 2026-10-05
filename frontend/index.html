@@ -792,7 +792,7 @@
                 const trackEl  = document.getElementById("reviewTrack");
 
                 try {
-                    const res = await fetch("http://localhost:8080/api/reviews");
+                    const res = await fetch("/api/reviews");
                     if (!res.ok) throw new Error("Failed to load reviews");
                     const data = await res.json();
                     const reviews = data.reviews || [];
@@ -904,7 +904,7 @@
             <div 
                 id="starVideoContainer"
                 onclick="rotateStar()"
-                class="star-shape cursor-pointer transition-transform duration-1000 ease-in-out w-[320px] h-[320px] sm:w-[400px] sm:h-[400px] bg-orange-500 p-1 flex items-center justify-center relative shadow-2xl hover:scale-105"
+                class="star-shape cursor-pointer transition-transform duration-1000 ease-in-out w-[320px] h-[320px] sm:w-[400px] sm:h-[400px] p-1 flex items-center justify-center relative shadow-2xl hover:scale-105 rounded-3xl"
                 title="Click me to rotate!"
             >
                 <video 
@@ -1017,7 +1017,7 @@
             </div>
         </div>
 
-        <a href="https://www.pizzahut.ng/" id="secondPicLink" class="absolute inset-0 z-10 block opacity-0 pointer-events-none transition-opacity duration-1000">
+        <a href="https://www.pizzahut.ng/order/pizzas" id="secondPicLink" class="absolute inset-0 z-10 block opacity-0 pointer-events-none transition-opacity duration-1000">
         
             <img src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=2069&auto=format&fit=crop" class="w-full h-full object-cover" alt="The Pizzaverse">
 

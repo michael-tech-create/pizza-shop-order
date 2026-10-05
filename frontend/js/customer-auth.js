@@ -13,7 +13,7 @@
 // declaration error on any page that loads both files together.
 // =============================================================
 
-const AUTH_API_URL = "http://localhost:8080"; // TODO: replace with your Render backend URL
+const AUTH_API_URL = "";
 
 const CUSTOMER_TOKEN_KEY  = "mcpizza_customer_token";
 const CUSTOMER_NAME_KEY   = "mcpizza_customer_name";

@@ -11,7 +11,7 @@ let activeCategoryId = null; // null = "All"
 async function loadCategoryFilters() {
     if (!categoryFiltersEl) return;
     try {
-        const res = await fetch("http://localhost:8080/api/categories");
+        const res = await fetch("/api/categories");
         if (!res.ok) return;
         const categories = await res.json();
         renderCategoryFilters(categories);
@@ -22,7 +22,7 @@ async function loadCategoryFilters() {
 
 function renderCategoryFilters(categories) {
     const tabClass = (isActive) => [
-        "px-4 py-2 rounded-full text-sm font-semibold transition-all",
+        "px-4 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2",
         isActive
             ? "bg-orange-600 text-white shadow-md shadow-orange-600/20"
             : "bg-white text-gray-600 border border-gray-200 hover:border-orange-300 hover:text-orange-600"
@@ -30,7 +30,10 @@ function renderCategoryFilters(categories) {
 
     const allBtn = `<button data-cat="" class="cat-filter-btn ${tabClass(activeCategoryId === null)}">All</button>`;
     const catBtns = categories.map(c => `
-        <button data-cat="${c.id}" class="cat-filter-btn ${tabClass(activeCategoryId === c.id)}">${c.name}</button>
+        <button data-cat="${c.id}" class="cat-filter-btn ${tabClass(activeCategoryId === c.id)}">
+            ${c.image_url ? `<img src="${c.image_url}" class="w-5 h-5 rounded-full object-cover" onerror="this.remove()">` : ""}
+            ${c.name}
+        </button>
     `).join("");
 
     categoryFiltersEl.innerHTML = allBtn + catBtns;
@@ -181,7 +184,7 @@ if (searchInput) {
 
         searchTimeout = setTimeout(async () => {
             try {
-                const response = await fetch(`http://localhost:8080/api/search?q=${encodeURIComponent(query)}`, {
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'

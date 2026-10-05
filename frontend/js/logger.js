@@ -180,7 +180,7 @@ const AppLogger = (() => {
                 return ok ? `Menu loaded` : `Menu fetch failed (HTTP ${status})`;
             }
            
-            return `${method} ${url.replace("http://localhost:8080", "")} → ${status}`;
+            return `${method} ${url} → ${status}`;
         }
 
         try {
@@ -196,7 +196,7 @@ const AppLogger = (() => {
             return res;
         } catch (err) {
             const duration = Math.round(performance.now() - start);
-            log(`Network error — ${method} ${url.replace("http://localhost:8080", "")} — ${err.message}`,
+            log(`Network error — ${method} ${url} — ${err.message}`,
                 "error", category, { url, method, error: err.message, duration_ms: duration });
             throw err;
         }

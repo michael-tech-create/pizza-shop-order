@@ -1,6 +1,6 @@
 async function getMenu() {
     try {
-        const response = await fetch("http://localhost:8080/menu");
+        const response = await fetch("/menu");
         const pizzas = await response.json(); 
         console.log("Parsed Pizza Data:", pizzas); 
         

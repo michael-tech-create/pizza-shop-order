@@ -32,6 +32,10 @@ ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_id INT REFERENCES customers
 CREATE INDEX IF NOT EXISTS idx_orders_customer_id ON orders(customer_id);
 
 -- Starter categories — edit/add more from the admin dashboard afterward.
+
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS image_url TEXT;
+
 INSERT INTO categories (name) VALUES
     ('Classic'), ('Specialty'), ('Vegetarian'), ('Meat Lovers')
 ON CONFLICT DO NOTHING;
+
