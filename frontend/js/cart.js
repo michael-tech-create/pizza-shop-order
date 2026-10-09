@@ -10,19 +10,27 @@ function formatNaira(amount) {
     return "₦" + Number(amount).toLocaleString("en-NG");
 }
 
+// One delegated listener. setupCartButtons used to attach a new listener to
+// every .add-to-cart button on each call, and the menu calls it twice after
+// render, so one click added two items.
+let cartClicksBound = false;
+
 function setupCartButtons() {
-    document.querySelectorAll(".add-to-cart").forEach(button => {
-        button.addEventListener("click", () => {
-            // Support both data-id and data-pizza-id safely
-            const itemID = Number(button.dataset.id) || Number(button.dataset.pizzaId) || 0;
-            
-            addToCart({
-                id:    itemID,
-                name:  button.dataset.name || "Delicious Pizza",
-                size:  button.dataset.size || "medium",
-                price: Number(button.dataset.price) || 0,
-                image: button.dataset.image || "",
-            });
+    if (cartClicksBound) return;
+    cartClicksBound = true;
+
+    document.addEventListener("click", (event) => {
+        const button = event.target.closest(".add-to-cart");
+        if (!button) return;
+
+        const itemID = Number(button.dataset.id) || Number(button.dataset.pizzaId) || 0;
+
+        addToCart({
+            id:    itemID,
+            name:  button.dataset.name || "Delicious Pizza",
+            size:  button.dataset.size || "medium",
+            price: Number(button.dataset.price) || 0,
+            image: button.dataset.image || "",
         });
     });
 }

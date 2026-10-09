@@ -228,10 +228,6 @@ async function loadMenu() {
         if (typeof loadFeaturedPizza === "function") {
             loadFeaturedPizza(pizzas);
         }
-    
-        if (typeof setupCartButtons === "function") {
-            setupCartButtons();
-        }
 
     } catch (error) {
         console.error("Failed to load menu:", error);

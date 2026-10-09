@@ -34,10 +34,12 @@ RUN mkdir -p /app/uploads && chown -R app:app /app
 USER app
 
 ENV GIN_MODE=release
+# Host mapping is -p 8080:80, so the process must listen on 80 inside the container.
+ENV PORT=80
 
-EXPOSE 8080
+EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD wget -qO- http://127.0.0.1:8080/health || exit 1
+  CMD wget -qO- http://127.0.0.1:80/health || exit 1
 
 ENTRYPOINT ["./server"]
