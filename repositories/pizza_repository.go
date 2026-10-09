@@ -29,6 +29,7 @@ func GetAllPizzas() ([]models.Pizza, error) {
 		       p.category_id, COALESCE(c.name, '') AS category_name
 		FROM pizzas p
 		LEFT JOIN categories c ON p.category_id = c.id
+		WHERE p.is_active
 	`
 	rows, err := database.DB.Query(query)
 	if err != nil {
@@ -70,7 +71,7 @@ func GetPizzaByID(id int) (models.Pizza, error) {
 		       p.category_id, COALESCE(c.name, '') AS category_name
 		FROM pizzas p
 		LEFT JOIN categories c ON p.category_id = c.id
-		WHERE p.id = $1
+		WHERE p.id = $1 AND p.is_active
 	`
 	var pizza models.Pizza
 
@@ -105,8 +106,23 @@ func DeletePizza(id int) (models.Pizza, error) {
 		return models.Pizza{}, err
 	}
 
-	query := `DELETE FROM pizzas WHERE id = $1`
-	_, err = database.DB.Exec(query, id)
+	var orderCount int
+	if err := database.DB.QueryRow(`SELECT COUNT(*) FROM order_items WHERE pizza_id = $1`, id).Scan(&orderCount); err != nil {
+		return models.Pizza{}, err
+	}
+
+	// Past orders store pizza_id and look up the name with a join. Removing the
+	// row would either fail the foreign key or wipe those line items, so a pizza
+	// that has been ordered is taken off the menu instead of deleted.
+	if orderCount > 0 {
+		_, err = database.DB.Exec(`UPDATE pizzas SET is_active = false WHERE id = $1`, id)
+		if err != nil {
+			return models.Pizza{}, err
+		}
+		return pizza, nil
+	}
+
+	_, err = database.DB.Exec(`DELETE FROM pizzas WHERE id = $1`, id)
 	if err != nil {
 		return models.Pizza{}, err
 	}
@@ -119,7 +135,7 @@ func SearchPizza(queryStr string) ([]models.Pizza, error) {
                p.category_id, COALESCE(c.name, '') AS category_name
         FROM pizzas p
         LEFT JOIN categories c ON p.category_id = c.id
-        WHERE LOWER(p.name) LIKE LOWER($1) OR LOWER(p.description) LIKE LOWER($1)
+        WHERE p.is_active AND (LOWER(p.name) LIKE LOWER($1) OR LOWER(p.description) LIKE LOWER($1))
     `
 	rows, err := database.DB.Query(query, "%"+queryStr+"%")
 	if err != nil {
@@ -245,7 +261,7 @@ func CreateOrder(customerName string, phone string, address string, items []mode
 	type sizePrices struct{ small, medium, large int }
 	priceByID := make(map[int]sizePrices)
 
-	priceRows, err := tx.Query(`SELECT id, price_small, price_medium, price_large FROM pizzas WHERE id = ANY($1)`, pq.Array(ids))
+	priceRows, err := tx.Query(`SELECT id, price_small, price_medium, price_large FROM pizzas WHERE is_active AND id = ANY($1)`, pq.Array(ids))
 	if err != nil {
 		return models.Order{}, err
 	}

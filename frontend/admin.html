@@ -1040,7 +1040,11 @@ async function confirmDelete() {
     if (!pendingDeleteId) return;
     try {
         const res = await AuthGuard.authFetch(`${API_URL}/api/pizzas/${pendingDeleteId}`, { method: "DELETE" });
-        if (!res.ok) throw new Error("Delete failed");
+        if (!res.ok) {
+            let message = "Delete failed";
+            try { const d = await res.json(); if (d.error) message = d.error; } catch {}
+            throw new Error(message);
+        }
         showToast("Pizza deleted", "success");
         AppLogger.log(`Pizza #${pendingDeleteId} deleted`, "warning", "PIZZA");
         closeDeleteModal();

@@ -32,7 +32,7 @@ func GetAllCategories() ([]models.Category, error) {
 	query := `
 		SELECT c.id, c.name, COALESCE(c.image_url, ''), COUNT(p.id) AS pizza_count
 		FROM categories c
-		LEFT JOIN pizzas p ON p.category_id = c.id
+		LEFT JOIN pizzas p ON p.category_id = c.id AND p.is_active
 		GROUP BY c.id, c.name, COALESCE(c.image_url, '')
 		ORDER BY c.name
 	`
