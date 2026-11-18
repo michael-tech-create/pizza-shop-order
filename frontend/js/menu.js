@@ -132,7 +132,7 @@ function createPizzaCard(pizza) {
     // Clicking anywhere on the card opens the pizza detail page
     card.addEventListener("click", (e) => {
         if (e.target.closest(".add-to-cart") || e.target.closest(".thumbnail-btn")) return;
-        window.location.href = `pizza.html?id=${pizza.id}`;
+        window.location.href = `/pizza?id=${pizza.id}`;
     });
 
     return card;
@@ -158,7 +158,7 @@ function renderSearchDropdown(pizzas) {
         const imageUrl = pizza.images?.[0]?.image_url || "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=150&auto=format&fit=crop";
         
         return `
-            <div class="flex items-center gap-4 p-4 hover:bg-orange-50 border-b border-gray-50 last:border-none cursor-pointer transition-colors" onclick="window.location.href='pizza.html?id=${pizza.id}'">
+            <div class="flex items-center gap-4 p-4 hover:bg-orange-50 border-b border-gray-50 last:border-none cursor-pointer transition-colors" onclick="window.location.href='/pizza?id=${pizza.id}'">
                 <img src="${imageUrl}" alt="${pizza.name}" class="w-16 h-16 rounded-xl object-cover shadow-sm">
                 <div class="flex-grow min-w-0">
                     <h4 class="text-base font-bold text-gray-900 truncate">${pizza.name}</h4>

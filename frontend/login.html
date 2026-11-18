@@ -57,7 +57,7 @@
 
         <div class="text-center mb-8">
             <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl mb-4 shadow-lg border border-white/20">
-                <a href="index.html"><img src="./public/images/icons8-pizza-32.png"/></span></a>
+                <a href="/"><img src="./public/images/icons8-pizza-32.png"/></span></a>
             </div>
             <h1 class="text-3xl font-extrabold text-white tracking-tight">McMichael Admin</h1>
             <p class="text-gray-100 text-sm mt-1.5 font-medium">Sign in to manage restaurant orders</p>
@@ -173,7 +173,7 @@
                 fetch(`${API_URL}/api/auth/verify`, {
                     headers: { "Authorization": `Bearer ${token}` },
                 }).then(res => {
-                    if (res.ok) window.location.href = "admin.html";
+                    if (res.ok) window.location.href = "/admin";
                 }).catch(() => {});
             }
         })();
@@ -264,7 +264,7 @@
                 submitBtn.classList.remove("bg-orange-600", "hover:bg-orange-700");
                 submitBtn.classList.add("bg-green-600");
 
-                setTimeout(() => { window.location.href = "admin.html"; }, 450);
+                setTimeout(() => { window.location.href = "/admin"; }, 450);
 
             } catch (err) {
                 showBannerError("Couldn't reach the server. Check your connection.");

@@ -37,7 +37,7 @@
 
         <div class="flex items-center gap-3">
             <div class="bg-orange-100 p-2 rounded-lg">
-                <a href="index.html"><img src="./public/images/icons8-pizza-32.png" alt="Pizza Icon"/></a>
+                <a href="/"><img src="./public/images/icons8-pizza-32.png" alt="Pizza Icon"/></a>
             </div>
             <div>
                 <h1 class="text-orange-800 text-lg font-bold leading-tight">McMichael Admin</h1>
@@ -46,11 +46,11 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <a href="index.html"
+            <a href="/"
                class="text-sm text-gray-500 hover:text-orange-600 font-medium transition-colors hidden sm:block">
                 ← Menu
             </a>
-            <a href="activity.html"
+            <a href="/activity"
                class="flex items-center gap-1.5 text-sm text-gray-500 hover:text-orange-600 font-medium transition-colors hidden sm:block">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -119,7 +119,7 @@
                 class="tab-inactive px-4 py-3 text-sm transition-all cursor-pointer">
             Categories
         </button>
-        <a href="activity.html"
+        <a href="/activity"
            class="tab-inactive px-4 py-3 text-sm flex items-center gap-1.5 sm:hidden">
             Logs
         </a>
@@ -1102,8 +1102,13 @@ async function uploadImages() {
         const res = await AuthGuard.authFetch(`${API_URL}/api/pizzas/${currentPizzaId}/images`, {
             method: "POST", body: formData
         });
-        if (!res.ok) throw new Error("Upload failed");
-        showToast(`${files.length} image(s) uploaded ✓`, "success");
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || "Upload failed");
+        if (result.failed?.length) {
+            showToast(`${result.uploaded.length} uploaded; ${result.failed.length} failed`, "error");
+        } else {
+            showToast(`${result.uploaded.length} image(s) uploaded ✓`, "success");
+        }
         document.getElementById("imageFileInput").value = "";
         document.getElementById("uploadPreview").innerHTML = "";
         document.getElementById("uploadPreview").classList.add("hidden");

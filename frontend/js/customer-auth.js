@@ -43,7 +43,7 @@ function clearCustomerSession() {
 
 function logoutCustomer() {
     clearCustomerSession();
-    window.location.href = "index.html";
+    window.location.href = "/";
 }
 
 async function customerSignup(name, phone, password) {
@@ -79,14 +79,14 @@ function renderCustomerNavSlot() {
 
     if (isCustomerLoggedIn()) {
         slot.innerHTML = `
-            <a href="my-orders.html" class="text-sm font-semibold text-gray-700 hover:text-orange-600">
+            <a href="/my-orders" class="text-sm font-semibold text-gray-700 hover:text-orange-600">
                 Hi, ${getCustomerName()}
             </a>
             <button onclick="logoutCustomer()" class="text-xs text-gray-400 hover:text-red-500 ml-2">Log out</button>
         `;
     } else {
         slot.innerHTML = `
-            <a href="userlogin.html" class="text-sm font-semibold text-gray-700 hover:text-orange-600">
+            <a href="/userlogin" class="text-sm font-semibold text-gray-700 hover:text-orange-600">
                 Log in
             </a>
         `;

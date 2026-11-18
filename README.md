@@ -2,7 +2,7 @@
 
 A single-restaurant pizza shop: customers browse the menu, check out, and pay with Paystack. Staff manage pizzas, categories, images, and orders from an admin dashboard.
 
-One Go process serves the website and the API. The HTML, CSS, and JavaScript are embedded in the binary. Postgres holds the data. Uploaded pizza images are written to `./uploads` and served at `/uploads`.
+One Go process serves the website and the API. The HTML, CSS, and JavaScript are embedded in the binary. Postgres holds the data and Cloudinary stores uploaded pizza images. The database stores each image's permanent Cloudinary URL.
 
 ## Screenshots
 
@@ -55,6 +55,7 @@ cp .env.example .env
 | `JWT_SECRET` | Signs admin and customer sessions. Required when `GIN_MODE=release`. |
 | `PAYSTACK_SECRET_KEY` | Paystack **secret** key (`sk_live_...` or `sk_test_...`). |
 | `PAYSTACK_CALLBACK_URL` | Public URL of `/payment-callback.html`. |
+| `CLOUDINARY_URL` | Cloudinary credentials in `cloudinary://api_key:api_secret@cloud_name` format. Required for image uploads. |
 | `ALLOWED_ORIGINS` | Extra browser origins, comma-separated. |
 | `TRUSTED_PROXIES` | Proxy CIDRs when the host sits behind a load balancer. |
 | `PORT` | Listen port. Defaults to `8080`. |
@@ -136,7 +137,7 @@ Set `PAYSTACK_CALLBACK_URL` to `https://<your-host>/payment-callback.html`.
 
 `GET /health` is the readiness check and runs a lightweight `SELECT 1` query. The GitHub Actions workflow at `.github/workflows/render-healthcheck.yml` pings the deployed app every three to five days and can also be started manually from the Actions tab. This confirms the app and database respond, but it does not keep a free Render instance awake: the instance can still sleep between checks, and a check may wake it.
 
-`./uploads` lives on the container disk. A new deploy or instance replacement can remove uploaded images unless the host has a persistent volume or the app stores images in external object storage. The scheduled health check does not make uploads persistent. On Render, configure a persistent disk mounted at the configured `UPLOAD_DIR` (default `/app/uploads`), or move image uploads to object storage, before relying on uploaded images across restarts.
+Set `CLOUDINARY_URL` in the deployment environment. The backend streams uploaded image files to Cloudinary, then stores the returned secure URL in Postgres. Uploaded images therefore survive Render restarts and instance replacement without a Render disk. Existing database rows that point to `/uploads/...` files are not migrated automatically; upload those images again to Cloudinary and update their database URLs.
 
 ## Project layout
 

@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"path/filepath"
 	"pizza-app/middleware"
 	"strconv"
-	"time"
 
 	"pizza-app/models"
 	"pizza-app/repositories"
 
+	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api"
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/gin-gonic/gin"
 )
 
@@ -240,30 +240,62 @@ func UploadPizzaImageHandler(c *gin.Context) {
 	}
 
 	files := form.File["images"]
+	if len(files) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no images provided"})
+		return
+	}
 	log.Println("Files Received:", len(files))
 	var uploaded []string
+	var failures []string
+	cld, err := cloudinary.New()
+	if err != nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "image storage is not configured"})
+		return
+	}
 
 	for _, file := range files {
-		filename := fmt.Sprintf("%d_%s", time.Now().UnixNano(), filepath.Base(file.Filename))
-		uploadsDir := os.Getenv("UPLOAD_DIR")
-		if uploadsDir == "" {
-			uploadsDir = "uploads"
-		}
-		path := filepath.Join(uploadsDir, filename)
-
-		if err := c.SaveUploadedFile(file, path); err != nil {
+		reader, err := file.Open()
+		if err != nil {
 			log.Println(err)
+			failures = append(failures, file.Filename)
 			continue
 		}
+		result, err := cld.Upload.Upload(c.Request.Context(), reader, uploader.UploadParams{
+			Folder:         fmt.Sprintf("pizza-app/pizzas/%d", pizzaID),
+			UseFilename:    api.Bool(true),
+			UniqueFilename: api.Bool(true),
+		})
+		closeErr := reader.Close()
+		if err != nil {
+			log.Println("Cloudinary upload error:", err)
+			failures = append(failures, file.Filename)
+			continue
+		}
+		if closeErr != nil {
+			log.Println("Upload reader close error:", closeErr)
+		}
 
-		imageURL := "/uploads/" + filename
-		log.Println("Writing To DB:", imageURL)
+		imageURL := result.SecureURL
+		log.Println("Saving Cloudinary URL:", imageURL)
 
 		if err := repositories.SavePizzaImage(pizzaID, imageURL); err != nil {
 			log.Println("DB Write Error:", err)
+			failures = append(failures, file.Filename)
 			continue
 		}
 		uploaded = append(uploaded, imageURL)
+	}
+	if len(failures) > 0 {
+		status := http.StatusInternalServerError
+		if len(uploaded) > 0 {
+			status = http.StatusMultiStatus
+		}
+		c.JSON(status, gin.H{
+			"error":    "one or more images could not be saved",
+			"uploaded": uploaded,
+			"failed":   failures,
+		})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{

@@ -16,7 +16,7 @@ const AuthGuard = (() => {
     const TOKEN_KEY    = "mcpizza_admin_token";
     const USERNAME_KEY = "mcpizza_admin_username";
     const EXPIRY_KEY   = "mcpizza_admin_expiry";
-    const LOGIN_PAGE   = "login.html";
+    const LOGIN_PAGE   = "/login";
 
     function getToken()    { return localStorage.getItem(TOKEN_KEY); }
     function getUsername() { return localStorage.getItem(USERNAME_KEY); }
