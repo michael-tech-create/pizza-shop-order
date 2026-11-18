@@ -36,6 +36,8 @@ USER app
 ENV GIN_MODE=release
 # Host mapping is -p 8080:80, so the process must listen on 80 inside the container.
 ENV PORT=80
+# Persist this directory with -v "$(pwd)/uploads:/app/uploads".
+ENV UPLOAD_DIR=/app/uploads
 
 EXPOSE 80
 

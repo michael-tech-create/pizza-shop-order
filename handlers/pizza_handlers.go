@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"pizza-app/middleware"
 	"strconv"
@@ -244,7 +245,11 @@ func UploadPizzaImageHandler(c *gin.Context) {
 
 	for _, file := range files {
 		filename := fmt.Sprintf("%d_%s", time.Now().UnixNano(), filepath.Base(file.Filename))
-		path := filepath.Join("uploads", filename)
+		uploadsDir := os.Getenv("UPLOAD_DIR")
+		if uploadsDir == "" {
+			uploadsDir = "uploads"
+		}
+		path := filepath.Join(uploadsDir, filename)
 
 		if err := c.SaveUploadedFile(file, path); err != nil {
 			log.Println(err)

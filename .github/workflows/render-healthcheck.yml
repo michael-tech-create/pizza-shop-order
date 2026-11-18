@@ -1,0 +1,19 @@
+name: Render health check
+
+on:
+  # GitHub cron cannot express a rolling five-day interval. This runs on
+  # days 1, 6, 11, 16, 21, 26, and 31 (when present), keeping gaps to 3–5 days.
+  schedule:
+    - cron: "0 9 */5 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  healthcheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Check Render app and database
+        run: curl --fail --silent --show-error --max-time 30 https://pizza-shop-order-1.onrender.com/health

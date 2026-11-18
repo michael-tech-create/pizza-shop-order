@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"io/fs"
@@ -67,10 +68,14 @@ func main() {
 	router.StaticFS("/js", http.FS(mustSubFS(frontendContent, "js")))
 	router.StaticFS("/public", http.FS(mustSubFS(frontendContent, "public")))
 
-	if err := os.MkdirAll("uploads", 0o755); err != nil {
+	uploadsDir := os.Getenv("UPLOAD_DIR")
+	if uploadsDir == "" {
+		uploadsDir = "uploads"
+	}
+	if err := os.MkdirAll(uploadsDir, 0o755); err != nil {
 		log.Fatalf("failed to create uploads directory: %v", err)
 	}
-	router.Static("/uploads", "./uploads")
+	router.Static("/uploads", uploadsDir)
 
 	pages := []string{
 		"index.html",
@@ -94,7 +99,12 @@ func main() {
 	}
 
 	router.GET("/health", func(c *gin.Context) {
-		if err := database.DB.Ping(); err != nil {
+		// Run a tiny query so this endpoint verifies that the database can
+		// execute work, not only that a connection can be opened.
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+		defer cancel()
+		var result int
+		if err := database.DB.QueryRowContext(ctx, "SELECT 1").Scan(&result); err != nil || result != 1 {
 			c.JSON(http.StatusServiceUnavailable, gin.H{"status": "db unreachable"})
 			return
 		}

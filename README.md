@@ -66,7 +66,7 @@ On an empty database, run the SQL files in `migrations/` in this order:
 go run .
 ```
 
-Open `http://127.0.0.1:8080`. `GET /health` returns `{"status":"ok"}` when Postgres answers.
+Open `http://127.0.0.1:8080`. `GET /health` runs `SELECT 1` and returns `{"status":"ok"}` when Postgres answers.
 
 ## Admin account
 
@@ -120,9 +120,9 @@ Use the `Dockerfile` on Render, Fly.io, Railway, or any host that runs a contain
 
 Set `PAYSTACK_CALLBACK_URL` to `https://<your-host>/payment-callback.html`.
 
-`GET /health` is the readiness check. A free Render instance sleeps when idle, so the first request after that can take a minute.
+`GET /health` is the readiness check and runs a lightweight `SELECT 1` query. The GitHub Actions workflow at `.github/workflows/render-healthcheck.yml` pings the deployed app every three to five days and can also be started manually from the Actions tab. This confirms the app and database respond, but it does not keep a free Render instance awake: the instance can still sleep between checks, and a check may wake it.
 
-`./uploads` lives on the container disk. A new deploy replaces that disk unless the host has a persistent volume, so uploaded images disappear on redeploy.
+`./uploads` lives on the container disk. A new deploy or instance replacement can remove uploaded images unless the host has a persistent volume or the app stores images in external object storage. The scheduled health check does not make uploads persistent. On Render, configure a persistent disk mounted at the configured `UPLOAD_DIR` (default `/app/uploads`), or move image uploads to object storage, before relying on uploaded images across restarts.
 
 ## Project layout
 
