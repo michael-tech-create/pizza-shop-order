@@ -1104,10 +1104,12 @@ async function uploadImages() {
         });
         const result = await res.json();
         if (!res.ok) throw new Error(result.error || "Upload failed");
-        if (result.failed?.length) {
-            showToast(`${result.uploaded.length} uploaded; ${result.failed.length} failed`, "error");
+        const uploaded = result.uploaded || result.images || [];
+        const failed = result.failed || [];
+        if (failed.length) {
+            showToast(`${uploaded.length} uploaded; ${failed.length} failed`, "error");
         } else {
-            showToast(`${result.uploaded.length} image(s) uploaded ✓`, "success");
+            showToast(`${uploaded.length} image(s) uploaded ✓`, "success");
         }
         document.getElementById("imageFileInput").value = "";
         document.getElementById("uploadPreview").innerHTML = "";

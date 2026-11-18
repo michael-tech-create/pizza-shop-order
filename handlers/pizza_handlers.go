@@ -300,6 +300,7 @@ func UploadPizzaImageHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"pizza_id": pizzaID,
+		"uploaded": uploaded,
 		"images":   uploaded,
 	})
 }
