@@ -4,6 +4,20 @@ A single-restaurant pizza shop: customers browse the menu, check out, and pay wi
 
 One Go process serves the website and the API. The HTML, CSS, and JavaScript are embedded in the binary. Postgres holds the data. Uploaded pizza images are written to `./uploads` and served at `/uploads`.
 
+## Screenshots
+
+![Pizza shop screenshot (13:51)](uploads/screenshot/Screenshot%20from%202026-11-18%2013-51-34.png)
+
+![Pizza shop screenshot (13:56)](uploads/screenshot/Screenshot%20from%202026-11-18%2013-56-05.png)
+
+![Pizza shop screenshot (13:57)](uploads/screenshot/Screenshot%20from%202026-11-18%2013-57-40.png)
+
+![Pizza shop screenshot (13:58)](uploads/screenshot/Screenshot%20from%202026-11-18%2013-58-14.png)
+
+![Pizza shop screenshot (13:59)](uploads/screenshot/Screenshot%20from%202026-11-18%2013-59-26.png)
+
+![Pizza shop screenshot (13:59)](uploads/screenshot/Screenshot%20from%202026-11-18%2013-59-50.png)
+
 ## Pages
 
 | URL | Who uses it |
